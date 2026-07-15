@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="social_page_action" model="ir.actions.act_window">
+        <field name="name">Page</field>
+        <field name="res_model">social.page</field>
+        <field name="view_mode">kanban,list,form,pivot</field>
+    </record>
+
+    <record id="social_page_view_kanban" model="ir.ui.view">
+        <field name="name">Page</field>
+        <field name="model">social.page</field>
+        <field name="arch" type="xml">
+            <kanban create="false" default_group_by="media_id" group_create="false" quick_create="false" sample="1">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="media_id"/>
+                <field name="image"/>
+                <field name="follower_count"/>
+                <field name="view_count"/>
+                <field name="like_count"/>
+                <field name="comment_count"/>
+                <field name="share_count"/>
+                <field name="click_count"/>
+                <field name="engagement_count"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click mb-3">
+                            <div class="pb-3">
+                                <div class="o_kanban_image">
+                                    <field name="image" widget="image" options="{'img_class': 'object-fit-contain'}" 
+                                           style="width: 70px; height: 70px;"/>
+                                </div>
+                                <div>
+                                    <h3>
+                                        <field name="name"/>
+                                    </h3>
+                                </div>
+                            </div>
+                            <hr class="mt-5 mb-2"></hr>
+                            <div class="kanban_social_page_footer oe_kanban_record_bottom">
+                                <div class="d-flex justify-content-start">
+                                    <t t-if="record.like_count.raw_value">
+                                        <div>
+                                            <i class="fa fa-thumbs-up" title="Total Likes"/>
+                                            <b t-out="record.like_count.raw_value"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="social_page_view_tree" model="ir.ui.view">
+        <field name="name">social.page.view.list</field>
+        <field name="model">social.page</field>
+        <field name="arch" type="xml">
+            <list create="false" sample="1">
+                <field name="name" />
+                <field name="social_provider" />
+            </list>
+        </field>
+    </record>
+
+    <record id="social_page_view_form" model="ir.ui.view">
+        <field name="name">Social Page</field>
+        <field name="model">social.page</field>
+        <field name="arch" type="xml">
+            <form duplicate="false" create="false">
+                <header>
+                    <button name="action_sinchronized_page" string="Synchronize Page"
+                        type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <div name="button_box" class="oe_button_box">
+                    </div>
+                    <field name="image" widget="image" class="oe_avatar"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="description"/>
+                            <field name="social_provider"/>
+                            <field name="media_id" groups="viin_social.viin_social_group_admin"/>
+                            <field name="assign_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="member_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="social_page_url"/>
+                            <field name="social_page_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Insights">
+                            <group>
+                                <group>
+                                    <field name="like_count"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="social_page_view_search" model="ir.ui.view">
+        <field name="name">Social Page</field>
+        <field name="model">social.page</field>
+        <field name="arch" type="xml">
+            <search>
+                <searchpanel>
+                    <field name="company_id" groups="base.group_multi_company" icon="fa-building" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <record id="social_page_view_pivot" model="ir.ui.view">
+        <field name="name">Social Page</field>
+        <field name="model">social.page</field>
+        <field name="arch" type="xml">
+            <pivot sample="1">
+                <field name="media_id" type="row"/>
+                <field name="name" type="row"/>
+                <field name="like_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <menuitem id="social_page_menu" name="Pages" parent="social_marketing_menu" sequence="19"
+              action="social_page_action"/>
+</odoo>

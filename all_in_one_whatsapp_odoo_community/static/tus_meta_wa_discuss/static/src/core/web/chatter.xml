@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <xpath
+            expr="//button[hasclass('o-mail-Chatter-sendMessage')]"
+            position="attributes"
+        >
+             <attribute name="t-if">props.hasMessageList and state.thread.DisableSendMessageBtn</attribute>
+        </xpath>
+         <xpath expr="//button[hasclass('o-mail-Chatter-sendMessage')]" position="after">
+             <button t-if="props.hasMessageList and state.thread.DisableWpSendMessageBtn" class="o-mail-Chatter-sendwaMessage btn text-nowrap me-1" t-att-class="{
+                    'btn-primary': state.composerType !== 'note',
+                    'btn-secondary': state.composerType === 'note',
+                    'active': state.composerType === 'WaMessage',
+                    'my-2': !props.compactHeight
+                }" t-att-disabled="!state.thread.hasWriteAccess and !(state.thread.hasReadAccess and state.thread.canPostOnReadonly) and props.threadId" data-hotkey="m" t-on-click="OpenWhatsappComposer">
+                    Send WhatsApp Message
+            </button>
+<!--             <button t-if="chatterTopbar.chatter and chatterTopbar.chatter.messaging and chatterTopbar.chatter.isShowWaSendMessage" class="o_ChatterTopbar_button o_ChatterTopbar_buttonSendWAMessage btn text-nowrap me-2"-->
+<!--                type="button"-->
+<!--                t-att-class="{-->
+<!--                    'o-active btn-odoo': chatterTopbar.chatter.composerView and !chatterTopbar.chatter.composerView.composer.isLog,-->
+<!--                    'btn-odoo': !chatterTopbar.chatter.composerView,-->
+<!--                    'btn-light': chatterTopbar.chatter.composerView and chatterTopbar.chatter.composerView.composer.isLog,-->
+<!--                }"-->
+<!--                t-att-disabled="!chatterTopbar.chatter.hasWriteAccess"-->
+<!--                data-hotkey="m"-->
+<!--                t-on-click="chatterTopbar.chatter.onClickWaSendMessage"-->
+<!--            >-->
+<!--                Send WhatsApp Message-->
+<!--            </button>-->
+         </xpath>
+    </t>
+</templates>

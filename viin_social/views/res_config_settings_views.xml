@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.social</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="50"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app name="viin_social" string="Social Media" data-string="Social Media">
+                    <block name="social_notif_container" title="Social Notification">
+                        <setting name="comment_notif_setting" string="Receive Comment Notification"
+                            help="Receive comment notifications from social networks">
+                            <field name="receive_comment_notification" />
+                        </setting>
+
+                        <setting name="reactive_notif_setting" string="Receive Reactive Notification"
+                            help="Receive notifications of post reactions from social networks">
+                            <field name="receive_reactive_notification" />
+                        </setting>
+                    </block>
+
+                    <block name="facebook_container" title="Facebook">
+                        <setting name="module_viin_social_facebook_setting" string="Enable Social Facebook"
+                            help="If checked, will enable the Social Facebook module">
+                            <field name="module_viin_social_facebook" />
+                        </setting>
+                    </block>
+
+                    <block name="linkedin_container" title="LinkedIn">
+                        <setting name="module_viin_social_linkedin_setting" string="Enable Social LinkedIn"
+                            help="If checked, will enable the Social LinkedIn module">
+                            <field name="module_viin_social_linkedin" />
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="social_config_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'viin_social'}</field>
+    </record>
+
+    <menuitem id="social_settings_menu" name="Settings" parent="social_configuration_menu"
+              action="social_config_action" sequence="0" groups="base.group_system"/>
+</odoo>

@@ -1,0 +1,37 @@
+<odoo>
+    <record id="res_config_settings_view_form_chatbot" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.discuss</field>
+        <field name="model">res.config.settings</field>
+        <field
+                name="inherit_id"
+                ref="all_in_one_whatsapp_odoo_community.res_config_settings_view_form"
+        />
+        <field name="arch" type="xml">
+            <xpath
+                    expr="//app[@name='tus_meta_whatsapp_base']/block"
+                    position="after"
+            >
+                <block title="For ChatBot">
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane" title="Load Default Whatsapp Channel In Discuss ">
+                                <label for="wa_chatbot_id" string="Whatsapp ChatBot"
+                                       class=" o_light_label"/>
+                                <field name="wa_chatbot_id" class="oe_inline"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane col-lg-4"
+                                 title="Stop Chatbot When Start User Conversation">
+                                <label for="is_chatbot_ended"
+                                       string="User Conversation"
+                                       clasL=" o_light_label"/>
+                                <field name="is_chatbot_ended" class="oe_inline"/>
+                            </div>
+                        </div>
+                    </div>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

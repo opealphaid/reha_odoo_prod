@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Marketing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-light" style="font-family:Roboto, Arial, sans-serif; line-height:1.25;">
+<div class="container py-4">
+    <section class="mb-4 rounded-4 shadow-sm p-4 p-lg-5 text-white" style="background-image: linear-gradient(120deg, #00BBCE, #7F4282);">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-6">
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-dark"><i class="fa fa-check-circle-o me-1"></i>Community</span>
+                    <span class="badge bg-dark"><i class="fa fa-check-circle-o me-1"></i>Cơ sở kỹ thuật</span>
+                    <span class="badge bg-dark"><i class="fa fa-check-circle-o me-1"></i>Ưu tiên mở rộng</span>
+                </div>
+                <p class="text-uppercase small fw-semibold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2;">Cơ sở ORM và giao diện cho bộ marketing mạng xã hội Viindoo</p>
+                <h1 class="h2 fw-bold mb-3 text-white" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:32px; line-height:1.15; letter-spacing:0.2px;">Social Marketing</h1>
+                <p class="mb-4" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;"><strong>Module cơ sở kỹ thuật</strong> quy định các model dùng chung (media, trang, bài viết, bài đăng, thông báo), cơ chế đồng bộ, trường chỉ số, nhóm quyền và khung giao diện backend tích hợp Discuss trong Odoo. <strong>Đăng bài thật lên mạng xã hội và tích hợp API nhà cung cấp</strong> do các <strong>module mở rộng</strong> đảm nhiệm, ví dụ <em>Facebook Social Marketing</em> và <em>LinkedIn Social Marketing</em>, các module này <strong>phụ thuộc</strong> vào gói này. Hãy cài module cơ sở kèm từng connector cần dùng để mỗi mạng xã hội có thể cập nhật riêng mà không phải tách nhánh lõi.</p>
+            </div>
+            <div class="col-lg-6">
+                <div class="border rounded-4 shadow-sm overflow-hidden bg-white p-2">
+                    <img src="01-tao-bai-viet-en.jpg" class="img-fluid w-100 rounded-4" alt="Ảnh chụp Social Marketing" style="object-fit:cover;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f4f8f9; border:1px solid #e0d4e2;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge" style="background-color:#f0e6f1 !important; color:#0b2336 !important; border:1px solid #AD4BB2 !important;"><i class="fa fa-sliders me-1"></i>Tính năng</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#7F4282;">Phần cơ sở đảm nhiệm lõi; module mở rộng bổ sung từng mạng xã hội</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Khả năng cốt lõi</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Lớp ORM ổn định, giao diện quản trị, khung cron và quy tắc truy cập mà các module <strong>Facebook, LinkedIn và connector tương lai kế thừa</strong>. OAuth, API gọi ra phía nhà cung cấp và xử lý riêng theo từng nền tảng mạng xã hội nằm ở module mở rộng; module cơ sở giữ một trục tích hợp thống nhất.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #a8e0e6; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#d9f5f8; color:#00BBCE;">
+                            <i class="fa fa-sitemap"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Kiến trúc model linh hoạt</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Media mạng xã hội, trang, bài viết, bài đăng và thông báo là các bản ghi đầy đủ, có thể mở rộng theo từng kênh.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#00BBCE;">Thiết kế cho module cầu nối</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #d4b8d6; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#ebd8ec; color:#7F4282;">
+                            <i class="fa fa-refresh"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Đồng bộ hóa</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Cron đồng bộ, kéo bài cũ và theo dõi trạng thái token xác thực.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#7F4282;">Đồng bộ Odoo với kênh mạng xã hội</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #a3e8cc; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#d1faf0; color:#12a66a;">
+                            <i class="fa fa-bar-chart"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Chỉ số tương tác</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Lượt xem, lượt thích, bình luận, lượt chia sẻ; đính kèm ảnh, video, tệp, liên kết; có thể gắn với kênh Discuss khi cấu hình.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#12a66a;">Đa phương tiện và tín hiệu</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #b0daf5; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#dbeefe; color:#0ea5e9;">
+                            <i class="fa fa-lock"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Phân quyền chi tiết</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Ba nhóm quyền (Administrator, Approver, Editor) tách quản trị hệ thống với thao tác nội dung hằng ngày.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#0ea5e9;">Vai trò sát vận hành marketing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f6f7fb; border:1px solid #e8eaef;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-success"><i class="fa fa-check me-1"></i>Giá trị</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#14824f;">Tác động kinh doanh</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Lợi ích</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;"><strong>Module cơ sở kèm module mở rộng</strong>: một lõi kỹ thuật trong Odoo, rồi lắp thêm đúng module theo từng mạng xã hội bạn dùng (Facebook, LinkedIn, v.v.). Tránh lặp model theo từng kênh và giảm phụ thuộc bảng tính hay bộ công cụ marketing tách rời.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #2cb35b; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#e3f5e9; color:#1f8f49; border:1px solid #b8e5c8; line-height:1;">
+                            <span style="font-size:24px;">01</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Mở rộng bằng module, không sao chép mã</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Phát hành <code>viin_social_facebook</code>, <code>viin_social_linkedin</code> hoặc connector khác <strong>phụ thuộc module cơ sở</strong> thay vì nhân đôi model bài viết và bài đăng cho từng mạng xã hội.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #7F4282; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#f0e6f1; color:#7F4282; border:1px solid #d4b8d6; line-height:1;">
+                            <span style="font-size:24px;">02</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Gắn chặt với Odoo</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Mail, Discuss, trình soạn thảo web và UTM đi cùng quy trình đội bạn đã quen trên giao diện quản trị.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #f3b229; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#fdf6e5; color:#c98a08; border:1px solid #f0d78a; line-height:1;">
+                            <span style="font-size:24px;">03</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Sẵn sàng đa kênh</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Một nơi vận hành cho nhiều mạng xã hội khi đã cài các module kết nối Viindoo tương ứng.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #27aac4; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#e5f6fa; color:#1f96af; border:1px solid #a8dce8; line-height:1;">
+                            <span style="font-size:24px;">04</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Tương tác tập trung</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Thông báo và bản ghi bài đăng giúp marketing và hỗ trợ dùng chung lịch sử tương tác thay vì xử lý rời trong hộp thư.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f8fafc;">
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-overview" role="tab" aria-selected="true">Tổng quan</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-demo" role="tab" aria-selected="false">Demo</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-support" role="tab" aria-selected="false">Hỗ trợ</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-tech" role="tab" aria-selected="false">Yêu cầu kỹ thuật</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-changelog" role="tab" aria-selected="false">Nhật ký thay đổi</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                    <div class="border rounded-3 p-3 mt-4 bg-white shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <h5 class="fw-bold mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Tổng quan Social Marketing</h5>
+                        </div>
+                        <div class="border rounded-3 overflow-hidden" style="border-color:#d9dce7 !important;">
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 text-white fw-bold" style="background-image: linear-gradient(135deg, #7F4282, #00BBCE);">Giải pháp</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted"><strong>Cơ sở kỹ thuật</strong> cho marketing mạng xã hội Viindoo: ORM dùng chung (media, trang, bài viết, bài đăng, thông báo), màn hình quản trị, cron đồng bộ, trường chỉ số, nhóm bảo mật và tích hợp Discuss. Đây là <strong>module mà các connector phải dựa vào</strong>, không phải gói đủ mọi mạng xã hội trong một sản phẩm đơn lẻ.</div>
+                            </div>
+                            <div class="row g-0 border-bottom" style="background-color:#fbfbfe;">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#f3ebf4; color:#0b2336;">Cơ sở và mở rộng</div>
+                                <div class="col-lg-9 p-3 text-muted">Module này giữ <strong>model trung lập và khung giao diện</strong>. Luồng OAuth, REST theo nhà cung cấp và quy tắc đăng riêng từng kênh nằm ở module bổ sung (ví dụ <strong>Facebook Social Marketing</strong>, <strong>LinkedIn Social Marketing</strong>) khai báo phụ thuộc <code>viin_social</code>. Để đăng bài trọn vẹn, cài <strong>module cơ sở và</strong> từng connector cần dùng. Xem <a href="#social-related">ứng dụng liên quan</a>.</div>
+                            </div>
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#e8f9fb; color:#0b2336;">Lộ trình đăng bài</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted">Sau khi cài module cơ sở, thêm module connector để ủy quyền tài sản trên mạng xã hội và đăng hoặc đồng bộ nội dung theo từng nền tảng.</div>
+                            </div>
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#e8f9fb; color:#0b2336;">Cảnh báo xung đột</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted">Gỡ Social Marketing chuẩn của Odoo nếu đang dùng để tránh xung đột ứng dụng và luồng marketing trùng.</div>
+                            </div>
+                            <div class="row g-0 border-bottom" style="background-color:#fbfbfe;">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#f3ebf4; color:#0b2336;">Ấn bản</div>
+                                <div class="col-lg-9 p-3 text-muted">Theo manifest: hỗ trợ Community. Enterprise có thể chạy khi bản Odoo tương thích; xác nhận với đơn vị triển khai.</div>
+                            </div>
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#e8f9fb; color:#0b2336;">Giấy phép</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted">Phân phối theo giấy phép ứng dụng Viindoo (OPL-1) trên cửa hàng.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 mt-4 rounded-4 border shadow-sm" style="background-color:#f6f8fc; border-color:#ebeef2 !important;">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="badge" style="background-color:#e5f6fa !important; color:#0b2336 !important; border:1px solid #a8dce8 !important;"><i class="fa fa-picture-o me-1"></i>Minh họa</span>
+                            <span class="small fw-semibold" style="color:#00BBCE;">Đi theo từng bước</span>
+                        </div>
+                        <h4 class="fw-bold mb-2 text-center text-lg-start" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:22px; line-height:1.15; color:#0b2336;">Danh sách chức năng kèm ảnh minh họa</h4>
+                        <p class="small text-muted mb-4" style="line-height:1.35;">Ảnh chụp minh họa <strong>toàn bộ kiến trúc</strong> (module cơ sở cùng module mở rộng như Facebook hoặc LinkedIn). Các bước dưới đây giả định connector đã được cài; module cơ sở chỉ cung cấp model và giao diện, phần còn lại do module mở rộng hoàn thiện.</p>
+                        <ol class="list-unstyled mb-0 d-flex flex-column gap-4">
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#d9f5f8; color:#00BBCE; border:1px solid #a8e0e6; font-size:18px;">1</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Tạo bài viết và bài đăng</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Soạn bài viết (article) và bài đăng (post) kèm đính kèm đa dạng trong Odoo trước khi xuất bản.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="01-tao-bai-viet-en.jpg" class="rounded-3 img-fluid w-100" alt="Tạo bài đăng social" style="object-fit:cover;">
+                                </div>
+                            </li>
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#ebd8ec; color:#7F4282; border:1px solid #d4b8d6; font-size:18px;">2</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Xác nhận và phê duyệt</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Dùng vai trò phê duyệt để nội dung qua kiểm soát trước khi lên lịch hoặc đăng.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="02-xac-nhan-bai-viet-vi.jpg" class="rounded-3 img-fluid w-100" alt="Xác nhận bài đăng" style="object-fit:cover;">
+                                </div>
+                            </li>
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#d1faf0; color:#12a66a; border:1px solid #a3e8cc; font-size:18px;">3</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Đăng bài lên mạng xã hội</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Đẩy bản đã duyệt lên tài sản Facebook hoặc LinkedIn qua module mở rộng Viindoo.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="03-dang-bai-len-mang-xa-hoi-vi.jpg" class="rounded-3 img-fluid w-100" alt="Đăng bài lên mạng xã hội" style="object-fit:cover;">
+                                </div>
+                            </li>
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#dbeefe; color:#0ea5e9; border:1px solid #b0daf5; font-size:18px;">4</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Quản lý bài đăng tập trung</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Theo dõi trạng thái, chỉ số tương tác và các bước xử lý tiếp theo trên giao diện kanban và danh sách thống nhất.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="04-quan-ly-bai-dang-vi.jpg" class="rounded-3 img-fluid w-100" alt="Quản lý bài đăng" style="object-fit:cover;">
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-demo" role="tabpanel">
+                    <div class="border rounded-4 p-3 bg-white shadow-sm mt-4">
+                        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                            <span class="badge" style="background-color:#00BBCE;"><i class="fa fa-play-circle me-1"></i>Demo</span>
+                            <h5 class="fw-bold mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Video và môi trường thử</h5>
+                        </div>
+                        <p class="text-muted small mb-3">Xem video tổng quan, sau đó mở bản demo Viindoo đã cài <strong>Social Marketing (module cơ sở)</strong> và ít nhất một <strong>module connector</strong> để menu đăng bài giống môi trường triển khai thật.</p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a class="btn text-white" href="https://youtu.be/T12bsc3uquE" target="_blank" rel="noopener noreferrer" style="background-color:#7F4282; border:1px solid #7F4282;">Video YouTube</a>
+                            <a class="btn text-white" href="https://v17demo-int.viindoo.com" target="_blank" rel="noopener noreferrer" style="background-color:#00BBCE; border:1px solid #00BBCE;">Demo quốc tế</a>
+                            <a class="btn text-white" href="https://v17demo-vn.viindoo.com" target="_blank" rel="noopener noreferrer" style="background-color:#0ea5e9; border:1px solid #0ea5e9;">Demo Việt Nam</a>
+                        </div>
+                        <div class="w-100 rounded-4 overflow-hidden border">
+                            <img src="01-tao-bai-viet-en.jpg" class="img-fluid w-100" alt="Xem trước Social Marketing" style="object-fit:cover;">
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-support" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col">
+                            <div class="card border rounded-3 shadow-sm h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="h5 fw-bold">Trước khi mua</h3>
+                                    <p class="text-muted flex-grow-1">Cho biết bạn cần <strong>chỉ module cơ sở</strong> (dự án tích hợp) hay <strong>module cơ sở kèm connector</strong> (Facebook, LinkedIn, v.v.). Nêu rõ ấn bản Odoo, có đang dùng Social Marketing mặc định của Odoo hay không, và số lượng bài đăng dự kiến.</p>
+                                    <a class="btn w-100" href="mailto:sales@viindoo.com" style="text-decoration:none !important; color:#fff !important; -webkit-text-fill-color:#fff; background-color:#00BBCE !important; border:1px solid #00BBCE !important; box-shadow:none;">
+                                        <i class="fa fa-envelope-o me-1"></i> sales@viindoo.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card border rounded-3 shadow-sm h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="h5 fw-bold">Hỗ trợ</h3>
+                                    <p class="text-muted flex-grow-1">Gửi kèm mã đơn hàng, phiên bản module (<code>viin_social</code> và connector), các bước tái hiện lỗi, thông báo lỗi API hoặc token, và nội dung console trình duyệt nếu lỗi giao diện.</p>
+                                    <a class="btn w-100" href="mailto:apps.support@viindoo.com" style="text-decoration:none !important; color:#fff !important; -webkit-text-fill-color:#fff; background-color:#7F4282 !important; border:1px solid #7F4282 !important; box-shadow:none;">
+                                        <i class="fa fa-envelope-o me-1"></i> apps.support@viindoo.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-tech" role="tabpanel">
+                    <div class="border rounded-3 p-3 bg-white">
+                        <h5 class="fw-bold mb-2">Yêu cầu kỹ thuật</h5>
+                        <ul class="small text-muted mb-0">
+                            <li><strong>Chuỗi phụ thuộc module cơ sở:</strong> Odoo 17 với <code>mail</code>, <code>web_editor</code>, <code>to_base</code>, <code>utm</code>. Không gói SDK Facebook hay LinkedIn trong module cơ sở.</li>
+                            <li>Tài nguyên OWL khai báo trong <code>web.assets_backend</code> (giao diện kanban, danh sách, hộp thoại) do module cơ sở cung cấp.</li>
+                            <li><strong>Module mở rộng</strong> (ví dụ <code>viin_social_facebook</code>, <code>viin_social_linkedin</code>) bổ sung OAuth, API gọi ra nhà cung cấp và quy tắc theo từng kênh mạng xã hội trên các model này.</li>
+                            <li>Test trong <code>viin_social/tests</code> phủ module cơ sở (trang, bài viết, quyền); module connector có bộ test tích hợp riêng.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-changelog" role="tabpanel">
+                    <div class="border rounded-3 p-3 bg-white">
+                        <h5 class="fw-bold mb-2">Nhật ký thay đổi</h5>
+                        <ul class="small text-muted mb-0">
+                            <li><strong>v0.1.2</strong> - Bảo trì và cập nhật migration cho Odoo 17.</li>
+                            <li><strong>v0.1.0</strong> - Phát hành module cơ sở Social Marketing: kết nối mạng xã hội, trang, bài viết, bài đăng, thông báo, đồng bộ, chỉ số và nhóm quyền.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f6f7fb; border:1px solid #e8eaef;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-9">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark"><i class="fa fa-users me-1"></i>Đối tượng</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#c98a08;">Phù hợp vai trò</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Ai nên dùng module này?</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;"><strong>Trước hết:</strong> developer, PO (Product Owner), đối tác triển khai hoặc kinh doanh bộ giải pháp marketing mạng xã hội Viindoo. <strong>Đội marketing</strong> thường cài module cơ sở <em>cùng lúc với</em> module Facebook, LinkedIn hoặc connector khác để có trọn quy trình đăng bài.</p>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                <div class="col">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #e8eaef; box-shadow:0 12px 30px #d9dde5;">
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Marketing và nội dung</h5>
+                        <p class="small text-muted mb-0 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Dùng module cơ sở <em>kèm</em> module connector: soạn, phê duyệt và theo dõi bài đăng kèm chỉ số sau khi Facebook, LinkedIn hoặc mở rộng khác đã cài và ủy quyền.</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #e8eaef; box-shadow:0 12px 30px #d9dde5;">
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Developer và PO</h5>
+                        <p class="small text-muted mb-0 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Kế thừa module cơ sở để phát hành connector mới hoặc tùy biến quy trình phê duyệt, không phải định nghĩa lại các bản ghi marketing mạng xã hội cốt lõi.</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #e8eaef; box-shadow:0 12px 30px #d9dde5;">
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Đối tác Odoo</h5>
+                        <p class="small text-muted mb-0 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Bàn giao bộ marketing mạng xã hội Viindoo thống nhất, thay cho tích hợp tạm bợ hoặc trùng lặp ứng dụng marketing của Odoo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4" id="social-related">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f6f4f8; border:1px solid #e0d4e2;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-9">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge" style="background-color:#f0e6f1 !important; color:#0b2336 !important; border:1px solid #AD4BB2 !important;"><i class="fa fa-puzzle-piece me-1"></i>Ứng dụng liên quan</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#7F4282;">Bổ sung sau cơ sở kỹ thuật</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Module mở rộng (phụ thuộc module cơ sở)</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Các ứng dụng này <strong>mở rộng</strong> Social Marketing bằng OAuth, API và logic riêng theo từng mạng xã hội. Cần thiết để đăng bài thật lên Facebook và LinkedIn; cài <em>thêm</em> sau module cơ sở.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6 d-flex">
+                    <div class="flex-grow-1 w-100 rounded-4 p-3 shadow-sm bg-white border d-flex flex-column" style="border-color:#7ec4eb !important; min-height:100%;">
+                        <h5 class="fw-bold mb-2 small" style="color:#0b2336;">Facebook Social Marketing</h5>
+                        <p class="small text-muted flex-grow-1 mb-0" style="line-height:1.25;">Kết nối trang Facebook, đăng bài và đồng bộ chỉ số tương tác vào model marketing mạng xã hội dùng chung.</p>
+                        <a class="small fw-semibold mt-auto pt-2 d-inline-block" href="https://viindoo.com/vi/apps/app/17.0/viin_social_facebook" target="_blank" rel="noopener noreferrer" style="color:#0ea5e9;">Xem trên Apps</a>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex">
+                    <div class="flex-grow-1 w-100 rounded-4 p-3 shadow-sm bg-white border d-flex flex-column" style="border-color:#b88fbb !important; min-height:100%;">
+                        <h5 class="fw-bold mb-2 small" style="color:#0b2336;">LinkedIn Social Marketing</h5>
+                        <p class="small text-muted flex-grow-1 mb-0" style="line-height:1.25;">Ủy quyền tài sản công ty trên LinkedIn và thống nhất đăng bài theo cùng luồng bài viết và bài đăng.</p>
+                        <a class="small fw-semibold mt-auto pt-2 d-inline-block" href="https://viindoo.com/vi/apps/app/17.0/viin_social_linkedin" target="_blank" rel="noopener noreferrer" style="color:#7F4282;">Xem trên Apps</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

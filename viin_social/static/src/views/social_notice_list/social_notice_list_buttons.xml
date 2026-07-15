@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="viin_social.SoicalNoticeListView.Buttons" t-inherit="web.ListView.Buttons" t-inherit-mode="primary" owl="1">
+        <xpath expr="//div[hasclass('o_list_buttons')]" position="inside">
+            <button type="button" t-on-click="readAllNotices" class="d-none d-md-block btn btn-secondary">
+                Mark all as read
+            </button>
+        </xpath>
+    </t>
+
+</templates>

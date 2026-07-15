@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+	<data>
+		<record id="social_media_facebook" model="social.media">
+			<field name="name">Facebook</field>
+			<field name="image" type="base64" file="viin_social_facebook/static/img/facebook.png"/>
+			<field name="description">Manage your Facebook pages and posts</field>
+			<field name="social_provider">facebook</field>
+		</record>
+	</data>
+</odoo>

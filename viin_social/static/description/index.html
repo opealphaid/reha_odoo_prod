@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Marketing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-light" style="font-family:Roboto, Arial, sans-serif; line-height:1.25;">
+<div class="container py-4">
+    <section class="mb-4 rounded-4 shadow-sm p-4 p-lg-5 text-white" style="background-image: linear-gradient(120deg, #00BBCE, #7F4282);">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-6">
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                    <span class="badge bg-dark"><i class="fa fa-check-circle-o me-1"></i>Community</span>
+                    <span class="badge bg-dark"><i class="fa fa-check-circle-o me-1"></i>Technical base</span>
+                    <span class="badge bg-dark"><i class="fa fa-check-circle-o me-1"></i>Extension-first</span>
+                </div>
+                <p class="text-uppercase small fw-semibold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2;">ORM and UI foundation for Viindoo social apps</p>
+                <h1 class="h2 fw-bold mb-3 text-white" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:32px; line-height:1.15; letter-spacing:0.2px;">Social Marketing</h1>
+                <p class="mb-4" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;"><strong>Technical base module</strong>: defines shared models (media, pages, articles, posts, notices), sync hooks, metrics fields, security groups, and Discuss-oriented UI shells in Odoo. <strong>Live publishing and vendor APIs</strong> are implemented in extension modules such as <em>Facebook Social Marketing</em> and <em>LinkedIn Social Marketing</em>, which depend on this package. Install the base plus the connectors you need so each network can evolve without forking the core.</p>
+            </div>
+            <div class="col-lg-6">
+                <div class="border rounded-4 shadow-sm overflow-hidden bg-white p-2">
+                    <img src="01-tao-bai-viet-en.jpg" class="img-fluid w-100 rounded-4" alt="Social Marketing screenshot" style="object-fit:cover;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f4f8f9; border:1px solid #e0d4e2;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge" style="background-color:#f0e6f1 !important; color:#0b2336 !important; border:1px solid #AD4BB2 !important;"><i class="fa fa-sliders me-1"></i>Features</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#7F4282;">What the base provides; extensions add networks</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Core capabilities</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Stable ORM layer, backend views, cron scaffolding, and access rules that <strong>Facebook, LinkedIn, and future connector modules inherit</strong>. Platform OAuth, outbound posting, and vendor-specific quirks stay in those extensions so this base remains a single integration spine.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #a8e0e6; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#d9f5f8; color:#00BBCE;">
+                            <i class="fa fa-sitemap"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Flexible model stack</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Social media, pages, articles, posts, and notices as first-class records you can extend per network.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#00BBCE;">Built for add-on bridges</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #d4b8d6; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#ebd8ec; color:#7F4282;">
+                            <i class="fa fa-refresh"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Synchronization</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Cron-driven sync, backfill of historical posts, and visibility into authentication token health.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#7F4282;">Keeps Odoo aligned with channels</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #a3e8cc; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#d1faf0; color:#12a66a;">
+                            <i class="fa fa-bar-chart"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Interaction metrics</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Track views, likes, comments, and shares; attach images, videos, files, and links; connect with Discuss channels where configured.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#12a66a;">Rich media and signals</div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #b0daf5; box-shadow:0 12px 30px #d9dde5; min-height:220px;">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:48px; height:48px; background-color:#dbeefe; color:#0ea5e9;">
+                            <i class="fa fa-lock"></i>
+                        </div>
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Granular access</h5>
+                        <p class="small text-muted mb-3 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Administrator, Approver, and Editor groups separate governance from day-to-day content work.</p>
+                        <div class="small fw-semibold mt-auto" style="color:#0ea5e9;">Roles that match marketing ops</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f6f7fb; border:1px solid #e8eaef;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-7">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-success"><i class="fa fa-check me-1"></i>Why it matters</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#14824f;">Business impact</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Benefits</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;"><strong>Base plus extensions</strong>: one technical core in Odoo, then stack only the network modules you sell or operate (Facebook, LinkedIn, others). Avoids duplicating models per channel and keeps spreadsheets or parallel marketing stacks out of the loop.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #2cb35b; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#e3f5e9; color:#1f8f49; border:1px solid #b8e5c8; line-height:1;">
+                            <span style="font-size:24px;">01</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Extension modules, not forks</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Ship <code>viin_social_facebook</code>, <code>viin_social_linkedin</code>, or future connectors that depend on this base instead of cloning article and post models per network.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #7F4282; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#f0e6f1; color:#7F4282; border:1px solid #d4b8d6; line-height:1;">
+                            <span style="font-size:24px;">02</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Native Odoo fit</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Mail, Discuss, web editor, and UTM foundations integrate with how teams already work in the backend.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #f3b229; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#fdf6e5; color:#c98a08; border:1px solid #f0d78a; line-height:1;">
+                            <span style="font-size:24px;">03</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Multi-channel ready</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">One operational hub for several networks once the matching Viindoo connector modules are installed.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="h-100 bg-white rounded-4 p-4 shadow-sm d-flex align-items-start gap-3" style="border-left:6px solid #27aac4; box-shadow:0 12px 28px #d9dde5;">
+                        <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:58px; min-height:64px; background-color:#e5f6fa; color:#1f96af; border:1px solid #a8dce8; line-height:1;">
+                            <span style="font-size:24px;">04</span>
+                        </span>
+                        <div>
+                            <h5 class="fw-bold mb-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Centralized interactions</h5>
+                            <p class="small text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Notices and post records give marketing and support a shared trail instead of siloed inbox exports.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f8fafc;">
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-overview" role="tab" aria-selected="true">Overview</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-demo" role="tab" aria-selected="false">Demo</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-support" role="tab" aria-selected="false">Support</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-tech" role="tab" aria-selected="false">Technical requirement</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" style="color:#7f4282;" data-bs-toggle="tab" href="#tab-changelog" role="tab" aria-selected="false">Changes log</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-overview" role="tabpanel">
+                    <div class="border rounded-3 p-3 mt-4 bg-white shadow-sm">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <h5 class="fw-bold mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Social Marketing overview</h5>
+                        </div>
+                        <div class="border rounded-3 overflow-hidden" style="border-color:#d9dce7 !important;">
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 text-white fw-bold" style="background-image: linear-gradient(135deg, #7F4282, #00BBCE);">Solution</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted"><strong>Technical base</strong> for Viindoo social marketing: shared ORM (media, pages, articles, posts, notices), backend screens, cron and sync entry points, metrics fields, security groups, and Discuss hooks. It is the dependency target for connector extensions, not a full multi-network product by itself.</div>
+                            </div>
+                            <div class="row g-0 border-bottom" style="background-color:#fbfbfe;">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#f3ebf4; color:#0b2336;">Base vs extensions</div>
+                                <div class="col-lg-9 p-3 text-muted">This module holds the <strong>neutral data model and UI framework</strong>. OAuth flows, vendor REST calls, and channel-specific publishing rules live in add-ons (for example <strong>Facebook Social Marketing</strong>, <strong>LinkedIn Social Marketing</strong>) that declare a dependency on <code>viin_social</code>. For end-to-end posting, install the base <em>and</em> each connector you need. See <a href="#social-related">related apps</a>.</div>
+                            </div>
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#e8f9fb; color:#0b2336;">Publishing path</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted">After the base is installed, add connector modules to authorize assets and push or pull content for each network.</div>
+                            </div>
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#e8f9fb; color:#0b2336;">Conflict warning</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted">Uninstall Odoo standard Social Marketing if it is installed to avoid conflicting apps and duplicate marketing flows.</div>
+                            </div>
+                            <div class="row g-0 border-bottom" style="background-color:#fbfbfe;">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#f3ebf4; color:#0b2336;">Editions</div>
+                                <div class="col-lg-9 p-3 text-muted">Editions supported: Community (as documented in the module manifest). Enterprise may run the stack when your Odoo build is compatible; confirm with your implementer.</div>
+                            </div>
+                            <div class="row g-0 border-bottom">
+                                <div class="col-lg-3 p-3 fw-bold" style="background-color:#e8f9fb; color:#0b2336;">Licensing</div>
+                                <div class="col-lg-9 p-3 bg-white text-muted">Distributed under the Viindoo app license (OPL-1) shown on the marketplace listing.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 mt-4 rounded-4 border shadow-sm" style="background-color:#f6f8fc; border-color:#ebeef2 !important;">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                            <span class="badge" style="background-color:#e5f6fa !important; color:#0b2336 !important; border:1px solid #a8dce8 !important;"><i class="fa fa-picture-o me-1"></i>Illustrated</span>
+                            <span class="small fw-semibold" style="color:#00BBCE;">Feature walkthrough</span>
+                        </div>
+                        <h4 class="fw-bold mb-2 text-center text-lg-start" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:22px; line-height:1.15; color:#0b2336;">Feature list with screenshots</h4>
+                        <p class="small text-muted mb-4" style="line-height:1.35;">Screenshots show the <strong>full stack</strong> (this base plus extensions such as Facebook or LinkedIn). The flows below rely on connector modules being installed; the base alone supplies models and UI that those modules complete.</p>
+                        <ol class="list-unstyled mb-0 d-flex flex-column gap-4">
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#d9f5f8; color:#00BBCE; border:1px solid #a8e0e6; font-size:18px;">1</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Create posts and articles</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Compose social articles and posts with rich attachments inside Odoo before they go live.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="01-tao-bai-viet-en.jpg" class="rounded-3 img-fluid w-100" alt="Create social post" style="object-fit:cover;">
+                                </div>
+                            </li>
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#ebd8ec; color:#7F4282; border:1px solid #d4b8d6; font-size:18px;">2</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Confirm and approve</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Use approval-oriented roles so content passes governance before scheduling or publishing.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="02-xac-nhan-bai-viet-en.jpg" class="rounded-3 img-fluid w-100" alt="Confirm social post" style="object-fit:cover;">
+                                </div>
+                            </li>
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#d1faf0; color:#12a66a; border:1px solid #a3e8cc; font-size:18px;">3</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Publish to social networks</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Push approved items to connected Facebook or LinkedIn assets through the dedicated Viindoo extensions.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="03-dang-bai-len-mang-xa-hoi-en.jpg" class="rounded-3 img-fluid w-100" alt="Publish to social networks" style="object-fit:cover;">
+                                </div>
+                            </li>
+                            <li class="bg-white rounded-4 border p-3 p-lg-4 shadow-sm" style="border-color:#b8e8ed !important;">
+                                <div class="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                    <span class="d-inline-flex align-items-center justify-content-center flex-shrink-0 rounded-4 fw-bold" style="width:48px; height:48px; background-color:#dbeefe; color:#0ea5e9; border:1px solid #b0daf5; font-size:18px;">4</span>
+                                    <div class="flex-grow-1" style="min-width:200px;">
+                                        <h5 class="fw-bold mb-1" style="font-size:16px; color:#0b2336;">Manage posts in one place</h5>
+                                        <p class="small text-muted mb-0" style="line-height:1.35;">Monitor status, engagement counters, and follow-up from consolidated kanban and list experiences.</p>
+                                    </div>
+                                </div>
+                                <div class="rounded-3 border bg-light p-2" style="border-color:#e0ecf0 !important;">
+                                    <img src="04-quan-ly-bai-dang-en.jpg" class="rounded-3 img-fluid w-100" alt="Manage social posts" style="object-fit:cover;">
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-demo" role="tabpanel">
+                    <div class="border rounded-4 p-3 bg-white shadow-sm mt-4">
+                        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                            <span class="badge" style="background-color:#00BBCE;"><i class="fa fa-play-circle me-1"></i>Demo</span>
+                            <h5 class="fw-bold mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Video and online sandboxes</h5>
+                        </div>
+                        <p class="text-muted small mb-3">Watch the overview video, then open a Viindoo demo where <strong>Social Marketing (base)</strong> and at least one <strong>connector extension</strong> are installed so publishing menus match production setups.</p>
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <a class="btn text-white" href="https://youtu.be/T12bsc3uquE" target="_blank" rel="noopener noreferrer" style="background-color:#7F4282; border:1px solid #7F4282;">YouTube overview</a>
+                            <a class="btn text-white" href="https://v17demo-int.viindoo.com" target="_blank" rel="noopener noreferrer" style="background-color:#00BBCE; border:1px solid #00BBCE;">International demo</a>
+                            <a class="btn text-white" href="https://v17demo-vn.viindoo.com" target="_blank" rel="noopener noreferrer" style="background-color:#0ea5e9; border:1px solid #0ea5e9;">Vietnam demo</a>
+                        </div>
+                        <div class="w-100 rounded-4 overflow-hidden border">
+                            <img src="01-tao-bai-viet-en.jpg" class="img-fluid w-100" alt="Social Marketing preview" style="object-fit:cover;">
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-support" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col">
+                            <div class="card border rounded-3 shadow-sm h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="h5 fw-bold">Pre-sales</h3>
+                                    <p class="text-muted flex-grow-1">Clarify whether you need the <strong>base only</strong> (integration project) or <strong>base plus connector modules</strong> (Facebook, LinkedIn, others). Share Odoo edition, conflict with Odoo Social Marketing, and expected posting volume.</p>
+                                    <a class="btn w-100" href="mailto:sales@viindoo.com" style="text-decoration:none !important; color:#fff !important; -webkit-text-fill-color:#fff; background-color:#00BBCE !important; border:1px solid #00BBCE !important; box-shadow:none;">
+                                        <i class="fa fa-envelope-o me-1"></i> sales@viindoo.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card border rounded-3 shadow-sm h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <h3 class="h5 fw-bold">Support</h3>
+                                    <p class="text-muted flex-grow-1">Include order reference, module versions (<code>viin_social</code> plus connectors), steps to reproduce, API or token errors, and browser console output for frontend issues.</p>
+                                    <a class="btn w-100" href="mailto:apps.support@viindoo.com" style="text-decoration:none !important; color:#fff !important; -webkit-text-fill-color:#fff; background-color:#7F4282 !important; border:1px solid #7F4282 !important; box-shadow:none;">
+                                        <i class="fa fa-envelope-o me-1"></i> apps.support@viindoo.com
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-tech" role="tabpanel">
+                    <div class="border rounded-3 p-3 bg-white">
+                        <h5 class="fw-bold mb-2">Technical requirement</h5>
+                        <ul class="small text-muted mb-0">
+                            <li><strong>Base dependency stack (this module):</strong> Odoo 17 with <code>mail</code>, <code>web_editor</code>, <code>to_base</code>, <code>utm</code>. No Facebook or LinkedIn SDKs here.</li>
+                            <li>OWL-backed backend assets under <code>web.assets_backend</code> for kanban, lists, and social dialogs defined in the base.</li>
+                            <li><strong>Extensions</strong> (for example <code>viin_social_facebook</code>, <code>viin_social_linkedin</code>) add OAuth, outbound APIs, and channel rules on top of these models.</li>
+                            <li>Automated tests under <code>viin_social/tests</code> cover base pages, articles, and access rights; connector modules carry their own integration tests.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-changelog" role="tabpanel">
+                    <div class="border rounded-3 p-3 bg-white">
+                        <h5 class="fw-bold mb-2">Changes log</h5>
+                        <ul class="small text-muted mb-0">
+                            <li><strong>v0.1.2</strong> - Maintenance and migration updates for Odoo 17.</li>
+                            <li><strong>v0.1.0</strong> - Initial Social Marketing base: social media, pages, articles, posts, notices, sync hooks, metrics, and security groups.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f6f7fb; border:1px solid #e8eaef;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-9">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge bg-warning text-dark"><i class="fa fa-users me-1"></i>Audience</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#c98a08;">Team fit</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Who should use this module?</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;"><strong>Primary:</strong> developers and partners building or selling the Viindoo social stack. <strong>Marketing users</strong> normally install this base together with Facebook, LinkedIn, or other connector modules so day-to-day publishing works end to end.</p>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-md-3 g-3">
+                <div class="col">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #e8eaef; box-shadow:0 12px 30px #d9dde5;">
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Marketing and content teams</h5>
+                        <p class="small text-muted mb-0 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Use the base <em>plus</em> connector modules: draft, approve, and track posts with metrics after Facebook, LinkedIn, or other extensions are installed and authorized.</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #e8eaef; box-shadow:0 12px 30px #d9dde5;">
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Developers and product owners</h5>
+                        <p class="small text-muted mb-0 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;"><strong>Main technical audience:</strong> inherit this base to ship new connector modules or customize approval flows without redefining core social records.</p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="h-100 rounded-4 p-4 shadow-sm d-flex flex-column" style="background-color:#ffffff; border:1px solid #e8eaef; box-shadow:0 12px 30px #d9dde5;">
+                        <h5 class="fw-bold mb-2" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:16px; line-height:1.2; color:#0b2336;">Odoo partners</h5>
+                        <p class="small text-muted mb-0 flex-grow-1" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">Deliver a consistent Viindoo social stack to customers who outgrow ad hoc integrations or duplicate Odoo marketing apps.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-4" id="social-related">
+        <div class="rounded-4 p-4 p-lg-5 shadow-sm" style="background-color:#f6f4f8; border:1px solid #e0d4e2;">
+            <div class="row g-3 align-items-end mb-3">
+                <div class="col-lg-9">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge" style="background-color:#f0e6f1 !important; color:#0b2336 !important; border:1px solid #AD4BB2 !important;"><i class="fa fa-puzzle-piece me-1"></i>Related apps</span>
+                        <span class="small fw-semibold" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-weight:700; font-size:13px; line-height:1.2; color:#7F4282;">Add after the technical base</span>
+                    </div>
+                    <h2 class="h3 fw-bold mb-2" style="font-family:Montserrat, Roboto, Arial, sans-serif; font-style:normal; font-weight:800; font-size:28px; line-height:1.15; color:#0b2336; letter-spacing:0.2px;">Extension modules (depend on this base)</h2>
+                    <p class="text-muted mb-0" style="font-family:Roboto, Arial, sans-serif; font-style:normal; font-size:13px; line-height:1.25;">These apps <strong>extend</strong> Social Marketing with OAuth, APIs, and network-specific behavior. They are required for real-world publishing to Facebook and LinkedIn; install them in addition to the base module.</p>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6 d-flex">
+                    <div class="flex-grow-1 w-100 rounded-4 p-3 shadow-sm bg-white border d-flex flex-column" style="border-color:#7ec4eb !important; min-height:100%;">
+                        <h5 class="fw-bold mb-2 small" style="color:#0b2336;">Facebook Social Marketing</h5>
+                        <p class="small text-muted flex-grow-1 mb-0" style="line-height:1.25;">Connect Facebook pages, publish, and pull insights into the shared social models.</p>
+                        <a class="small fw-semibold mt-auto pt-2 d-inline-block" href="https://viindoo.com/apps/app/17.0/viin_social_facebook" target="_blank" rel="noopener noreferrer" style="color:#0ea5e9;">View on Apps</a>
+                    </div>
+                </div>
+                <div class="col-md-6 d-flex">
+                    <div class="flex-grow-1 w-100 rounded-4 p-3 shadow-sm bg-white border d-flex flex-column" style="border-color:#b88fbb !important; min-height:100%;">
+                        <h5 class="fw-bold mb-2 small" style="color:#0b2336;">LinkedIn Social Marketing</h5>
+                        <p class="small text-muted flex-grow-1 mb-0" style="line-height:1.25;">Authorize LinkedIn company assets and align publishing with the same article and post flows.</p>
+                        <a class="small fw-semibold mt-auto pt-2 d-inline-block" href="https://viindoo.com/apps/app/17.0/viin_social_linkedin" target="_blank" rel="noopener noreferrer" style="color:#7F4282;">View on Apps</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

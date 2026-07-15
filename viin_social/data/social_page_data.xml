@@ -1,0 +1,11 @@
+<odoo>
+	<record id="social_page_cron_sync_all_post" model="ir.cron">
+		<field name="name">Social Pages: Synchronize Old Posts</field>
+		<field name="model_id" ref="model_social_page" />
+		<field name="user_id" ref="base.user_root" />
+		<field name="state">code</field>
+		<field name="interval_number">1</field>
+		<field name="interval_type">days</field>
+		<field name="code">model._cron_sync_all_post()</field>
+	</record>
+</odoo>

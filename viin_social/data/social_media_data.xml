@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data noupdate="0">
+		<record id="social_media_cron_schedule_synchronized" model="ir.cron">
+			<field name="name">Social: Synchronized All Data</field>
+			<field name="model_id" ref="model_social_media" />
+			<field name="user_id" ref="base.user_root" />
+			<field name="state">code</field>
+			<field name="interval_number">1</field>
+			<field name="interval_type">days</field>
+			<field name="nextcall" eval="(DateTime.now().replace(hour=0, minute=0) + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')" />
+			<field name="code">model._cron_synchronized_all_datas()</field>
+		</record>
+	</data>
+</odoo>

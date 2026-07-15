@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="viin_social_facebook.facebook_preview" t-name="Facebook Preview">
+        <div class="viin_social_preview viin_social_facebook_preview bg-white px-3 border rounded overflow-hidden">
+            <div class="viin_social_preview_header d-flex my-3">
+                <span class="viin_social_preview_icon_wrapper d-inline-block rounded-circle overflow-hidden me-2">
+                    <i class="fa fa-facebook text-white fa-2x"/>
+                </span>
+
+                <div class="viin_social_preview_author">
+                    <b class="d-block mb-2">Facebook Page</b>
+                    <div class="text-muted viin_social_preview_description">
+                        Published by Facebook Page • <time t-esc="published_date"/> • <i class="fa fa-globe"/>
+                    </div>
+                </div>
+            </div>
+            <div class="viin_social_preview_message pb-3">
+                <t t-esc="message"/>
+            </div>
+            <div class="viin_social_stream_post_image d-flex mx-n3 overflow-hidden">
+                <t t-if="images">
+                    <t t-foreach="images" t-as="image">
+                        <a t-if="image_index == 1 and len(images) > 2"
+                           class="viin_social_stream_post_image_more position-relative d-flex ms-1">
+                            <img t-attf-src="data:image/png;base64, #{image}" alt="Post Image"/>
+                            <div class="viin_social_stream_post_image_more_overlay d-flex align-items-center h-100 w-100 text-white justify-content-center position-absolute h1 m-0"
+                                 style="user-select: none;">
+                                +<t t-esc="len(images) - 2"/>
+                            </div>
+                        </a>
+                        <img t-elif="image_index &lt; 2" t-attf-src="data:image/png;base64, #{image}" alt="Post Image"/>
+                    </t>
+                </t>
+                <t t-if="title">
+                    <div style="background-color: #f2f3f5">
+                        <img t-if="image_url" t-attf-src="#{image_url}" alt="image"/>
+                        <div class="ms-3 mt-2">
+                            <t t-if="site_name" t-esc="site_name"/>
+                            <br/>
+                            <b t-if="title" t-esc="title" class="mt-2"/>
+                            <br/>
+                            <t t-if="description" t-esc="description" class="mt-2"/>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </template>
+</odoo>

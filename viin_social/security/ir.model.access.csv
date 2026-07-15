@@ -1,0 +1,12 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_social_article_editor,social.article.editor,model_social_article,viin_social_group_editor,1,1,1,1
+access_social_post_editor,social.post.editor,model_social_post,viin_social_group_editor,1,1,1,1
+access_social_page_editor,social.page.editor,model_social_page,viin_social_group_editor,1,0,0,0
+access_social_page_approver,social.page.approver,model_social_page,viin_social_group_approve,1,1,0,0
+access_social_page_admin,social.page.admin,model_social_page,viin_social_group_admin,1,1,1,1
+access_social_media_editor,social.media.editor,model_social_media,viin_social_group_editor,1,0,0,0
+access_social_media_admin,social.media.admin,model_social_media,viin_social_group_admin,1,1,1,1
+access_social_notice_editor,social.notice.editor,model_social_notice,viin_social_group_editor,1,1,0,0
+access_social_notice_admin,social.notice.admin,model_social_notice,viin_social_group_admin,1,1,0,1
+access_social_post_action_edit_post,access.social.post.action.edit.post,model_social_post_action_edit_post,viin_social_group_editor,1,1,1,1
+access_wizard_social_confirm,access.social.wizard.confirm,model_wizard_social_confirm,viin_social_group_editor,1,1,1,1

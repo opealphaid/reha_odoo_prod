@@ -1,0 +1,42 @@
+<odoo>
+    <record model="ir.ui.view" id="whatsapp_messaging_lists_contacts_form_view">
+        <field name="name">whatsapp.messaging.lists.contacts.form</field>
+        <field name="model">whatsapp.messaging.lists.contacts</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="created_date" readonly="1"/>
+                        <field name="name" required="1"/>
+                        <field name="phone" required="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="whatsapp_messaging_lists_contacts_list_view">
+        <field name="name">whatsapp.messaging.lists.contacts.list</field>
+        <field name="model">whatsapp.messaging.lists.contacts</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" />
+                <field name="phone" />
+                <field name="created_date" readonly="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="whatsapp_messaging_lists_contacts_action">
+        <field name="name">WA Messaging Lists Contacts</field>
+        <field name="res_model">whatsapp.messaging.lists.contacts</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="whatsapp_messaging_lists_contacts_menu"
+        name="WA Messaging Lists Contacts"
+        parent="all_in_one_whatsapp_odoo_community.whatsapp_messaging_lists_main_menu"
+        action="whatsapp_messaging_lists_contacts_action"
+    />
+</odoo>

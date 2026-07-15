@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+	<div t-name="viin_social.PostAttachmentsCarousel" owl="1">
+		<Dialog size="'lg'" title="props.title" modalRef="modalRef" footer="false">
+			<div id="carouselExampleControls" class="carousel slide text-center bg-black" data-bs-ride="carousel">
+				<div class="carousel-inner">
+					<t t-set="current_position" t-value="0"/>
+					<t t-foreach="props.attachments" t-as="attachment" t-key="attachment_index">
+						<div t-attf-class="carousel-item {{ (current_position == props.active_position) ? 'active' : '' }}">
+							<t t-if="attachment['type'] == 'photo'">
+								<img t-att-src="attachment['src']" alt="Attachment"/>
+							</t>
+						</div>
+						<t t-set="current_position" t-value="current_position + 1"/>
+					</t>
+				</div>
+				<button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev">
+					<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Previous</span>
+				</button>
+				<button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">
+					<span class="carousel-control-next-icon" aria-hidden="true"></span>
+					<span class="visually-hidden">Next</span>
+				</button>
+			</div>
+		</Dialog>
+	</div>
+</templates>

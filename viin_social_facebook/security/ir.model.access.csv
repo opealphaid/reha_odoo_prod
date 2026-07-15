@@ -1,0 +1,2 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_social_review_editor,social.review.editor,model_social_review,viin_social.viin_social_group_editor,1,0,0,0

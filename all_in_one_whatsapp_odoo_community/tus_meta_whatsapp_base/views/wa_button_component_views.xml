@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="wa_button_component_view_form" model="ir.ui.view">
+            <field name="name">wa.button.component.view.form</field>
+            <field name="model">wa.button.component</field>
+            <field name="arch" type="xml">
+                <form string="Buttons">
+                    <sheet>
+                        <group>
+                            <field name="button_type"/>
+                            <field name="components_id" invisible="1"/>
+                            <field name="button_text"/>
+                            <field name="url_type" readonly="button_type != 'url'"/>
+                            <field name="static_website_url" readonly="button_type != 'url' and url_type != 'static'"/>
+                            <field name="dynamic_website_url" readonly="button_type != 'url' and url_type != 'dynamic'"/>
+                            <field name="phone_number" readonly="button_type != 'phone'"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="wa_button_component_view_list" model="ir.ui.view">
+            <field name="name">wa.button.component.view.list</field>
+            <field name="model">wa.button.component</field>
+            <field name="arch" type="xml">
+                <list string="Buttons" editable="bottom">
+                    <field name="button_type"/>
+                    <field name="components_id" invisible="1"/>
+                    <field name="button_text"/>
+                    <field name="url_type"/>
+                    <field name="static_website_url"/>
+                    <field name="dynamic_website_url"/>
+                    <field name="phone_number"/>
+                </list>
+            </field>
+        </record>
+    </data>
+</odoo>

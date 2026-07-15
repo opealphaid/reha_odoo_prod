@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <div t-name="viin_social.SocialPostComment" owl="1">
+        <t t-set="comment" t-value="props.comment"/>
+        <div class="social_root_comment social_comment" t-attf-social_comment_id="#{comment['id']}"
+        t-attf-style="#{comment['is_hidden'] ? 'opacity: 0.5' : ''}">
+            <div class="social_comment_body d-flex">
+                <div class="social_commenter_avatar me-3">
+                    <t t-if="comment['from']">
+                        <t t-if="comment['from']['author_image']">
+                            <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="comment['from']['author_image']" alt="Avatar"/>
+                        </t>
+                        <t t-if="comment['from']['author_image_src']">
+                            <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="comment['from']['author_image_src']" alt="Avatar"/>
+                        </t>
+                        <t t-elif="comment['from']['page_image']">
+                            <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="comment['from']['page_image']" alt="Avatar"/>
+                        </t>
+                    </t>
+                </div>
+                <div class="social_comment_content flex-grow-1">
+                    <div class="social_comment_message ps-3 pb-2">
+                        <div class="d-flex">
+                            <div class="d-flex flex-wrap flex-grow-1 pt-2">
+                                <t t-if="comment['from']">
+                                    <b><t t-out="comment['from']['name']"/></b>
+                                    <span class="px-2">.</span>
+                                </t>
+                                <p class="m-0"><t t-out="this.formatLocalDateTime(comment['created_time'])"/></p>
+                                <span class="px-2">.</span>
+                                <div>
+                                    <i class="fa fa-thumbs-up" title="Likes"/>
+                                        <b class="comment_like_count" t-out="comment['like_count']"/>
+                                </div>
+                            </div>
+                            <div class="dropdown social_comment_action">
+                              <button class="button_comment_action btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                              </button>
+                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="button_delete_comment dropdown-item" href="#" t-on-click="_deleteComment">Delete</a>
+                                <a class="button_hide_comment dropdown-item" href="#"
+                                t-attf-style="#{comment['is_hidden'] or comment['is_page_comment'] ? 'display: none' : ''}" t-on-click="_hideCommnet">Hide comment</a>
+                              </div>
+                            </div>
+                        </div>
+                        <p class="m-0"><t t-out="comment['message']"/></p>
+                    </div>
+                    <t t-if="comment['attachment'] and comment['attachment']['src']">
+                        <div class="comment_attachment my-2 d-flex flex-wrap">
+                            <t t-if="comment['attachment']['type'] == 'photo'">
+                                <img class="social_comment_image" t-att-src="comment['attachment']['src']" alt="Attachment"/>
+                            </t>
+                            <t t-elif="comment['attachment']['type'] == 'sticker'">
+                                <img class="social_comment_sticker" t-att-src="comment['attachment']['src']" alt="Attachment"/>
+                            </t>
+                            <t t-else="">
+                                <video class="social_comment_image" controls="controls" t-att-src="comment['attachment']['src']"/>
+                            </t>
+                        </div>
+                    </t>
+                    <div class="social_comment_engagement d-flex justify-content-start">
+                        <a class="button_like_comment text-primary fw-bold" href="#"
+                        t-attf-style="#{comment['is_hidden'] ? 'display: none' : ''}" t-on-click="_likeComment">
+                            Like
+                        </a>
+                        <span class="px-2">.</span>
+                        <a class="button_reply_comment text-primary fw-bold" href="#"
+                        t-attf-style="#{comment['is_hidden'] ? 'display: none' : ''}" t-on-click="_showReplyInput">
+                            Reply
+                        </a>
+                        <a class="button_unhide_comment text-primary fw-bold" href="#"
+                        t-attf-style="#{comment['is_hidden'] ? 'display: inline-block' : 'display: none'}" t-on-click="_unhideComment">
+                            Unhide
+                        </a>
+
+                        <t t-if="comment['comment_count'] > 0">
+                            <a class="button_show_more_reply text-primary" href="#"  t-on-click="_showReplyComment">
+                            <span class="px-2">.</span>
+                                <i class="fa fa-angle-double-down"/>
+                                View more reply
+                            </a>
+                        </t>
+                    </div>
+                </div>
+            </div>
+            <div class="reply_comments">
+                <t t-call="viin_social.social_reply_template" />
+            </div>
+            <t t-call="viin_social.social_write_reply_template"/>
+        </div>
+    </div>
+
+    <div t-name="viin_social.social_reply_template" owl="1">
+        <t t-foreach="state.reply_comments" t-as="reply" t-key="reply_index">
+            <div class="d-flex mt-4 ps-5 social_comment reply_comment" t-attf-social_comment_id="#{reply['id']}"
+                t-attf-style="#{reply['is_hidden'] ? 'opacity: 0.5' : ''}">
+                <div class="social_reply_avata me-3">
+                    <t t-if="reply['from']">
+                        <t t-if="reply['from']['author_image']">
+                            <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="reply['from']['author_image']" alt="Avatar"/>
+                        </t>
+                        <t t-elif="reply['from']['page_image']">
+                            <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="reply['from']['page_image']" alt="Avatar"/>
+                        </t>
+                    </t>
+                </div>
+                <div class="social_reply_comment flex-grow-1">
+                    <div class="social_comment_message ps-3 pb-2">
+                        <div class="d-flex">
+                            <div class="d-flex flex-wrap flex-grow-1 pt-2">
+                                <t t-if="reply['from']">
+                                    <b><t t-out="reply['from']['name']"/></b>
+                                    <span class="px-2">.</span>
+                                </t>
+                                <p class="m-0"><t t-out="this.formatLocalDateTime(reply['created_time'])"/></p>
+                                <span class="px-2">.</span>
+                                <div>
+                                    <i class="fa fa-thumbs-up" title="Likes"/>
+                                    <b class="comment_like_count" t-out="reply['like_count']"/>
+                                </div>
+                            </div>
+                            <div class="dropdown social_comment_action">
+                              <button class="button_comment_action btn" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fa fa-ellipsis-v"></i>
+                              </button>
+                              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <a class="button_delete_comment dropdown-item" href="#" t-on-click="_deleteComment">Delete</a>
+                                <a class="button_hide_comment dropdown-item" href="#"
+                                t-attf-style="#{reply['is_hidden'] or reply['is_page_comment'] ? 'display: none' : ''}" t-on-click="_hideCommnet">Hide comment</a>
+                              </div>
+                            </div>
+                        </div>
+                        <p class="m-0"><t t-out="reply['message']"/></p>
+                    </div>
+                    <t t-if="reply['attachment'] and reply['attachment']['src']">
+                        <div class="comment_attachment my-2 d-flex flex-wrap">
+                            <t t-if="reply['attachment']['type'] == 'photo'">
+                                <img class="social_comment_image" t-att-src="repy['attachment']['src']" alt="Attachment"/>
+                            </t>
+                            <t t-if="reply['attachment']['type'] == 'sticker'">
+                                <img class="social_comment_sticker" t-att-src="reply['attachment']['src']" alt="Attachment"/>
+                            </t>
+                            <t t-else="">
+                                <video class="social_comment_image" controls="controls" t-att-src="reply['attachment']['src']"/>
+                            </t>
+                        </div>
+                    </t>
+                    <div class="social_comment_engagement d-flex justify-content-start">
+                        <a class="button_like_comment text-primary fw-bold" href="#"
+                            t-attf-style="#{reply['is_hidden'] ? 'display: none' : ''}" t-on-click="_likeComment">
+                            Like
+                        </a>
+                        <span class="px-2">.</span>
+                        <a class="button_reply_comment text-primary fw-bold" href="#"
+                            t-attf-style="#{reply['is_hidden'] ? 'display: none' : ''}" t-on-click="_showReplyInput">
+                            Reply
+                        </a>
+                        <a class="button_unhide_comment text-primary fw-bold" href="#"
+                            t-attf-style="#{reply['is_hidden'] ? 'display: inline-block' : 'display: none'}" t-on-click="_unhideComment">
+                            Unhide
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </t>
+    </div>
+
+    <div t-name="viin_social.social_write_reply_template" owl="1">
+        <div class="d-flex my-4 ps-5">
+            <div class="social_reply_avatar me-3 d-none">
+                <t t-if="props.page_image">
+                    <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="props.page_image" alt="props.page_name"/>
+                </t>
+                <t t-elif="comment['from'] and comment['from']['page_image']">
+                    <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="comment['from']['page_image']" alt="Avatar"/>
+                </t>
+            </div>
+            <div class="comment_input social_reply_comment_input flex-grow-1 d-flex d-none">
+                <textarea class="form-control bg-light flex-grow-1 d-none" placeholder="Write a reply..." t-on-keydown="_replyComment"/>
+                <div class="d-none">
+                    <SocialPostCommentEmoji />
+                </div>
+            </div>
+        </div>
+    </div>
+
+</templates>

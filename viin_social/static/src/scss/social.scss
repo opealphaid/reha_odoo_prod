@@ -1,0 +1,99 @@
+// Form Views
+// ===================================================
+.viin_social_article_view_form {
+	.o_form_sheet {
+        position: relative;
+
+        .viin_social_article_empty_preview {
+            @include media-breakpoint-down(md) {
+                display: none;
+            }
+
+            &.o_view_nocontent {
+                @include o-position-absolute(0, 0, 0, 55%);
+                padding-top: 5%;
+				top: 44px;
+            }
+        }
+
+        .o_group.o_inner_group.viin_social_post_preview_group {
+            > tbody > tr > td {
+                padding-right: 0;
+            }
+        }
+
+        .viin_social_post_form_attachments .o_attachments,
+        .viin_social_post_form_attachments .o_attachment {
+            width: 250px;
+            padding-left: 0;
+        }
+
+        .viin_social_post_form_content td {
+            position: relative;
+        }
+
+        .viin_social_post_message_wrapper {
+            &, & + textarea[disabled] {
+                padding-right: 50px;
+
+                @include media-breakpoint-up(sm) {
+                    width: 100%!important;
+                }
+            }
+
+            ~ .viin_social_icon_dropdown {
+                @include o-position-absolute(0, 30px);
+
+                .dropdown-toggle:after {
+                    display: none;
+                }
+            }
+
+        }
+    }
+
+    .viin_social_preview {
+        font-size: 1.2rem;
+
+        .viin_social_preview_icon_wrapper {
+			width: 2em;
+			height: 2em;
+        }
+
+        .viin_social_stream_post_image img {
+			max-height: 170px;
+			cursor: pointer;
+		    width: 100%;
+		    height: auto;
+		    max-width: 100%;
+		    object-fit: cover;
+		    object-position: center;
+
+            @media (min-height: 800px) {
+			max-height: 280px;
+            }
+        }
+    }
+
+    .viin_social_add_emoji {
+        float: right;
+        margin-bottom: 1rem;
+		margin-top: -40px;
+		.o_mail_emoji {
+			cursor: pointer;
+			padding: 2px;
+		    width: 2rem;
+		    height: 2rem;
+		}
+    }
+}
+
+.kanban_social_articlse_content {
+    font-family: "Roboto";
+    line-height: 1.5;
+}
+
+.social_kanban_image {
+    width: 64px;
+    height: 64px;
+}

@@ -1,0 +1,88 @@
+<odoo>
+    <record id='social_notice_view_tree' model='ir.ui.view'>
+        <field name='name'>Social notice</field>
+        <field name='model'>social.notice</field>
+        <field name='arch' type='xml'>
+            <list decoration-bf="is_seen==False" js_class="social_notice_list" sample="1">
+                <field name='social_time'/>
+                <field name='page_id'/>
+                <field name='company_id'/>
+                <field name='type'/>
+                <field name='social_user_name'/>
+                <field name='social_message'/>
+                <button name="action_view" type="object" string="View" class="oe_highlight"/>
+            </list>
+        </field>
+    </record>
+
+    <record id='social_notice_view_form' model='ir.ui.view'>
+        <field name='name'>Social notice</field>
+        <field name='model'>social.notice</field>
+        <field name='arch' type='xml'>
+            <form create="false" edit="false">
+                <header>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                            invisible="active" />
+                    <div name="button_box" class="oe_button_box">
+                        <button name="action_view" type="object" string="View" icon="fa-eye"/>
+                    </div>
+                    <group>
+                        <field name="post_id"/>
+                        <field name='social_time'/>
+                        <field name='page_id'/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name='type'/>
+                        <field name='social_user_name'/>
+                        <field name='social_message' string="Content"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="social_notice_view_search" model="ir.ui.view">
+        <field name="name">Notice</field>
+        <field name="model">social.notice</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="type"/>
+                <field name="page_id"/>
+                <field name="social_message"/>
+                <field name="social_time"/>
+                <filter name="ftr_archive" string="Archived" domain="[('active', '=', False)]"/>
+                <separator string="Type"/>
+                <filter name="ftr_type_comment" string="Comments"
+                        domain="[('type', '=', 'comment')]"/>
+                <filter name="ftr_state_posted" string="Messages"
+                        domain="[('type', '=', 'message')]"/>
+                <separator string="Seen"/>
+                <filter name="ftr_is_seen" string="Seen"
+                        domain="[('is_seen', '=', True)]"/>
+                <filter name="ftr_not_seen" string="Not Seen"
+                        domain="[('is_seen', '=', False)]"/>
+                <separator/>
+                <filter name="ftr_date" string="Date" date="social_time"/>
+                <group string="Group By">
+                    <filter name="grp_by_type" string="Type"
+                            context="{'group_by': 'type'}"/>
+                    <filter name="grp_by_page_id" string="Page"
+                            context="{'group_by': 'page_id'}"/>
+                    <filter name="grp_by_company_id" string="Company"
+                            context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id='social_notice_action_window' model='ir.actions.act_window'>
+        <field name='name'>Social Notice</field>
+        <field name='res_model'>social.notice</field>
+        <field name='view_mode'>list,form,search</field>
+    </record>
+
+    <menuitem id="social_notice_menu" name="Notices" parent="social_marketing_menu"
+              action="social_notice_action_window" sequence="14"/>
+</odoo>

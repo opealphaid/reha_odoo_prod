@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-name="viin_social.SocialPostKanbanView.Buttons" t-inherit="web.KanbanView.Buttons" t-inherit-mode="primary" owl="1">
+        <xpath expr="//div[@t-if='props.showButtons']" position="after">
+            <button type="button" t-on-click="synchAllPosts"
+                    class="btn btn-primary">
+                Synch all Posts
+            </button>
+        </xpath>
+    </t>
+
+</templates>

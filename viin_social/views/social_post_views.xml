@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="social_post_action" model="ir.actions.act_window">
+        <field name="name">Post</field>
+        <field name="res_model">social.post</field>
+        <field name="view_mode">kanban,list,form,search,pivot</field>
+    </record>
+
+    <record id="social_post_view_tree" model="ir.ui.view">
+        <field name="name">Post</field>
+        <field name="model">social.post</field>
+        <field name="arch" type="xml">
+            <list create="false" sample="1">
+                <field name="page_id" string="Page"/>
+                <field name="date_posted"/>
+                <field name="user_posted"/>
+                <field name="message"/>
+                <field name="media_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="social_post_view_kanban" model="ir.ui.view">
+        <field name="name">Post</field>
+        <field name="model">social.post</field>
+        <field name="arch" type="xml">
+            <kanban create="false" edit="false" default_group_by="page_id" group_create="false" js_class="social_post_kanban" quick_create="false" sample="1">
+                <field name="article_id"/>
+                <field name="message"/>
+                <field name="attachment_ids"/>
+                <field name="media_id"/>
+                <field name="likes_count"/>
+                <field name="comments_count"/>
+                <field name="shares_count"/>
+                <field name="views_count"/>
+                <field name="social_post_id"/>
+                <field name="social_post_url"/>
+                <field name="page_id"/>
+                <field name="attachment_link"/>
+                <field name="attachment_link_title"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="oe_kanban_global_click mb-3">
+                            <div class="kanban_social_post_content">
+                                <div class="row">
+                                    <div class="col-md-8 ps-3 text-start" style="font-weight:bold;">
+                                        <field name="page_id"/>
+                                    </div>
+                                    <div class="col-md-4 ps-3 text-end">
+                                        <field name="state" widget="label_selection"
+                                               options="{'classes': {'ready': 'info', 'scheduled': 'warning', 'posted': 'success', 'cancel': 'danger'}}"/>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-2">
+                                        <field name="user_posted" widget="many2one_avatar_user"/>
+                                    </div>
+                                    <div class="col-md-10 text-end">
+                                        <field name="date_posted"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr class="mt-2 mb-2"></hr>
+                            <div class="kanban_social_post_content social_post_detail d-flex ">
+                                <b class = 'overflow-hidden'>
+	                                <t t-if="record.message_view_more.raw_value">
+										<field name="message_view_more"/>
+	                                    ... See More
+	                                </t>
+	                                <t t-else="">
+	                                	<field name="message"/>
+	                                </t>
+                                </b>
+                                
+                            </div>
+                            <br/>
+                            <div class="kanban_social_post_attachments">
+                                <div class="social_page_avatar me-4">
+
+                                    <t t-set="i" t-value="1"/>
+                                    <t t-foreach="record.attachment_ids.raw_value" t-as="attachment">
+                                        <t t-if="i &lt; 4">
+                                            <img t-attf-src="/web/image/#{attachment}" width="27%" height="27%"
+                                                 alt="image"/>
+                                        </t>
+                                        <t t-if="i == 4">
+                                            <span>More+</span>
+                                        </t>
+                                        <t t-set="i" t-value="i+1"/>
+                                    </t>
+
+
+                                    <t t-if="record.attachment_link.raw_value">
+                                        <a t-attf-href="{{record.attachment_link.raw_value}}" target="_blank">
+                                            <t t-if="record.attachment_link_title.raw_value">
+                                                	<b class ="overflow-hidden d-flex" t-out="record.attachment_link_title.raw_value"/>
+                                            </t>
+                                            <t t-else="">
+                                                <b class="overflow-hidden d-flex" t-out="record.attachment_link.raw_value"/>
+                                            </t>
+                                        </a>
+                                    </t>
+                                </div>
+                            </div>
+                            <hr class="mt-2 mb-2"></hr>
+                            <div class="kanban_social_post_footer oe_kanban_record_bottom">
+                                <div class="d-flex justify-content-between for-inherit">
+                                    <div>
+                                        <i class="fa fa-thumbs-up" title="Likes"/>
+                                        <b t-out="record.likes_count.raw_value"/>
+                                    </div>
+                                    <div>
+                                        <i class="fa fa-comment" title="Comments"/>
+                                        <b t-out="record.comments_count.raw_value"/>
+                                    </div>
+                                    <div>
+                                        <i class="fa fa-share-alt" title="Shares"/>
+                                        <b t-out="record.shares_count.raw_value"/>
+                                    </div>
+                                    <div>
+                                        <i class="fa fa-eye" title="Views"/>
+                                        <b t-out="record.views_count.raw_value"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="social_post_view_form" model="ir.ui.view">
+        <field name="name">Post</field>
+        <field name="model">social.post</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                    <button name='action_post_article' type="object" class="btn btn-primary"
+                            invisible="state != 'ready'" string="Confirm / Post"/>
+                    <button name='action_cancel_post' type="object" class="btn btn-light"
+                            invisible="state != 'ready'" string="Cancel"/>
+                    <button name='action_set_ready_post' type="object" class="btn btn-primary"
+                            invisible="state != 'cancelled'" string="Set To Ready"/>
+                    <button name='action_view_post' type="object" class="btn btn-primary"
+                            invisible="state not in ('posted', 'scheduled')"
+                            string="View on Social"/>
+                    <button name='action_edit_post' type="object" class="btn btn-light"
+                            invisible="state != 'posted'" string="Edit Post"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" invisible="active"/>
+                    <group name="post_content" string="Post's Content">
+                        <field name="article_id" string="Article" />
+                        <field name="page_id" string="Page" />
+                        <field name="company_id"
+                            groups="base.group_multi_company" />
+                        <field name="date_posted" />
+                        <field name="user_posted" />
+                        <field name="message" />
+                        <field name="attachment_type" />
+                        <label for="attachment_ids"
+                            invisible="attachment_type != 'file'" />
+                        <div colspan="2">
+                            <field name="attachment_ids"
+                                widget='many2many_binary'
+                                invisible="attachment_type != 'file'"
+                                nolabel="1" />
+                        </div>
+                        <field name="attachment_link" widget="url"
+                            class="d-inline-block text-truncate"
+                            style="min-width: 100%; width: 1px;" />
+                        <field name="social_post_id" />
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="social_post_view_search" model="ir.ui.view">
+        <field name="name">Post</field>
+        <field name="model">social.post</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="article_id"/>
+                <field name="page_id"/>
+                <field name="message"/>
+                <field name="date_posted"/>
+                <separator/>
+                <filter name="ftr_user_assigned" string="Assigned"
+                        domain="['|','|', ('article_id.assign_id','=',uid),('page_id.assign_id','=',uid), ('media_id.assign_id','=',uid)]"/>
+                <separator string="State"/>
+                <filter name="ftr_state_ready" string="Ready"
+                        domain="[('state', '=', 'ready')]"/>
+                <filter name="ftr_state_posted" string="Posted"
+                        domain="[('state', '=', 'posted')]"/>
+                <filter name="ftr_state_cancelled" string="Cancelled"
+                        domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="ftr_date_posted" string="Posted Date" date="date_posted"/>
+                <separator/>
+                <filter name="ftr_inactive" string="Archived"
+                        domain="[('active', '=', False)]"/>
+                <separator/>
+                <filter name="ftr_post_on_my_page" string="Posts on my page"
+                        domain="[('post_on_my_page', '=', True)]"/>
+                <separator/>
+
+                <group string="Group By">
+                    <filter name="grp_by_state" string="State"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="grp_by_article" string="Article"
+                            context="{'group_by': 'article_id'}"/>
+                    <filter name="grp_by_page_id" string="Page"
+                            context="{'group_by': 'page_id'}"/>
+                    <filter name="grp_by_media_id" string="Media"
+                            context="{'group_by': 'media_id'}"/>
+                </group>
+                <searchpanel>
+                    <field name="company_id" groups="base.group_multi_company" icon="fa-building" enable_counters="1"/>
+                    <field name="state" string="State" enable_counters="1"/>
+                    <field name="page_id" string="Pages" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <record id="social_post_view_pivot" model="ir.ui.view">
+        <field name="name">Social Post</field>
+        <field name="model">social.post</field>
+        <field name="arch" type="xml">
+            <pivot sample="1">
+                <field name="page_id" type="row"/>
+                <field name="likes_count" type="measure"/>
+                <field name="comments_count" type="measure"/>
+                <field name="shares_count" type="measure"/>
+                <field name="views_count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_server_delete_post"
+            model="ir.actions.server">
+        <field name="name">Delete (include Social Pages)</field>
+        <field name="type">ir.actions.server</field>
+        <field name="model_id" ref="model_social_post"/>
+        <field name="binding_model_id" ref="model_social_post"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_delete_post_in_social()</field>
+    </record>
+
+    <menuitem id="social_post_menu" name="Posts" parent="social_marketing_menu"
+              action="social_post_action" sequence="11"/>
+</odoo>

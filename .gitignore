@@ -1,0 +1,68 @@
+# --- PYTHON ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# --- ENTORNOS VIRTUALES ---
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# --- ODOO ---
+*.log
+*.pot
+*.mo
+*.swp
+*.tmp
+*.db
+*.db-journal
+*.dat
+*.cache
+*.bak
+addons/*/static/lib/
+
+# Archivos generados por Odoo
+*.zip
+*.tar
+*.tar.gz
+*.egg-info
+
+# Bases de datos temporales
+*.sql
+*.sqlite3
+
+# --- EDITORES ---
+# VS Code
+.vscode/
+.history/
+
+# PyCharm
+.idea/
+*.iml
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- TESTS / COVERAGE ---
+.coverage
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# --- PERSONALIZADOS ---
+# Archivos sensibles o personales
+config/
+secret.key

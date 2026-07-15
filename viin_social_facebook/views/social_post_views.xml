@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="social_post_view_search" model="ir.ui.view">
+        <field name="name">social.post.form.inherit.facebook</field>
+        <field name="model">social.post</field>
+        <field name="inherit_id" ref="viin_social.social_post_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date_posted']" position="after">
+                <separator/>
+                <filter name="ftr_facebook" string="Facebook"
+                        domain="[('page_id.social_provider', '=', 'facebook')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

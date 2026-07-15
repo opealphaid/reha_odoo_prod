@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="social_post_action_edit_post_view_form" model="ir.ui.view">
+        <field name="name">social.post.action.edit.post.form</field>
+        <field name="model">social.post.action.edit.post</field>
+        <field name="arch" type="xml">
+            <form string="Edit Post">
+                <group>
+                    <field name="message"/>
+                </group>
+                <footer>
+                    <button name="action_confirm_edit" string="Confirm" type="object" class="oe_highlight"/>
+                    <button string="Cancel" class="btn-default" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

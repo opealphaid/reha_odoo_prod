@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="discuss.AgentListPanel">
+        <ActionPanel title="title">
+            <View t-props="viewProps"/>
+        </ActionPanel>
+    </t>
+<!--   NAME OF PARTNER IN CHATTER WINDOW HEADER-->
+    <t t-name="tus_meta_wa_discuss.ChatWindow.headerContent" t-inherit="mail.ChatWindow.headerContent" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[@t-if='!state.editingName']" position="replace">
+            <div t-if="thread.chatPartner" class="text-truncate fw-bold border border-transparent me-1 my-0" t-att-title="thread.chatPartner.name" t-esc="thread.chatPartner.name" t-att-class="thread ? 'ms-1' : 'ms-3'"/>
+            <div t-elif="!state.editingName" class="text-truncate fw-bold border border-transparent me-1 my-0" t-att-title="props.chatWindow.displayName" t-esc="props.chatWindow.displayName" t-att-class="thread ? 'ms-1' : 'ms-3'"/>
+        </xpath>
+    </t>
+
+<!-- NAME OF PARTNER IN DISCUSS SIDEBAR -->
+<!--    <t t-name="mail.DiscussSidebarChannel.main">-->
+<!--    -->  
+    <t t-name="tus_meta_wa_discuss.DiscussSidebarChannel" t-inherit="mail.DiscussSidebarChannel" t-inherit-mode="extension">
+<!--        <xpath expr="//button/span/t" position="replace">-->
+<!--            <t t-if="thread.chatPartner" t-esc="thread.chatPartner.name" />-->
+<!--            <t t-else="" t-esc="thread.displayName" />-->
+<!--        </xpath>-->
+    </t>
+<!--   NAME OF PARTNER IN DISCUSS HEADER -->
+    <t t-name="tus_meta_wa_discuss.Discuss" t-inherit="mail.Discuss" t-inherit-mode="extension">
+<!--        <xpath expr="//AutoresizeInput[@value='thread.displayName']" position="attributes">-->
+<!--            <attribute name="value">thread.chatPartner ? thread.chatPartner.name : thread.displayName</attribute>-->
+<!--        </xpath>-->
+    </t>
+<!--   ADD WHATSAPP Channels and NAME OF PARTNER IN Messaging Dropdown -->
+    <t t-name="tus_meta_wa_discuss.MessagingMenu.content" t-inherit="mail.MessagingMenu.content" t-inherit-mode="extension">
+<!--        <xpath expr="//div[hasclass('o-mail-MessagingMenu-header')]/t[@t-if='!ui.isSmall']" position="inside">-->
+<!--            <button class="btn btn-link py-2 rounded-0" t-att-class="store.discuss.activeTab === 'WpChannels' ? 'fw-bold' : 'text-muted'" type="button" role="tab" t-on-click="() => store.discuss.activeTab = 'WpChannels'">WhatsApp</button>-->
+<!--        </xpath>-->
+<!--        <xpath expr="//t[@t-foreach='threads']//NotificationItem" position="attributes">-->
+<!--            <attribute name="displayName">thread.chatPartner ? thread.chatPartner.name : thread.displayName</attribute>-->
+<!--        </xpath>-->
+    </t>
+</templates>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template_ext" xml:space="preserve">
+    <t t-name="MessageExt" t-inherit="mail.Message" t-inherit-mode="extension" owl="1">
+
+        <!-- Add Sent, Delivered, Received, Read Status in WhatsApp for Every Message in Discuss, Chatter, Not in Chat Window/Sidebar -->
+        <xpath expr="//div[hasclass('o-mail-Message-bubble')]" position="after">
+<!--            <t t-if="message.wp_status == 'sent'">-->
+                <div class="o_Message_seenIndicator me-1" t-att-data-tooltip="message.wp_status">
+                    <i class="o_MessageSeenIndicator_icon o-first fa fa-check ps-1"/>
+                </div>
+<!--            </t>-->
+<!--            <t t-if="message.wp_status == 'delivered'">-->
+                <div class="o_Message_seenIndicator me-1" t-att-data-tooltip="message.wp_status">
+                    <i class="o_MessageSeenIndicator_icon o-first fa fa-check ps-1"/>
+                    <i class="o_MessageSeenIndicator_icon o-second fa fa-check position-absolute"/>
+                </div>
+<!--            </t>-->
+<!--            <t t-if="message.wp_status == 'read'">-->
+<!--                <div class="o_Message_seenIndicator o_icon_read me-1" t-att-data-tooltip="message.wp_status">-->
+<!--                    <i class="o_MessageSeenIndicator_icon o-first fa fa-check ps-1"/>-->
+<!--                    <i class="o_MessageSeenIndicator_icon o-second fa fa-check position-absolute"/>-->
+<!--                </div>-->
+<!--            </t>-->
+        </xpath>
+
+    </t>
+
+        <t t-name="MessageViewNotificationExt" t-inherit="mail.Message.notification" t-inherit-mode="extension" owl="1">
+         <!-- Add WhatsApp Icon for Every WhatsApp Message in Discuss, Chatter, Chat Window/Sidebar -->
+<!--                <xpath expr="//div[@t-if='message.originThread?.eq(props.thread) and message.notifications.length > 0']" position="after">-->
+<!--&lt;!&ndash;                <t t-if="message.message_type != 'notification'">&ndash;&gt;-->
+<!--                    <div>-->
+<!--                        <span t-if="message.isWaMsgs" class="o-mail-Message-notification cursor-pointer me-1" >-->
+<!--                            <i class="fa fa-whatsapp ms-1"/>-->
+<!--                        </span>-->
+<!--                        &lt;!&ndash; When Message is Failed, Showing Error Message &ndash;&gt;-->
+<!--                        <t t-if="message.wa_delivery_status == 'failed'">-->
+<!--                            <button class="btn" t-att-data-tooltip="message.wa_error_message" style="color:red;">-->
+<!--                                <span class="fa fa-warning" aria-label="Error Message"/> This Message was not sent-->
+<!--                            </button>-->
+<!--                        </t>-->
+<!--                    </div>-->
+<!--&lt;!&ndash;                </t>&ndash;&gt;-->
+<!--            </xpath>-->
+        </t>
+</templates>

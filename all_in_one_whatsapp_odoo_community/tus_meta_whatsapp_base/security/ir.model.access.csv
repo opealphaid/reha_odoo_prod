@@ -1,0 +1,18 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_provider","security_provider","all_in_one_whatsapp_odoo_community.model_provider","",1,1,1,1
+"access_whatsapp_history_user","security_whatsapp_history_user","all_in_one_whatsapp_odoo_community.model_whatsapp_history","all_in_one_whatsapp_odoo_community.whatsapp_group_user",1,1,1,0
+"access_whatsapp_history_manager","security_whatsapp_history_manager","all_in_one_whatsapp_odoo_community.model_whatsapp_history","all_in_one_whatsapp_odoo_community.whatsapp_group_manager",1,1,1,1
+"access_wa_template","security_wa_template","all_in_one_whatsapp_odoo_community.model_wa_template","",1,1,1,1
+"access_components","security_components","all_in_one_whatsapp_odoo_community.model_components","",1,1,1,1
+"access_variables","security_variables","all_in_one_whatsapp_odoo_community.model_variables","",1,1,1,1
+"access_channel_provider_line","security_channel_provider_line","all_in_one_whatsapp_odoo_community.model_channel_provider_line","",1,1,1,1
+"access_wa_compose_message","security_wa_compose_message","all_in_one_whatsapp_odoo_community.model_wa_compose_message","",1,1,1,1
+"access_ir_model_user","ir_model_all","base.model_ir_model",base.group_user,1,0,0,0
+"access_ir_model_fields_user","ir_model_fields all","base.model_ir_model_fields",base.group_user,1,0,0,0
+"access_interactive_list","access.interactive.list","model_interactive_list",base.group_user,1,1,1,1
+"access_interactive_list_title","access.interactive.list.title","model_interactive_list_title",base.group_user,1,1,1,1
+"access_interactive_button","access.interactive.button","model_interactive_button",base.group_user,1,1,1,1
+"access_product_list","access.product.list","model_product_list",base.group_user,1,1,1,1
+"access_interactive_product_list","access.interactive.product.list","model_interactive_product_list",base.group_user,1,1,1,1
+"access_wa_button_component","access.wa.button.component","model_wa_button_component",base.group_user,1,1,1,1
+"access_wa_carousel_component","access.wa.carousel.component","model_wa_carousel_component",base.group_user,1,1,1,1

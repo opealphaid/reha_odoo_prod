@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<odoo>
+	<data>
+		<record id="base.module_category_marketing_social_marketing" model="ir.module.category">
+			<field name="name">Social Marketing</field>
+			<field name="description">Social Marketing Management</field>
+			<field name="sequence">-1</field>
+		</record>
+
+		<record id="viin_social_group_editor" model="res.groups">
+			<field name="name">Editor</field>
+			<field name="category_id" ref="base.module_category_marketing_social_marketing" />
+			<field name="comment">User can write own article if assigned</field>
+			<field name="implied_ids" eval="[(4, ref('base.group_user'))]" />
+		</record>
+
+		<record id="viin_social_group_approve" model="res.groups">
+			<field name="name">Approver</field>
+			<field name="category_id" ref="base.module_category_marketing_social_marketing" />
+			<field name="comment">User can post on own social page if assigned</field>
+			<field name="implied_ids" eval="[(4, ref('viin_social.viin_social_group_editor'))]" />
+		</record>
+
+		<record id="viin_social_group_admin" model="res.groups">
+			<field name="name">Administrator</field>
+			<field name="category_id" ref="base.module_category_marketing_social_marketing" />
+			<field name="comment">The user has full access right to media, pages, articles, posts.</field>
+			<field name="implied_ids" eval="[(4, ref('viin_social_group_approve'))]" />
+			<field name="users" eval="[(4, ref('base.user_admin')), (4, ref('base.user_root'))]" />
+		</record>
+	</data>
+
+ 	<data noupdate="0">
+		<record id="social_notice_rule_person" model="ir.rule">
+			<field name="name">Social Notice Rule Person</field>
+			<field name="model_id" ref="model_social_notice"/>
+			<field name="groups" eval="[(4, ref('viin_social_group_editor')),
+			  							(4, ref('viin_social_group_approve'))]"/>
+			<field name="domain_force">[('page_id.member_ids', 'in', user.id)]</field>
+			<field name="perm_create" eval="False" />
+			<field name="perm_unlink" eval="False" />
+		</record>
+
+		<record id="social_notice_rule_admin" model="ir.rule">
+			<field name="name">Social Notice Rule Admin</field>
+			<field name="model_id" ref="model_social_notice"/>
+			<field name="groups" eval="[(4, ref('viin_social_group_admin'))]"/>
+			<field name="domain_force">[(1, '=', 1)]</field>
+			<field name="perm_create" eval="False" />
+		</record>
+
+		<record id="social_article_rule_editor_edit_delete" model="ir.rule">
+			<field name="name">Delete Article</field>
+			<field name="model_id" ref="model_social_article" />
+			<field name="domain_force">[('author_id','=',user.id), ('assign_id','=',user.id)]</field>
+			<field name="groups" eval="[(4, ref('viin_social.viin_social_group_editor'))]" />
+			<field name="perm_read" eval="False" />
+			<field name="perm_write" eval="True" />
+			<field name="perm_create" eval="False" />
+			<field name="perm_unlink" eval="True" />
+		</record>
+
+		<record id="social_article_rule_editor_edit" model="ir.rule">
+			<field name="name">Write Article</field>
+			<field name="model_id" ref="model_social_article" />
+			<field name="domain_force">[('assign_id','=',user.id)]</field>
+			<field name="groups" eval="[(4, ref('viin_social.viin_social_group_editor'))]" />
+			<field name="perm_read" eval="False" />
+			<field name="perm_write" eval="True" />
+			<field name="perm_create" eval="False" />
+			<field name="perm_unlink" eval="False" />
+		</record>
+
+		<record id="social_page_rule_approve" model="ir.rule">
+			<field name="name">Change Members on The Page</field>
+			<field name="model_id" ref="model_social_page" />
+			<field name="domain_force">[('assign_id','=',user.id)]</field>
+			<field name="groups" eval="[(4, ref('viin_social.viin_social_group_approve'))]" />
+			<field name="perm_read" eval="False" />
+			<field name="perm_write" eval="True" />
+			<field name="perm_create" eval="False" />
+			<field name="perm_unlink" eval="False" />
+		</record>
+
+		<record id="social_article_rule_admin_and_approve" model="ir.rule">
+			<field name="name">Social Article Rule Admin and Approve </field>
+			<field name="model_id" ref="model_social_article" />
+			<field name="domain_force">[(1,'=',1)]</field>
+			<field name="groups" eval="[(4, ref('viin_social.viin_social_group_admin')),
+									    (4, ref('viin_social.viin_social_group_approve'))]" />
+			<field name="perm_read" eval="True" />
+			<field name="perm_write" eval="True" />
+			<field name="perm_create" eval="True" />
+			<field name="perm_unlink" eval="True" />
+		</record>
+
+		<record id="social_page_rule_admin" model="ir.rule">
+			<field name="name">Page Social Administrator</field>
+			<field name="model_id" ref="model_social_page" />
+			<field name="domain_force">[(1,'=',1)]</field>
+			<field name="groups" eval="[(4, ref('viin_social.viin_social_group_admin'))]" />
+			<field name="perm_read" eval="True" />
+			<field name="perm_write" eval="True" />
+			<field name="perm_create" eval="True" />
+			<field name="perm_unlink" eval="True" />
+		</record>
+
+        <record id="social_article_rule" model="ir.rule">
+            <field name="name">Social article multi-company</field>
+            <field name="model_id" ref="model_social_article"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="social_post_rule" model="ir.rule">
+            <field name="name">Social post multi-company</field>
+            <field name="model_id" ref="model_social_post"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">[('company_id', 'in', company_ids + [False])]</field>
+        </record>
+
+        <record id="social_notice_rule" model="ir.rule">
+            <field name="name">Social notice multi-company</field>
+            <field name="model_id" ref="model_social_notice"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">[('company_id', 'in', company_ids + [False])]</field>
+        </record>
+
+        <record id="social_page_rule" model="ir.rule">
+            <field name="name">Social page multi-company</field>
+            <field name="model_id" ref="model_social_page"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">[('company_id', 'in', company_ids + [False])]</field>
+        </record>
+
+		<record id="social_media_rule" model="ir.rule">
+            <field name="name">Social media multi-company</field>
+            <field name="model_id" ref="model_social_media"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        </record>
+	</data>
+</odoo>

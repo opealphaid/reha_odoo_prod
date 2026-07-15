@@ -1,0 +1,8 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_whatsapp_messaging","security_whatsapp_messaging","all_in_one_whatsapp_odoo_community.model_whatsapp_messaging","",1,1,1,1
+"access_whatsapp_messaging_schedule_date","security_whatsapp_messaging_schedule_date","all_in_one_whatsapp_odoo_community.model_whatsapp_messaging_schedule_date","",1,1,1,1
+"access_whatsapp_messaging_lists","security_whatsapp_messaging_lists","all_in_one_whatsapp_odoo_community.model_whatsapp_messaging_lists","",1,1,1,1
+"access_whatsapp_messaging_lists_contacts","security_whatsapp_messaging_lists_contacts","all_in_one_whatsapp_odoo_community.model_whatsapp_messaging_lists_contacts","",1,1,1,1
+all_in_one_whatsapp_odoo_community.access_marketing_contact_history,access_marketing_contact_history,all_in_one_whatsapp_odoo_community.model_marketing_contact_history,base.group_user,1,1,1,1
+access_test_whatsapp_marketing,access.test.whatsapp.marketing,model_test_whatsapp_marketing,,1,1,1,1
+

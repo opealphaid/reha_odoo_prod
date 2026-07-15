@@ -1,0 +1,393 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* to_base
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-03 01:50+0000\n"
+"PO-Revision-Date: 2025-09-03 01:50+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "Cannot get the size of a file or folder"
+msgstr "Kann die Größe einer Datei oder eines Ordners nicht erhalten"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_res_company
+msgid "Companies"
+msgstr "Unternehmen"
+
+#. module: to_base
+#: model:ir.model.fields,field_description:to_base.field_res_company__favicon
+msgid "Company Favicon"
+msgstr "Unternehmen Favicon"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_res_config_settings
+msgid "Config Settings"
+msgstr "Konfigurationseinstellungen"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_res_partner
+msgid "Contact"
+msgstr "Kontakt"
+
+#. module: to_base
+#: model_terms:ir.ui.view,arch_db:to_base.res_country_view_search
+msgid "Country Search"
+msgstr "Ländersuche"
+
+#. module: to_base
+#: model_terms:ir.ui.view,arch_db:to_base.res_country_view_search
+msgid "Currency"
+msgstr "Währung"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_res_currency_rate
+msgid "Currency Rate"
+msgstr "Währungsrate"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/controllers/main.py:0
+#, python-format
+msgid "Database does not exist in server."
+msgstr "Die Datenbank existiert nicht auf dem Server."
+
+#. module: to_base
+#: model:res.partner.category,name:to_base.res_partner_category_erp_vendor
+msgid "ERP Vendor"
+msgstr "ERP-Anbieter"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_mail_template
+msgid "Email Templates"
+msgstr "E-Mail-Vorlagen"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_mail_thread
+msgid "Email Thread"
+msgstr "E -Mail-Verlauf"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_mail_compose_message
+msgid "Email composition wizard"
+msgstr "E-Mail-Erstellungs-Assistent"
+
+#. module: to_base
+#: model:ir.model.fields,help:to_base.field_res_users__marketplace_merchant
+msgid ""
+"External user with limited access to marketplace merchant functionalities"
+msgstr ""
+"Externer Benutzer mit begrenztem Zugriff auf Markthändlerfunktionalitäten"
+
+#. module: to_base
+#: model:ir.model.fields,field_description:to_base.field_res_company__font
+msgid "Font"
+msgstr "Schriftart"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "For the hour period, the given date should be in datetime"
+msgstr "Für den Stundenzeitraum sollte das angegebene Datum in datetime sein"
+
+#. module: to_base
+#: model_terms:ir.ui.view,arch_db:to_base.res_country_view_search
+msgid "Group By"
+msgstr "Gruppieren nach"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_base_language_install
+msgid "Install Language"
+msgstr "Sprache installieren"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "Invalid input base number for EAN13 code"
+msgstr "Ungültige Eingabe einer Basisnummer für EAN13 -Code"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "Invalid year '%s'"
+msgstr "Ungültiges Jahr '%s' '"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"Local time zone is not defined. You may need to set a time zone in your "
+"user's Preferences."
+msgstr ""
+"Die lokale Zeitzone ist nicht definiert. Möglicherweise müssen Sie eine "
+"Zeitzone in den Einstellungen Ihres Benutzers festlegen."
+
+#. module: to_base
+#: model:ir.model.fields,field_description:to_base.field_res_users__marketplace_merchant
+msgid "Marketplace Merchant User"
+msgstr "Markthändler Benutzer"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/controllers/main.py:0
+#, python-format
+msgid "Master password is not correct."
+msgstr "Das Master-Passwort ist nicht korrekt."
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_mail_message
+msgid "Message"
+msgstr "Nachricht"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_ir_module_module
+msgid "Module"
+msgstr "Module"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "Number of terms must be greater than zero (0)"
+msgstr "Die Anzahl der Begriffe muss größer als Null sein (0)"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/res_currency_rate.py:0
+#, python-format
+msgid "Only one currency rate per day allowed!"
+msgstr "Nur ein Währungssatz pro Tag erlaubt!"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/ir_module_module.py:0
+#, python-format
+msgid "Operation is not supported"
+msgstr "Der Vorgang wird nicht unterstützt"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/helper/multi_threading.py:0
+#, python-format
+msgid ""
+"Progamming Error! The field `%s` is not a Many2one field of the model %s's"
+msgstr ""
+"Progamming Error! The field `%s` is not a Many2one field of the model %s's"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/helper/multi_threading.py:0
+#, python-format
+msgid "Progamming Error! The field `%s` is not a field of the model %s's"
+msgstr "Programmierfehler! Das Feld `%s` ist kein Feld des Modells %s"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_ir_qweb_field_barcode
+msgid "Qweb Field Barcode"
+msgstr "Qweb Feld Barcode"
+
+#. module: to_base
+#: model:ir.model.fields,field_description:to_base.field_ir_module_module__should_installed_but_not_installed
+#: model_terms:ir.ui.view,arch_db:to_base.ir_module_module_view_search
+msgid "Should Have Been Installed"
+msgstr "Sollte installiert werden"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_to_base
+msgid "TVTMA Base Model"
+msgstr "TVTMA-Basismodell"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"The `start_day_offset` passed to the method `period_iter` must be greater "
+"than or equal to zero!"
+msgstr ""
+"Der an die Methode `period_iter` übergebene` start_day_offset` muss größer "
+"oder gleich Null sein!"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "The given dt_from must be either date or datetime."
+msgstr "Der angegebene dt_from muss entweder date oder datetime sein."
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"The given dt_start and dt_end passed into the method "
+"`period_iter(period_name, dt_start, dt_end, start_day_offset)` must be in "
+"the same type. This could be a programming error..."
+msgstr ""
+"Die angegebenen dt_start- und dt_end-Werte, die an die Methode "
+"`period_iter(period_name, dt_start, dt_end, start_day_offset)` übergeben "
+"werden, müssen vom gleichen Typ sein. Dies könnte ein Programmierfehler "
+"sein..."
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "The given dt_to must be either date or datetime."
+msgstr "Das angegebene dt_to muss entweder date oder datetime."
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"The given period_start_date must be either date or datetime type. This "
+"could be programming error..."
+msgstr ""
+"Das angegebene period_start_date muss entweder date oder datetime-Typ sein. "
+"Dies könnte Programmierfehler sein ..."
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"The method `calculate_weights` only accepts item weights in either float or "
+"integer."
+msgstr ""
+"Die Methode `calculate_weights` akzeptiert nur Artikelgewichte in Float "
+"oder Ganzzahl."
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"The method get_weekdays_for_period(dt_from, dt_to) does not support the "
+"periods having more than 7 days"
+msgstr ""
+"Die Methode get_weekdays_for_period(dt_from, dt_to) unterstützt keine "
+"Perioden mit mehr als 7 Tagen"
+
+#. module: to_base
+#: model:ir.model.fields,help:to_base.field_res_company__favicon
+msgid ""
+"This field holds the image used to display a favicon for a given company."
+msgstr ""
+"Dieses Feld enthält das Bild, mit dem ein Favicon für ein bestimmtes "
+"Unternehmen angezeigt wird."
+
+#. module: to_base
+#: model:ir.model.fields,help:to_base.field_ir_module_module__should_installed_but_not_installed
+msgid ""
+"This indicates whether this module should be installed when it is marked as "
+"automatically installed and its dependencies are installed already but it "
+"itself is not installed."
+msgstr ""
+"Dies zeigt an, ob dieses Modul installiert werden sollte, wenn es als "
+"automatisch installiert markiert ist und seine Abhängigkeiten bereits "
+"installiert sind, es jedoch selbst nicht installiert ist."
+
+#. module: to_base
+#: model:ir.model.fields.selection,name:to_base.selection__res_company__font__times_new_roman
+msgid "Times New Roman"
+msgstr "Times New Roman"
+
+#. module: to_base
+#: model:ir.model,name:to_base.model_res_users
+msgid "User"
+msgstr "Benutzer"
+
+#. module: to_base
+#: model:res.partner.category,name:to_base.res_partner_category_viindoo_consulting
+msgid "Viindoo Consulting Services"
+msgstr "Viindoo Consulting Services"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"Wrong value passed to the argument `weekday` of the method `next_weekday`. "
+"The value for `weekday` must be >= 0 and <= 6"
+msgstr ""
+"Falscher Wert übergeben an das Argument \"weekday\" der Methode "
+"`next_weekday`. Der Wert für `weekday` muss >= 0 und <= 6 sein"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid ""
+"Wrong value passed to the argument representing the period. The value for "
+"`period_name` should be either 'hourly' or 'daily' or 'weekly' or 'monthly' "
+"or 'quarterly' or 'biannually' or 'annually'"
+msgstr ""
+"Falscher Wert, der an das Argument übergeben wird, das die Periode "
+"darstellt. Der Wert für `period_name` sollte entweder 'hourly' oder 'daily' "
+"oder 'weekly' oder 'monthly' oder 'quarterly' oder 'biannually' oder "
+"'annually' sein"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/mail_thread.py:0
+#, python-format
+msgid ""
+"You are only allowed to send messages or log notes if you don't mention "
+"anyone since you don't have access right to add followers to this document."
+msgstr ""
+"Sie dürfen nur Nachrichten senden oder Notizen protokollieren, wenn Sie "
+"niemanden erwähnen, da Sie keinen Zugriff haben, um Follower zu diesem "
+"Dokument hinzuzufügen."
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/mail_thread.py:0
+#, python-format
+msgid ""
+"You may not be able to add followers. Here is the reason:\n"
+"%s"
+msgstr ""
+"Möglicherweise können Sie keine Follower hinzufügen. Hier ist der Grund:\n"
+"%s"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/helper/multi_threading.py:0
+#, python-format
+msgid ""
+"db_connection_percentage should be greater than or equal to 0 and less than "
+"or equal to 80"
+msgstr ""
+"db_connection_percentage sollte größer oder gleich 0 und weniger als oder "
+"gleich 80 sein"
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/helper/multi_threading.py:0
+#, python-format
+msgid "max_threads_per_threaded must be an integer."
+msgstr "max_threads_per_threaded muss eine Ganzzahl sein."
+
+#. module: to_base
+#. odoo-python
+#: code:addons/to_base/models/to_base.py:0
+#, python-format
+msgid "the method guess_lang has not been implemented yet"
+msgstr "Die Methode guess_lang wurde noch nicht implementiert"

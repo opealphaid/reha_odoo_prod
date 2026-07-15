@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="social_article_view_form" model="ir.ui.view">
+        <field name="name">social.article.form.inherit.facebook</field>
+        <field name="model">social.article</field>
+        <field name="inherit_id" ref="viin_social.social_article_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='previews_placeholder']" position="inside">
+                <field name="facebook_preview" nolabel="1" colspan="2" widget="viin_social_post_preview"
+                       readonly="1"
+                       invisible="not display_facebook_preview"
+                       class="viin_social_preview_wrapper m-0 px-4 py-4 bg-200"/>
+            </xpath>
+            <xpath expr="//field[@name='assign_id']" position='after'>
+
+                <field name="schedule_later"/>
+                <field name="schedule_date"
+                       invisible="not schedule_later"
+                       required="schedule_later"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="social_article_view_search" model="ir.ui.view">
+        <field name="name">social.article.search.inherit.facebook</field>
+        <field name="model">social.article</field>
+        <field name="inherit_id" ref="viin_social.social_article_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='author_id']" position="after">
+                <separator string="State"/>
+                <filter name="ftr_facebook" string="Facebook"
+                        domain="[('page_ids.social_provider', '=', 'facebook')]"/>
+                <separator/>
+
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

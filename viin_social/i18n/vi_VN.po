@@ -1,0 +1,1910 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* viin_social
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-24 02:11+0000\n"
+"PO-Revision-Date: 2025-12-24 02:11+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_notice.py:0
+msgid ""
+"\n"
+"            <b>{social_user_name}</b> commented on the post <a href=\"{post_link}\" target=\"_blank\">{post_name}</a>: <br>\n"
+"            {social_message} <br>\n"
+"            {element_photo}\n"
+"        "
+msgstr ""
+"\n"
+"            <b>{social_user_name}</b> đã bình luận về bài viết <a href=\"{post_link}\" target=\"_blank\">{post_name}</a>: <br>\n"
+"            {social_message} <br>\n"
+"            {element_photo}\n"
+"        "
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_notice.py:0
+msgid ""
+"\n"
+"            <b>{social_user_name}</b> reacted to the post <a href=\"{post_link}\" target=\"_blank\">{post_name}</a>: <br>\n"
+"            {reaction_type}\n"
+"        "
+msgstr ""
+"\n"
+"            <b>{social_user_name}</b> đã bày tỏ cảm xúc về bài viết <a href=\"{post_link}\" target=\"_blank\">{post_name}</a>: <br>\n"
+"            {reaction_type}\n"
+"        "
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_notice.py:0
+msgid ""
+"\n"
+"            <b>{social_user_name}</b> sent a message to {page_name} page: <br>\n"
+"            {social_message}\n"
+"        "
+msgstr ""
+"\n"
+"            <b>{social_user_name}</b> đã gửi một tin nhắn tới trang {page_name}: <br>\n"
+"            {social_message}\n"
+"        "
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_mixin.py:0
+msgid ""
+"%(title)s: \n"
+"status code: %(status_code)s \n"
+"response: \n"
+" %(response)s \n"
+"%(kwargs)s"
+msgstr ""
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "%s new posts will be posted \n"
+msgstr "%s bài đăng mới sẽ được đăng \n"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "%s posts will be deleted \n"
+msgstr "%s bài đăng sẽ bị xóa"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "%s posts will be updated \n"
+msgstr "%s bài đăng sẽ được cập nhật"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_kanban
+msgid "... See More"
+msgstr "... Xem thêm"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_kanban
+msgid "<b>... See More</b>"
+msgstr "<b>... Xem thêm</b>"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_kanban
+msgid "<i class=\"fa fa-calendar\" title=\"Create on\"/>"
+msgstr "<i class=\"fa fa-calendar\" title=\"Tạo trên\"/>"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_kanban
+msgid "<i class=\"fa fa-comment\" title=\"Comments\"/>"
+msgstr "<i class=\"fa fa-comment\" title=\"Bình luận\"/>"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_kanban
+msgid "<i class=\"fa fa-eye\" title=\"Views\"/>"
+msgstr "<i class=\"fa fa-eye\" title=\"Lượt xem\"/>"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_kanban
+msgid "<i class=\"fa fa-share-alt\" title=\"Shares\"/>"
+msgstr "<i class=\"fa fa-share-alt\" title=\"Chia sẻ\"/>"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_kanban
+msgid "<i class=\"fa fa-thumbs-up\" title=\"Likes\"/>"
+msgstr "<i class=\"fa fa-thumbs-up\" title=\"Lượt thích\"/>"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_page_view_kanban
+msgid "<i class=\"fa fa-thumbs-up\" title=\"Total Likes\"/>"
+msgstr "<i class=\"fa fa-thumbs-up\" title=\"Tổng lượt thích\"/>"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_kanban
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_kanban
+msgid "<span>More+</span>"
+msgstr "<span>Thêm+</span>"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid ""
+"<ul class='o_mail_thread_message_tracking'>                                 "
+"<li>%(page_name)s Post State: %(origin_state)s"
+"                                     <span class='fa fa-long-arrow-right' "
+"role='img' aria-label='Changed' title='Changed'></span> %(new_state)s"
+"                                 </li>                             </ul>"
+msgstr ""
+"<ul class='o_mail_thread_message_tracking'>                                 "
+"<li>%(page_name)s Trạng thái bài đăng: %(origin_state)s"
+"                                     <span class='fa fa-long-arrow-right' "
+"role='img' aria-label='Changed' title='Changed'></span> %(new_state)s"
+"                                 </li>                             </ul>"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid ""
+"<ul class='o_mail_thread_message_tracking'>                         "
+"<li>%(post_count)s Post is removed: %(page_names)s</li>                     "
+"</ul>"
+msgstr ""
+"<ul class='o_mail_thread_message_tracking'>                         "
+"<li>%(post_count)s Bài đăng đã bị xóa: %(page_names)s</li>                     "
+"</ul>"
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid ""
+"<ul class='o_mail_thread_message_tracking'>                     "
+"<li>%(post_count)s Post have created: %(post_names)s </li>                 "
+"</ul>"
+msgstr ""
+"<ul class='o_mail_thread_message_tracking'>                             "
+"<li>%s bài đăng đã được tạo: %s </li>                         </ul>"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_needaction
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_needaction
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_needaction
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_needaction
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_needaction
+msgid "Action Needed"
+msgstr "Cần có hành động"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_discuss_channel__active
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__active
+#: model:ir.model.fields,field_description:viin_social.field_social_page__active
+#: model:ir.model.fields,field_description:viin_social.field_social_post__active
+msgid "Active"
+msgstr "Có hiệu lực"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_ids
+msgid "Activities"
+msgstr "Hoạt động"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_exception_decoration
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_exception_decoration
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_exception_decoration
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_exception_decoration
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Hành động ngoại lệ"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_state
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_state
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_state
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_state
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_state
+msgid "Activity State"
+msgstr "Trạng thái hoạt động"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_type_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_type_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_type_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_type_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icon kiểu hoạt động"
+
+#. module: viin_social
+#: model:res.groups,name:viin_social.viin_social_group_admin
+msgid "Administrator"
+msgstr "Quản trị viên"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__member_ids
+msgid ""
+"All members can: Receive Notifications, Reply/Delete Comments, and are "
+"default members on social conversation."
+msgstr ""
+"Tất cả thành viên có thể: Nhận thông báo, bình luận/trả lời/xóa bình luận, "
+"và là thành viên mặc định của kênh thảo luận xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_media__assign_id
+#: model:ir.model.fields,field_description:viin_social.field_social_page__assign_id
+#: model:res.groups,name:viin_social.viin_social_group_approve
+msgid "Approver"
+msgstr "Người phê duyệt"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Archived"
+msgstr "Đã lưu trữ"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid ""
+"Are you sure you want to cancel this post? If canceled, all posts on the "
+"system and social networks will be deleted"
+msgstr ""
+"Bạn có chắc chắn muốn hủy bài đăng này không? Nếu hủy, tất cả các bài đăng "
+"trên hệ thống và mạng xã hội sẽ bị xóa"
+
+#. module: viin_social
+#: model:ir.actions.act_window,name:viin_social.social_article_action
+#: model:ir.model.fields,field_description:viin_social.field_social_post__article_id
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_tree
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Article"
+msgstr "Bài viết"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Article's Content"
+msgstr "Nội dung bài viết"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "Article: %s was posted on social media"
+msgstr "Bài viết: %s đã được đăng trên mạng xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__article_ids
+#: model:ir.ui.menu,name:viin_social.social_article_menu
+msgid "Articles"
+msgstr "Bài viết"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__assign_id
+msgid "Assign to"
+msgstr "Phân công cho"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Assigned"
+msgstr "Được phân công"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_article__attachment_type__file
+msgid "Attach Files"
+msgstr "Đính kèm tệp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__attachment_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_post__attachment_ids
+msgid "Attach Images/Videos"
+msgstr "Đính kèm ảnh/Video"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__attachment_link
+#: model:ir.model.fields,field_description:viin_social.field_social_post__attachment_link
+msgid "Attach Link"
+msgstr "Đính kèm liên kết"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__attachment_link_title
+#: model:ir.model.fields,field_description:viin_social.field_social_post__attachment_link_title
+msgid "Attach Link Title"
+msgstr "Đính kèm tiêu đề liên kết"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/post_attachments_carousel/social_attachments_carousel.xml:0
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_kanban
+msgid "Attachment"
+msgstr "Đính kèm"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_attachment_count
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_attachment_count
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_attachment_count
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_attachment_count
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_attachment_count
+msgid "Attachment Count"
+msgstr "SL tệp đính kèm"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__attachment_type
+#: model:ir.model.fields,field_description:viin_social.field_social_post__attachment_type
+msgid "Attachment Type"
+msgstr "Kiểu đính kèm"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__author_id
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_kanban
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+msgid "Author"
+msgstr "Tác giả"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+#: model:ir.model.fields,field_description:viin_social.field_social_page__image
+msgid "Avatar"
+msgstr "Ảnh đại diện"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__image
+msgid "Avatar of this page"
+msgstr "Ảnh đại diện của trang này"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message
+msgid "Body"
+msgstr "Nội dung"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__can_cancel
+msgid "Can Cancel"
+msgstr "Có thể hủy"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/discuss_channel.py:0
+msgid ""
+"Can not add the user '%s' to this conversation.\n"
+"Only approver or members of the Page are allowed to join this conversation."
+msgstr ""
+"Không thể thêm người dùng '%s' vào cuộc hội thoại này.\n"
+"Chỉ người phê duyệt hoặc các thành viên của trang mới được tham gia cuộc hội thoại."
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_action_edit_post_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.wizard_social_confirm_view_form
+msgid "Cancel"
+msgstr "Hủy"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_article__state__cancelled
+#: model:ir.model.fields.selection,name:viin_social.selection__social_post__state__cancelled
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Cancelled"
+msgstr "Đã hủy"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_discuss_channel__channel_type
+msgid "Channel Type"
+msgstr "Loại kênh"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_discuss_channel__channel_type
+msgid ""
+"Chat is private and unique between 2 persons. Group is private among invited"
+" persons. Channel can be freely joined (depending on its configuration)."
+msgstr ""
+"Chat là riêng tư và chỉ giữa 2 người. Nhóm là riêng tư cho một nhóm người "
+"được mời. Kênh có thể tham dự tự do (tùy theo cấu hình)."
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_notice__type__comment
+msgid "Comment"
+msgstr "Bình luận"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+msgid "Comments"
+msgstr "Bình luận"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_res_company
+msgid "Companies"
+msgstr "Công ty"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__company_id
+#: model:ir.model.fields,field_description:viin_social.field_social_media__company_id
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__company_id
+#: model:ir.model.fields,field_description:viin_social.field_social_page__company_id
+#: model:ir.model.fields,field_description:viin_social.field_social_post__company_id
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+msgid "Company"
+msgstr "Công ty"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_res_config_settings
+msgid "Config Settings"
+msgstr "Thiết lập cấu hình"
+
+#. module: viin_social
+#: model:ir.ui.menu,name:viin_social.social_configuration_menu
+msgid "Configuration"
+msgstr "Cấu hình"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_action_edit_post_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.wizard_social_confirm_view_form
+msgid "Confirm"
+msgstr "Xác nhận"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+msgid "Confirm / Post"
+msgstr "Xác nhận / đăng"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "Confirm Delete Post In Social"
+msgstr "Xác nhận xóa bài đăng trên mạng xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_article__state__confirmed
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+msgid "Confirmed"
+msgstr "Đã xác nhận"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_res_partner
+msgid "Contact"
+msgstr "Liên hệ"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_form
+msgid "Content"
+msgstr "Nội dung"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__message
+msgid "Content of this article"
+msgstr "Nội dung của bài viết này"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_post__message
+msgid "Content of this post"
+msgstr "Nội dung của bài đăng này"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__create_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_media__create_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__create_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_page__create_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_post__create_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__create_uid
+#: model:ir.model.fields,field_description:viin_social.field_wizard_social_confirm__create_uid
+msgid "Created by"
+msgstr "Tạo bởi"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__create_date
+#: model:ir.model.fields,field_description:viin_social.field_social_media__create_date
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__create_date
+#: model:ir.model.fields,field_description:viin_social.field_social_page__create_date
+#: model:ir.model.fields,field_description:viin_social.field_social_post__create_date
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__create_date
+#: model:ir.model.fields,field_description:viin_social.field_wizard_social_confirm__create_date
+msgid "Created on"
+msgstr "Tạo vào"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+msgid "Date"
+msgstr "Ngày"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_post__date_posted
+msgid "Date Posted"
+msgstr "Ngày đăng"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+msgid "Delete"
+msgstr "Xóa"
+
+#. module: viin_social
+#: model:ir.actions.server,name:viin_social.action_server_delete_post
+msgid "Delete (include Social Pages)"
+msgstr "Xóa (bao gồm trên trang xã hội)"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Delete Post"
+msgstr "Xóa bài đăng"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_media__description
+#: model:ir.model.fields,field_description:viin_social.field_social_page__description
+msgid "Description"
+msgstr "Mô tả"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_media__description
+msgid "Description of Social Media"
+msgstr "Mô tả của kênh truyền thông"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__description
+msgid "Description of this page on Social Media"
+msgstr "Mô tả của trang này trong kênh truyền thông"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_discuss_channel
+msgid "Discussion Channel"
+msgstr "Kênh thảo luận"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__display_name
+#: model:ir.model.fields,field_description:viin_social.field_social_media__display_name
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__display_name
+#: model:ir.model.fields,field_description:viin_social.field_social_page__display_name
+#: model:ir.model.fields,field_description:viin_social.field_social_post__display_name
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__display_name
+#: model:ir.model.fields,field_description:viin_social.field_wizard_social_confirm__display_name
+msgid "Display Name"
+msgstr "Tên hiển thị"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_article__state__draft
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+msgid "Draft"
+msgstr "Dự thảo"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_social_post_action_edit_post
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_action_edit_post_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+msgid "Edit Post"
+msgstr "Sửa bài đăng"
+
+#. module: viin_social
+#: model:res.groups,name:viin_social.viin_social_group_editor
+msgid "Editor"
+msgstr "Biên tập viên"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment_emojis/social_post_comment_emojis.xml:0
+msgid "Emojis"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_res_config_settings__module_viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Enable Social Facebook"
+msgstr "Kích hoạt Social Facebook"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_res_config_settings__module_viin_social_linkedin
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Enable Social LinkedIn"
+msgstr "Kích hoạt Social LinkedIn"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.js:0
+msgid "Error"
+msgstr "Lỗi"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_media__token_expired_date
+msgid "Expiration date of access token"
+msgstr "Ngày hết hạn của access token"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Facebook"
+msgstr ""
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/discuss_channel.py:0
+msgid "File attachments are not supported yet."
+msgstr "Tệp đính kèm không được hỗ trợ"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__attachment_type
+#: model:ir.model.fields,help:viin_social.field_social_post__attachment_type
+msgid "Files: Image or Videos"
+msgstr "Tệp: ảnh hoặc video"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_follower_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_follower_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_follower_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_follower_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_follower_ids
+msgid "Followers"
+msgstr "Người theo dõi"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_partner_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_partner_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_partner_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_partner_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "Người theo dõi (đối tác)"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__activity_type_icon
+#: model:ir.model.fields,help:viin_social.field_social_media__activity_type_icon
+#: model:ir.model.fields,help:viin_social.field_social_notice__activity_type_icon
+#: model:ir.model.fields,help:viin_social.field_social_page__activity_type_icon
+#: model:ir.model.fields,help:viin_social.field_social_post__activity_type_icon
+msgid "Font awesome icon e.g. fa-tasks"
+msgstr ""
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Group By"
+msgstr "Nhóm theo"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__has_message
+#: model:ir.model.fields,field_description:viin_social.field_social_media__has_message
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__has_message
+#: model:ir.model.fields,field_description:viin_social.field_social_page__has_message
+#: model:ir.model.fields,field_description:viin_social.field_social_post__has_message
+msgid "Has Message"
+msgstr "Có thông điệp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__hide_button_post_article
+msgid "Hide Button Post Article"
+msgstr ""
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+msgid "Hide comment"
+msgstr "Ẩn bình luận"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__id
+#: model:ir.model.fields,field_description:viin_social.field_social_media__id
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__id
+#: model:ir.model.fields,field_description:viin_social.field_social_page__id
+#: model:ir.model.fields,field_description:viin_social.field_social_post__id
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__id
+#: model:ir.model.fields,field_description:viin_social.field_wizard_social_confirm__id
+msgid "ID"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_discuss_channel__social_participant_id
+#: model:ir.model.fields,help:viin_social.field_social_notice__social_participant_id
+msgid "ID of participant in social conversation"
+msgstr "ID của người tham dự trong cuộc trò chuyện"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_discuss_channel__social_conversation_id
+msgid "ID of social conversation"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_mail_mail__social_message_id
+#: model:ir.model.fields,help:viin_social.field_mail_message__social_message_id
+msgid "ID of social message"
+msgstr "ID của tin nhắn"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_post__social_post_id
+msgid "ID of this post on Social Media"
+msgstr "ID của bài đăng này trên kênh truyền thông"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_exception_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_exception_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_exception_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_exception_icon
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__activity_exception_icon
+#: model:ir.model.fields,help:viin_social.field_social_media__activity_exception_icon
+#: model:ir.model.fields,help:viin_social.field_social_notice__activity_exception_icon
+#: model:ir.model.fields,help:viin_social.field_social_page__activity_exception_icon
+#: model:ir.model.fields,help:viin_social.field_social_post__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icon để chỉ báo một hoạt động ngoại lệ."
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__message_needaction
+#: model:ir.model.fields,help:viin_social.field_social_media__message_needaction
+#: model:ir.model.fields,help:viin_social.field_social_notice__message_needaction
+#: model:ir.model.fields,help:viin_social.field_social_page__message_needaction
+#: model:ir.model.fields,help:viin_social.field_social_post__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "Nếu được đánh dấu, các thông điệp mới sẽ cần bạn xem xét."
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__message_has_error
+#: model:ir.model.fields,help:viin_social.field_social_article__message_has_sms_error
+#: model:ir.model.fields,help:viin_social.field_social_media__message_has_error
+#: model:ir.model.fields,help:viin_social.field_social_media__message_has_sms_error
+#: model:ir.model.fields,help:viin_social.field_social_notice__message_has_error
+#: model:ir.model.fields,help:viin_social.field_social_notice__message_has_sms_error
+#: model:ir.model.fields,help:viin_social.field_social_page__message_has_error
+#: model:ir.model.fields,help:viin_social.field_social_page__message_has_sms_error
+#: model:ir.model.fields,help:viin_social.field_social_post__message_has_error
+#: model:ir.model.fields,help:viin_social.field_social_post__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "Nếu được đánh dấu, một số thông điệp đã gặp lỗi khi gửi đi."
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "If checked, will enable the Social Facebook module"
+msgstr "Nếu được chọn, sẽ kích hoạt mô-đun Social Facebook"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "If checked, will enable the Social LinkedIn module"
+msgstr "Nếu được chọn, sẽ kích hoạt mô-đun Social LinkedIn"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "Info: \n"
+msgstr "Thông tin: \n"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_page_view_form
+msgid "Insights"
+msgstr "Thông tin chi tiết"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_is_follower
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_is_follower
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_is_follower
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_is_follower
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_is_follower
+msgid "Is Follower"
+msgstr "Đang theo dõi"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_res_users_settings__is_discuss_sidebar_category_social_chat_open
+msgid "Is category social chat open?"
+msgstr "Danh mục trò chuyện MXH có mở không?"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_res_config_settings__is_discuss_sidebar_category_social_chat_open
+msgid "Is category socialchat open"
+msgstr ""
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_media_view_kanban
+msgid "LINK ACCOUNT"
+msgstr "Liên kết tài khoản"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__write_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_media__write_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__write_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_page__write_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_post__write_uid
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__write_uid
+#: model:ir.model.fields,field_description:viin_social.field_wizard_social_confirm__write_uid
+msgid "Last Updated by"
+msgstr "Cập nhật lần cuối bởi"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__write_date
+#: model:ir.model.fields,field_description:viin_social.field_social_media__write_date
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__write_date
+#: model:ir.model.fields,field_description:viin_social.field_social_page__write_date
+#: model:ir.model.fields,field_description:viin_social.field_social_post__write_date
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__write_date
+#: model:ir.model.fields,field_description:viin_social.field_wizard_social_confirm__write_date
+msgid "Last Updated on"
+msgstr "Cập nhật lần cuối vào"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+msgid "Like"
+msgstr "Thích"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+msgid "Likes"
+msgstr "Thích"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "LinkedIn"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_media__image
+msgid "Logo"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_media__image
+msgid "Logo of Social Media"
+msgstr "Logo của kênh truyền thông"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/views/social_notice_list/social_notice_list_buttons.xml:0
+msgid "Mark all as read"
+msgstr "Đánh dấu đã đọc tất cả"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Media"
+msgstr "Truyền thông"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__member_ids
+msgid "Members"
+msgstr "Thành viên"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_mail_message
+#: model:ir.model.fields,field_description:viin_social.field_wizard_social_confirm__message
+#: model:ir.model.fields.selection,name:viin_social.selection__social_notice__type__message
+msgid "Message"
+msgstr "Thông điệp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_has_error
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_has_error
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_has_error
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_has_error
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_has_error
+msgid "Message Delivery error"
+msgstr "Có lỗi gửi thông điệp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_view_more
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_view_more
+msgid "Message More"
+msgstr "Tin nhắn thêm"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_ids
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+msgid "Messages"
+msgstr "Thông điệp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__my_activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_media__my_activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__my_activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_page__my_activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_post__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Hạn chót hoạt động"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_media__name
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__name
+#: model:ir.model.fields,field_description:viin_social.field_social_page__name
+msgid "Name"
+msgstr "Tên"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__name
+msgid "Name of this page on Social Media"
+msgstr "Tên của trang này trên kênh truyền thông"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__message
+msgid "New content"
+msgstr "Nội dung bài đăng mới"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/post_attachments_carousel/social_attachments_carousel.xml:0
+msgid "Next"
+msgstr "Tiếp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_date_deadline
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Hạn chót hoạt động kế tiếp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_summary
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_summary
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_summary
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_summary
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_summary
+msgid "Next Activity Summary"
+msgstr "Tóm tắt hoạt động kế tiếp"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_type_id
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_type_id
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_type_id
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_type_id
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_type_id
+msgid "Next Activity Type"
+msgstr "Kiểu hành động kế tiếp"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_article__attachment_type__none
+#: model:ir.model.fields.selection,name:viin_social.selection__social_media__social_provider__none
+msgid "None"
+msgstr "Trống"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_article__posts_state__not_posted
+msgid "Not Posted"
+msgstr "Chưa được đăng"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+msgid "Not Seen"
+msgstr "Chưa xem"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__type
+msgid "Notice Type"
+msgstr "Kiểu thông báo"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_social_notice
+msgid "Notice from Users on the Page"
+msgstr "Thông báo từ người dùng trên Trang"
+
+#. module: viin_social
+#: model:ir.ui.menu,name:viin_social.social_notice_menu
+msgid "Notices"
+msgstr "Thông báo"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_needaction_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_needaction_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_needaction_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_needaction_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_needaction_counter
+msgid "Number of Actions"
+msgstr "Số lượng hành động"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_has_error_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_has_error_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_has_error_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_has_error_counter
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_has_error_counter
+msgid "Number of errors"
+msgstr "Số lượng lỗi"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__message_needaction_counter
+#: model:ir.model.fields,help:viin_social.field_social_media__message_needaction_counter
+#: model:ir.model.fields,help:viin_social.field_social_notice__message_needaction_counter
+#: model:ir.model.fields,help:viin_social.field_social_page__message_needaction_counter
+#: model:ir.model.fields,help:viin_social.field_social_post__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Số thông điệp cần có hành động"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__message_has_error_counter
+#: model:ir.model.fields,help:viin_social.field_social_media__message_has_error_counter
+#: model:ir.model.fields,help:viin_social.field_social_notice__message_has_error_counter
+#: model:ir.model.fields,help:viin_social.field_social_page__message_has_error_counter
+#: model:ir.model.fields,help:viin_social.field_social_post__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "Số thông điệp có lỗi khi gửi đi"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_page.py:0
+msgid "Only the assigned user on Page/Media or Manager can synch message"
+msgstr ""
+"Chỉ người được phân công trên trang/truyền thông hoặc quản lý mới có thể "
+"đồng bộ tin nhắn"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_page.py:0
+msgid "Only the assigned user or Manager can edit members"
+msgstr ""
+"Chỉ người dùng được chỉ định hoặc người quản lý mới có thể chỉnh sửa thành "
+"viên"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "Operation not supported"
+msgstr "Hoạt động không được hỗ trợ"
+
+#. module: viin_social
+#: model:ir.actions.act_window,name:viin_social.social_page_action
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__page_id
+#: model:ir.model.fields,field_description:viin_social.field_social_post__page_id
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_tree
+msgid "Page"
+msgstr "Trang"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__social_page_id
+msgid "Page Id on Social"
+msgstr "ID trang trên MXH"
+
+#. module: viin_social
+#: model:ir.ui.menu,name:viin_social.social_page_menu
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Pages"
+msgstr "Trang"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__photo
+msgid "Photo Link"
+msgstr "Link ảnh"
+
+#. module: viin_social
+#: model:ir.actions.act_window,name:viin_social.social_post_action
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__post_id
+#: model:ir.model.fields.selection,name:viin_social.selection__social_notice__type__post
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Post"
+msgstr "Bài đăng"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.js:0
+msgid "Post Attachments"
+msgstr "Đính kèm bài đăng"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__post_link
+msgid "Post Link"
+msgstr "Link bài đăng"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_post__post_on_my_page
+msgid "Post On My Page"
+msgstr "Bài đăng trên trang của tôi"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_post_action_edit_post__post_id
+msgid "Post On Social Page"
+msgstr "Bài đăng trên trang xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__page_ids
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Post on"
+msgstr "Đăng vào"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__media_ids
+msgid "Post on Media"
+msgstr "Đăng trên kênh truyền thông"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Post on Social Media"
+msgstr "Đăng lên mạng xã hội"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_page.py:0
+msgid "Post sync successful!"
+msgstr "Đồng bộ bài đăng thành công!"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+msgid "Post's Content"
+msgstr "Nội dung của bài đăng"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_article__posts_state__posted
+#: model:ir.model.fields.selection,name:viin_social.selection__social_post__state__posted
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Posted"
+msgstr "Đã đăng"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Posted Date"
+msgstr "Ngày đăng"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_post__user_posted
+msgid "Posted by"
+msgstr "Được đăng bởi"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__post_ids
+#: model:ir.model.fields,field_description:viin_social.field_social_page__post_ids
+#: model:ir.ui.menu,name:viin_social.social_post_menu
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+msgid "Posts"
+msgstr "Bài đăng"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__posts_state
+msgid "Posts State"
+msgstr "Trạng thái bài đăng"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__post_ids
+msgid "Posts from this article"
+msgstr "Bài đăng từ bài viết"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Posts on my page"
+msgstr "Bài đăng trên trang của tôi"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid ""
+"Posts on system and social networks will be deleted. Are you sure to Delete "
+"this post?"
+msgstr ""
+"Bài đăng trên hệ thống và mạng xã hội sẽ bị xóa. Bạn có chắc chắn muốn xóa "
+"bài đăng này"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__post_ids
+msgid "Posts on this page"
+msgstr "Bài đăng trên trang"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Preview your article"
+msgstr "Xem trước bài viết của bạn"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/post_attachments_carousel/social_attachments_carousel.xml:0
+msgid "Previous"
+msgstr "Trước"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_notice__type__reaction
+msgid "Reaction"
+msgstr "Cảm xúc"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__reaction_type
+msgid "Reaction Type"
+msgstr "Kiểu bày tỏ cảm xúc"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_post__state__ready
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "Ready"
+msgstr "Sẵn sàng"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_res_company__receive_comment_notification
+#: model:ir.model.fields,field_description:viin_social.field_res_config_settings__receive_comment_notification
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Receive Comment Notification"
+msgstr "Nhận thông báo bình luận"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_res_company__receive_reactive_notification
+#: model:ir.model.fields,field_description:viin_social.field_res_config_settings__receive_reactive_notification
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Receive Reactive Notification"
+msgstr "Nhận thông báo cảm xúc về bài viết"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_res_company__receive_comment_notification
+#: model:ir.model.fields,help:viin_social.field_res_config_settings__receive_comment_notification
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Receive comment notifications from social networks"
+msgstr "Nhận thông báo bình luận từ các trang mạng xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_res_company__receive_reactive_notification
+#: model:ir.model.fields,help:viin_social.field_res_config_settings__receive_reactive_notification
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Receive notifications of post reactions from social networks"
+msgstr "Nhận thông báo cảm xúc về bài viết từ các trang mạng xã hội"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+msgid "Reply"
+msgstr "Trả lời"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__activity_user_id
+#: model:ir.model.fields,field_description:viin_social.field_social_media__activity_user_id
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__activity_user_id
+#: model:ir.model.fields,field_description:viin_social.field_social_page__activity_user_id
+#: model:ir.model.fields,field_description:viin_social.field_social_post__activity_user_id
+msgid "Responsible User"
+msgstr "Người dùng chịu trách nhiệm"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__message_has_sms_error
+#: model:ir.model.fields,field_description:viin_social.field_social_media__message_has_sms_error
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__message_has_sms_error
+#: model:ir.model.fields,field_description:viin_social.field_social_page__message_has_sms_error
+#: model:ir.model.fields,field_description:viin_social.field_social_post__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "Có lỗi gửi SMS"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__schedule_later
+msgid "Schedule later"
+msgstr "Lên lịch sau"
+
+#. module: viin_social
+#: model:ir.model.fields.selection,name:viin_social.selection__social_post__state__scheduled
+msgid "Scheduled"
+msgstr "Đã lên lịch"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__schedule_date
+msgid "Scheduled Post Date"
+msgstr "Ngày lên lịch bài đăng"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+msgid "Seen"
+msgstr "Đã xem"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__is_seen
+msgid "Seen?"
+msgstr "Đã xem ?"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+msgid "Set To Ready"
+msgstr "Đặt về sẵn sàng"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_discuss_channel__active
+msgid "Set active to false to hide the channel without removing it."
+msgstr "Đặt đang hoạt động thành sai để ẩn kênh và không cần xóa bỏ kênh."
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Set to Draft"
+msgstr "Đặt về dự thảo"
+
+#. module: viin_social
+#: model:ir.actions.act_window,name:viin_social.social_config_action
+#: model:ir.ui.menu,name:viin_social.social_settings_menu
+msgid "Settings"
+msgstr "Thiết lập"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+msgid "Shares"
+msgstr "Chia sẻ"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__message_view_more
+#: model:ir.model.fields,help:viin_social.field_social_post__message_view_more
+msgid "Showing 1 piece of content in addition to the kanban"
+msgstr "Hiển thị 1 phần nội dung trong kanban"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_social_article
+msgid "Social Article"
+msgstr "Bài viết"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_comment_id
+msgid "Social Comment Id"
+msgstr "ID bình luận"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/core/public_web/discuss_app_model_patch.js:0
+#: code:addons/viin_social/static/src/core/web/discuss_app_model.js:0
+#: model:ir.model.fields.selection,name:viin_social.selection__discuss_channel__channel_type__social_chat
+msgid "Social Conversation"
+msgstr "Cuộc trò chuyện trên trang"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_discuss_channel__social_conversation_id
+msgid "Social Conversation ID"
+msgstr "ID cuộc trò chuyện"
+
+#. module: viin_social
+#: model:ir.ui.menu,name:viin_social.social_marketing_menu
+msgid "Social Marketing"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.actions.act_window,name:viin_social.social_media_action
+#: model:ir.model,name:viin_social.model_social_media
+#: model:ir.model.fields,field_description:viin_social.field_social_page__media_id
+#: model:ir.model.fields,field_description:viin_social.field_social_post__media_id
+#: model:ir.ui.menu,name:viin_social.social_media_menu
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_kanban
+msgid "Social Media"
+msgstr "Truyền thông xã hội"
+
+#. module: viin_social
+#: model:ir.model.constraint,message:viin_social.constraint_social_media_name_unique_per_company
+msgid "Social Media name must be unique per company"
+msgstr "Tên của Kênh truyền thông phải là duy nhất cho mỗi công ty"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_message
+msgid "Social Message"
+msgstr "Tin nhắn trên trang"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_mail_mail__social_message_id
+#: model:ir.model.fields,field_description:viin_social.field_mail_message__social_message_id
+msgid "Social Message ID"
+msgstr "ID tin nhắn trên trang"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_social_mixin
+msgid "Social Mixin"
+msgstr ""
+
+#. module: viin_social
+#: model:ir.actions.act_window,name:viin_social.social_notice_action_window
+msgid "Social Notice"
+msgstr "Thông báo trên trang xã hội"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.res_config_settings_view_form
+msgid "Social Notification"
+msgstr "Thông báo mạng xã hội"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_social_page
+msgid "Social Page"
+msgstr "Trang xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_discuss_channel__social_page_id
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_page_id
+msgid "Social Page ID"
+msgstr "ID trang xã hội"
+
+#. module: viin_social
+#: model:ir.actions.server,name:viin_social.social_page_cron_sync_all_post_ir_actions_server
+msgid "Social Pages: Synchronize Old Posts"
+msgstr "Trang: Đồng bộ bài đăng cũ"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_discuss_channel__social_participant_id
+msgid "Social Participant ID"
+msgstr "ID người tham dự trên trang"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_participant_id
+msgid "Social Participant Id"
+msgstr "ID người tham dự trên trang"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_kanban_controller/social_post_kanban_controller.js:0
+#: model:ir.model,name:viin_social.model_social_post
+msgid "Social Post"
+msgstr "Bài đăng trên mạng xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_post_id
+#: model:ir.model.fields,field_description:viin_social.field_social_post__social_post_id
+msgid "Social Post ID"
+msgstr "ID bài đăng trên trang"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_post__social_post_url
+msgid "Social Post URL"
+msgstr "URL bài đăng trên trang"
+
+#. module: viin_social
+#: model:ir.model.constraint,message:viin_social.constraint_social_post_unique_social_post_id
+msgid "Social Post must be unique to each company!"
+msgstr "Social Post phải là duy nhất với mỗi công ty!"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_media__social_provider
+#: model:ir.model.fields,field_description:viin_social.field_social_page__social_provider
+msgid "Social Provider"
+msgstr "Nhà cung cấp mạng xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_user_id
+msgid "Social User ID"
+msgstr "ID người dùng trên trang"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_discuss_channel__social_user_name
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_user_name
+msgid "Social User Name"
+msgstr "Tên người dùng trên trang"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/core/web/messaging_menu_patch.js:0
+msgid "Social chat"
+msgstr "Cuộc trò chuyện trên trang"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_notice.py:0
+msgid "Social notification: %(post_name)s, %(page_name)s"
+msgstr "Thông báo trên trang xã hội: %(post_name)s, %(page_name)s"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_notice.py:0
+msgid "Social notification: %(user_name)s - %(page_name)s"
+msgstr "Thông báo trên trang xã hội: %(user_name)s - %(page_name)s"
+
+#. module: viin_social
+#: model:ir.actions.server,name:viin_social.social_post_cron_announce_the_scheduled_post_has_been_posted_ir_actions_server
+msgid "Social: Announce the scheduled post has been posted"
+msgstr "Truyền thông xã hội: thông báo bài viết được lên lịch đã được đăng"
+
+#. module: viin_social
+#: model:ir.actions.server,name:viin_social.social_media_cron_schedule_synchronized_ir_actions_server
+msgid "Social: Synchronized All Data"
+msgstr "Trang xã hội: đồng bộ tất cả dữ liệu"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__source_id
+msgid "Source"
+msgstr "Nguồn"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_post__article_id
+msgid "Source of this post"
+msgstr "Nguồn của bài đăng này"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__article_ids
+msgid "Sources of the posts on this page"
+msgstr "Nguồn của bài đăng trên trang này"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__state
+#: model:ir.model.fields,field_description:viin_social.field_social_post__state
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_search
+msgid "State"
+msgstr "Trạng thái"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__activity_state
+#: model:ir.model.fields,help:viin_social.field_social_media__activity_state
+#: model:ir.model.fields,help:viin_social.field_social_notice__activity_state
+#: model:ir.model.fields,help:viin_social.field_social_page__activity_state
+#: model:ir.model.fields,help:viin_social.field_social_post__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Trạng thái dựa trên hoạt động\n"
+"Quá hạn: Ngày đến hạn đã trôi qua\n"
+"Hôm nay: Hôm nay là ngày phải thực hiện\n"
+"Đã hoạch định: Các hoạt động trong tương lai."
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/views/social_post_kanban/social_post_banban_buttons.xml:0
+msgid "Synch all Posts"
+msgstr "Đồng bộ tất cả bài đăng"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_page_view_form
+msgid "Synchronize Page"
+msgstr "Đồng bộ trang"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_media_view_form
+msgid "Synchronize Pages"
+msgstr "Đồng bộ trang"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_page.py:0
+msgid "Synchronize information of the page: %s successful"
+msgstr "Đồng bộ thông tin của trang: %s thành công"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__media_id
+#: model:ir.model.fields,help:viin_social.field_social_post__media_id
+msgid "The Social Media which this page belongs"
+msgstr "Kênh truyền thông "
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "The post has not been posted."
+msgstr "Bài chưa được đăng"
+
+#. module: viin_social
+#: model:res.groups,comment:viin_social.viin_social_group_admin
+msgid "The user has full access right to media, pages, articles, posts."
+msgstr ""
+"Người dùng có toàn quyền truy cập vào kênh truyền thông, trang, bài viết, "
+"bài đăng."
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid ""
+"This article has no social media posts yet, you need to set it to draft to "
+"be able to edit it."
+msgstr ""
+"Bài viết chưa có bài đăng trước đó, bạn cần đặt về dự thảo để có thể chỉnh "
+"sửa chúng"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid ""
+"This scheduled post may have already been posted on the page: <b>%s</b>"
+msgstr "Bài viết được lên lịch này có thể đã được đăng trên trang: <b>%s</b>"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_notice__social_time
+msgid "Time on Social"
+msgstr "Thời gian trên trang xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__name
+#: model:ir.model.fields,field_description:viin_social.field_social_post__name
+msgid "Title"
+msgstr "Tiêu đề"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_media__token_expired_date
+msgid "Token Expired Date"
+msgstr "Ngày hết hạn token"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__click_count
+msgid "Total Clicks"
+msgstr "Tổng lượt nhấp chuột"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__comment_count
+#: model:ir.model.fields,field_description:viin_social.field_social_post__comments_count
+msgid "Total Comments"
+msgstr "Tổng lượt bình luận"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__engagement_count
+msgid "Total Engagements"
+msgstr "Tổng lượt tương tác"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__like_count
+#: model:ir.model.fields,field_description:viin_social.field_social_post__likes_count
+msgid "Total Likes"
+msgstr "Tổng lượt thích"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__share_count
+#: model:ir.model.fields,field_description:viin_social.field_social_post__shares_count
+msgid "Total Shares"
+msgstr "Tổng lượt chia sẻ"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__view_count
+#: model:ir.model.fields,field_description:viin_social.field_social_post__views_count
+msgid "Total Views"
+msgstr "Tổng số lượt xem"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__follower_count
+msgid "Total followers"
+msgstr "Tổng số người theo dõi"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__post_count
+msgid "Total posts posted"
+msgstr "Tổng bài đăng đã đăng"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_search
+msgid "Type"
+msgstr "Kiểu"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__activity_exception_decoration
+#: model:ir.model.fields,help:viin_social.field_social_media__activity_exception_decoration
+#: model:ir.model.fields,help:viin_social.field_social_notice__activity_exception_decoration
+#: model:ir.model.fields,help:viin_social.field_social_page__activity_exception_decoration
+#: model:ir.model.fields,help:viin_social.field_social_post__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "URL Unsupported or was not found"
+msgstr "URL không hỗ trợ hoặc không tìm thấy"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__social_page_url
+msgid "URL of Social"
+msgstr "URL của trang xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_post__social_post_url
+msgid "URL of this post on Social Media"
+msgstr "URL của bài đăng này trên trang xã hội"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+msgid "Unhide"
+msgstr "Hủy ẩn"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "Update Social Post"
+msgstr "Cập nhật bài đăng"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Update Social Posts"
+msgstr "Cập nhật bài đăng"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__social_provider
+msgid "Use to hide fields of other social"
+msgstr "Sử dụng để ẩn các trường xã hội khác"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_res_users_settings
+msgid "User Settings"
+msgstr "Cài đặt Người dùng"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_res_partner__user_social_chat_username
+#: model:ir.model.fields,field_description:viin_social.field_res_users__user_social_chat_username
+msgid "User Social Chat Username"
+msgstr ""
+
+#. module: viin_social
+#: model:res.groups,comment:viin_social.viin_social_group_approve
+msgid "User can post on own social page if assigned"
+msgstr "Người dùng có thể đăng trên trang xã hội nếu được phân công"
+
+#. module: viin_social
+#: model:res.groups,comment:viin_social.viin_social_group_editor
+msgid "User can write own article if assigned"
+msgstr "Người dùng có thể sửa bài viết của mình nếu được phân công"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__assign_id
+msgid "User has right to this article"
+msgstr "Người dùng có quyền với bài viết này"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_media__assign_id
+msgid ""
+"User has rights to all posts in all pages of this media on social networks"
+msgstr ""
+"Người dùng có quyền với tất cả bài đăng trong tất cả các trang của kênh "
+"truyền thông này."
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_page__assign_id
+msgid "User has rights to all posts of this page on social networks"
+msgstr "Người dùng có quyền với tất cả bài đăng của trang này"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_page__users_can_select_ids
+msgid "Users Can Select"
+msgstr "Người dùng có thể chọn"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_notice_view_tree
+msgid "View"
+msgstr "Xem"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+msgid "View more comment"
+msgstr "Xem thêm bình luận"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+msgid "View more reply"
+msgstr "Xem thêm phản hồi"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_form
+msgid "View on Social"
+msgstr "Xem trên trang xã hội"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "When choosing 'Attach Files', you need to upload a photo or video file"
+msgstr "Khi chọn 'Đính kèm tệp', bạn cần tải lên 1 ảnh hoặc video"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "When set to Cancel, All Posts will be deleted"
+msgstr "Khi đặt thành hủy bỏ, tất cả bài đăng sẽ bị xóa"
+
+#. module: viin_social
+#: model:ir.model,name:viin_social.model_wizard_social_confirm
+msgid "Wizard Social Confirm"
+msgstr "Đồ thuật xác nhận"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+msgid "Write a comment..."
+msgstr "Đăng một bình luận"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_article_view_form
+msgid "Write a message to see the preview."
+msgstr "Sửa nội dung để xem trước"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+msgid "Write a reply..."
+msgstr "Đăng một phản hồi..."
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "You cannot delete Article %s when state is 'Confirmed'"
+msgstr "Bạn không thể xóa bài viết %s khi trạng thái là 'Đã xác nhận'"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid ""
+"You cannot delete posts already posted. You need to be in the Approve group "
+"and have permissions with the respective Posts"
+msgstr ""
+"Bạn không thể xóa các bài đăng đã đăng. Bạn cần phải ở trong nhóm Phê duyệt "
+"và có quyền với các Bài đăng tương ứng"
+
+#. module: viin_social
+#: model:ir.model.constraint,message:viin_social.constraint_social_page_unique_social_social_page_id_social_page_url
+msgid ""
+"You cannot have two pages with the same Social Page and Social Network URL "
+"of the same company!"
+msgstr ""
+"Bạn không thể có hai trang với cùng Social Page và URL và cùng một công ty!"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "You don't have permission to delete comments."
+msgstr "Bạn không có quyền xóa bình luận."
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "You don't have rights on the post: %s"
+msgstr "Bạn không có quyền với bài đăng: %s"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "You don't have rights post article to the page"
+msgstr "Bạn không có quyền đăng bài viết lên trang"
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_article.py:0
+msgid "You need to choose at least one page"
+msgstr "Bạn cần chọn ít nhất một trang"
+
+#. module: viin_social
+#: model:ir.model.fields,help:viin_social.field_social_article__schedule_date
+msgid ""
+"You need to schedule the post within the next 30 minutes to 70 days, since "
+"the post is confirmed by the user with approval permission."
+msgstr ""
+"Bạn cần lên lịch đăng bài trong vòng 30 phút đến 70 ngày tới, kể từ khi bài "
+"đăng được xác nhận bởi người phê duyệt."
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_notice.py:0
+msgid "a post on social media"
+msgstr "một bài đăng trên mạng xã hội"
+
+#. module: viin_social
+#: model:ir.model.fields,field_description:viin_social.field_social_article__active
+msgid "active"
+msgstr "Hiệu lực"
+
+#. module: viin_social
+#: model_terms:ir.ui.view,arch_db:viin_social.social_post_view_kanban
+msgid "image"
+msgstr "Hình ảnh"
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/components/social_post_comment/social_post_comment.xml:0
+#: code:addons/viin_social/static/src/components/social_post_dialog/social_post_dialog.xml:0
+msgid "props.page_name"
+msgstr ""
+
+#. module: viin_social
+#. odoo-javascript
+#: code:addons/viin_social/static/src/core/public_web/messaging_menu_patch.js:0
+msgid "social_chat"
+msgstr ""
+
+#. module: viin_social
+#. odoo-python
+#: code:addons/viin_social/models/social_post.py:0
+msgid "you don't have permission on the post"
+msgstr "Bạn không có quyền với bài đăng"

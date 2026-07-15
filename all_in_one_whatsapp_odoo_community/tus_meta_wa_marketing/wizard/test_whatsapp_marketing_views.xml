@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="test_whatsapp_marketing_wizard_form">
+        <field name="name">test.whatsapp.marketing.form</field>
+        <field name="model">test.whatsapp.marketing</field>
+        <field name="arch" type="xml">
+            <form string="Test Whatsapp Marketing">
+                <group>
+                    <group>
+                        <field name="partner_id" placeholder="Add contacts to notify..."/>
+                        <field name="template_id" domain="[('model_id.model', '=', 'res.partner')]"/>
+                    </group>
+                    <br/>
+                    <field name="body_html" nolabel="1" class="oe-bordered-editor"
+                           placeholder="Write your message here..."
+                           options="{'style-inline': true}" force_save="1" readonly="1"/>
+                </group>
+                <footer>
+                    <button name="test_whatsapp_marketing" string="Test" type="object"
+                            class="oe_highlight"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_test_whatsapp_marketing_wizard" model="ir.actions.act_window">
+        <field name="name">Test Whatsapp Marketing</field>
+        <field name="res_model">test.whatsapp.marketing</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

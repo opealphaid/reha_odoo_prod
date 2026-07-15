@@ -1,0 +1,36 @@
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.fleet.tracking</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="6"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="WhatsApp" string="WhatsApp" name="tus_meta_whatsapp_base"
+                     groups="all_in_one_whatsapp_odoo_community.whatsapp_group_manager">
+                    <block title="For Chatter">
+                        <div class="row mt16 o_settings_container">
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="not_wa_msgs_btn_in_chatter"
+                                           string="Not Show Send Message Button in Chatter"
+                                           class=" o_light_label"/>
+                                    <field name="not_send_msgs_btn_in_chatter" class="oe_inline"
+                                           widget="many2many_tags"/>
+                                </div>
+                            </div>
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="not_wa_msgs_btn_in_chatter"
+                                           string="Not Show Send Whatsapp Message Button in Chatter"
+                                           clasL=" o_light_label"/>
+                                    <field name="not_wa_msgs_btn_in_chatter" class="oe_inline" widget="many2many_tags"/>
+                                </div>
+                            </div>
+                        </div>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

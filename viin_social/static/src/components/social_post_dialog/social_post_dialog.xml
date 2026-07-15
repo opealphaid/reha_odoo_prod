@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <div t-name="viin_social.SocialPostDialog" owl="1">
+        <Dialog size="'md'" title="props.title" modalRef="modalRef" footer="false">
+            <div class="modal_social_post_content">
+                <div class="modal_social_page_infor d-flex mb-2">
+                    <t t-if="props.page_image">
+                        <div class="social_page_avatar me-4">
+                            <img class="social_avatar rounded-circle" width="50" height="50" t-att-src="props.page_image" alt="Avatar"/>
+                        </div>
+                    </t>
+                    <div class="page_name flex-grow-1">
+                        <h4><t t-out="props.page_name"/></h4>
+                    </div>
+                </div>
+                <t t-if="props.post_message">
+                    <div class="modal_social_post_message">
+                        <t t-out="props.post_message"/>
+                    </div>
+                </t>
+                <t t-if="props.attachment_link">
+                    <br/>
+                    <a t-attf-href="{{props.attachment_link}}"  target="_blank">
+                        <t t-if="props.attachment_link_title">
+                            <b t-out="props.attachment_link_title"/>
+                        </t>
+                        <t t-else="">
+                            <b t-out="props.attachment_link"/>
+                        </t>
+                    </a>
+                </t>
+                <div class="modal_social_post_image d-flex flex-wrap mt-3">
+                    <t t-set="attachments" t-value="props.attachments" />
+                    <t t-if="attachments.length >= 2">
+                        <t t-foreach="[0,1]" t-as="i" t-key="i">
+                            <t t-if="attachments[i]['type'] == 'photo'">
+                                <div class="post_image_attachment" t-attf-data-attachment-position="#{i}" t-on-click="_showMoreAttachments">
+                                    <img t-att-src="attachments[i]['src']" alt="Attachment" />
+                                    <t t-if="i == 1 and attachments.length > 2">
+                                        <div class="number_hide_image d-flex align-items-center justify-content-center">+<t t-out="attachments.length - 2"/></div>
+                                    </t>
+                                </div>
+                            </t>
+                        </t>
+                    </t>
+                    <t t-elif="attachments.length > 0">
+                        <div class="post_image_attachment_full">
+                            <t t-if="attachments[0]['type'] == 'photo'">
+                                <img t-att-src="attachments[0]['src']" alt="Attachment" />
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </div>
+
+            <div class="modal_social_post_engagement mt-4">
+                <div class="d-flex justify-content-around border-top border-bottom py-2">
+                    <div>
+                        <i class="fa fa-thumbs-up" title="Likes"/>
+                        <b class="post_like_count" t-out="props.post_like_count"/>
+                    </div>
+                    <div class="ms-4">
+                        <i class="fa fa-comment" title="Comments"/>
+                        <b class="post_comment_count" t-out="props.post_comment_count"/>
+                    </div>
+                    <div class="kanban_social_post_shares_count ms-4">
+                        <b class="post_share_count" t-out="props.post_share_count"/>
+                        Shares
+                    </div>
+                </div>
+            </div>
+            <div class="modal_social_comment bg-white px-2 py-4">
+                <t t-call="viin_social.social_write_comment_template"/>
+                <div class="post_comments">
+                    <t t-foreach="state.comments" t-as="comment" t-key="comment_index">
+                        <SocialPostComment comment="comment" post_id="props.post_id" page_image="props.page_image"/>
+                    </t>
+                </div>
+                <t t-if="props.first_level_comment_count > 5">
+                    <a class="button_show_more_comment text-primary ps-5" href="#" t-on-click="_showMoreComment">
+                        <i class="fa fa-angle-double-down"/>
+                        View more comment
+                    </a>
+                </t>
+            </div>
+        </Dialog>
+    </div>
+
+    <div t-name="viin_social.social_write_comment_template" owl="1">
+        <div class="modal_social_write_comment d-flex mb-4">
+            <div class="me-3">
+                <t t-if="props.page_image">
+                    <img class="social_avatar rounded-circle" width="30" height="30" t-att-src="props.page_image" alt="props.page_name"/>
+                </t>
+            </div>
+            <div class="comment_input social_write_comment_input flex-grow-1 d-flex">
+                <textarea class="form-control bg-light flex-grow-1" placeholder="Write a comment..." t-on-keydown="_addComment" />
+                <SocialPostCommentEmoji/>
+            </div>
+        </div>
+    </div>
+
+</templates>

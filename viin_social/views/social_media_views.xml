@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="social_media_action" model="ir.actions.act_window">
+        <field name="name">Social Media</field>
+        <field name="res_model">social.media</field>
+        <field name="view_mode">kanban,form</field>
+    </record>
+
+    <record id="social_media_view_kanban" model="ir.ui.view">
+        <field name="name">Social Media</field>
+        <field name="model">social.media</field>
+        <field name="arch" type="xml">
+            <kanban create="false" quick_create="false" group_create="false">
+                <field name="id"/>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="company_id" />
+                <field name="image"/>
+                <templates>
+                    <t t-name="card">
+                        <div>
+                            <div class="d-flex flex-row">
+                                <div class="o_kanban_image">
+                                    <field class="me-3 social_kanban_image" name="image" widget="image" 
+                                    options="{'img_class': 'object-fit-contain'}"/>
+                                </div>
+                                <div>
+                                    <h3>
+                                        <field name="name"/>
+                                    </h3>
+                                    <field name="description"/>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <button name="action_link_account" type="object" class="btn btn-primary float-end">
+                                    LINK ACCOUNT</button>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="social_media_view_form" model="ir.ui.view">
+        <field name="name">Social Media</field>
+        <field name="model">social.media</field>
+        <field name="arch" type="xml">
+            <form create="false" delete="false" duplicate="false">
+                <header>
+                    <button name="action_synchronized" string="Synchronize Pages" type="object" class="oe_highlight"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                    </div>
+                    <field name="image" widget="image" class="oe_avatar"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="social_provider"/>
+                            <field name="description"/>
+                            <field name="company_id" groups="base.group_multi_company" />
+                            <field name="assign_id"/>
+                            <field name="token_expired_date"/>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="social_media_view_search" model="ir.ui.view">
+        <field name="name">Social Media</field>
+        <field name="model">social.media</field>
+        <field name="arch" type="xml">
+            <search>
+                <searchpanel>
+                    <field name="company_id" groups="base.group_multi_company" icon="fa-building" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <menuitem id="social_media_menu" name="Social Media" parent="social_configuration_menu"
+              action="social_media_action" sequence="10"/>
+</odoo>

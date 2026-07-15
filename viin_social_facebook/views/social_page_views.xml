@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="social_page_view_form" model="ir.ui.view">
+        <field name="name">Social Page</field>
+        <field name="model">social.page</field>
+        <field name="inherit_id" ref="viin_social.social_page_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_sinchronized_page']" position="after">
+                <button name="action_sinchronized_posts" string="Synchronize Posts"
+                    type="object" class="oe_highlight"
+                    title="Synchronize the 100 most recent posts"
+                    invisible="social_provider != 'facebook'"/>
+                <button name="action_sync_next_posts"
+                    string="Synchronize Old Posts" type="object"
+                    title="Sync 500 older posts"
+                    invisible="not next_post_sync_url or social_provider != 'facebook'" />
+                <button name="action_get_social_page_message"
+                    string="Get Message" type="object"
+                    title="Sync the 25 most recent chats"
+                    invisible="social_provider != 'facebook'" />
+            </xpath>
+
+            <xpath expr="//field[@name='description']" position="after">
+                <field name="facebook_page_about" invisible="social_provider != 'facebook'"/>
+            </xpath>
+
+            <field name="social_page_id" position="after">
+                <field name="sync_all_post" />
+            </field>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Reviews" invisible="social_provider != 'facebook'">
+                    <div>
+                        <button name='action_refresh_reviews' string='Refresh' type='object' class='btn btn-primary'/>
+                        <button name='action_view_all_reviews' string='View on Page' type='object'
+                                class='btn btn-primary ms-2'/>
+                    </div>
+                    <br/>
+                    <field name='review_ids'>
+                        <list>
+                            <field name='review_date'/>
+                            <field name='message'/>
+                        </list>
+                    </field>
+                </page>
+
+                <page string="Facebook Settings" invisible="social_provider != 'facebook'">
+                    <separator string="Webhook" />
+                    <group>
+                        <field name="subscribed_apps" />
+                    </group>
+                    <button name="action_subscrib_app"
+                        string="Register Webhooks" type="object"
+                        invisible="subscribed_apps" />
+                    <button name="action_cacncel_subscrib_app_facebook"
+                        string="Cancel Webhooks" type="object"
+                        invisible="not subscribed_apps" />
+                    <group string="Page Setting"
+                        invisible="social_provider != 'facebook'"
+                        groups="viin_social.viin_social_group_admin">
+                        <group>
+                            <field name="is_published"
+                                widget='boolean_toggle' />
+                            <field name="users_can_message"
+                                widget='boolean_toggle' />
+                            <!--<field name="users_can_post"
+                                widget='boolean_toggle' />-->
+                            <field name="review_posts_by_other"
+                                widget='boolean_toggle' />
+                        </group>
+                        <group>
+                            <!--<field name="users_can_post_photos"
+                                widget='boolean_toggle' />-->
+                            <field name="users_can_tag_photos"
+                                widget='boolean_toggle' />
+                            <field name="profanity_filter" />
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

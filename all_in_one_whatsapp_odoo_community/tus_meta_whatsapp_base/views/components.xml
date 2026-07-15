@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="components_view_form" model="ir.ui.view">
+            <field name="name">components.view.form</field>
+            <field name="model">components</field>
+            <field name="arch" type="xml">
+                <form string="Components">
+                    <sheet>
+                        <group>
+                            <field name="type"/>
+                            <field name="formate" invisible="type != 'header'"/>
+                            <field name="formate_media_type" invisible="type != 'header' or formate != 'media'"/>
+                            <field name="media_type" invisible="type != 'header' or formate != 'media'"/>
+                            <field name="attachment_ids" widget="many2many_binary"
+                                   invisible="formate != 'media' or formate_media_type != 'static'"/>
+                            <field name="text"
+                                   invisible="type == 'header' and formate == 'media' or type == 'buttons' or type == 'interactive' or type == 'carousel' "/>
+                            <field name="is_expiration" invisible="type != 'limited_time_offer'"/>
+                            <field name="limited_offer_exp_date" invisible="type != 'limited_time_offer'"/>
+                            <field name="model_id" force_save="1" invisible="1"/>
+                            <field name="interactive_type" invisible="type != 'interactive'"/>
+                        </group>
+
+                        <group>
+                            <field name="wa_button_ids" invisible="type != 'buttons'">
+                                <list string="Buttons" editable="bottom">
+                                    <field name="button_type"/>
+                                    <field name="button_text"/>
+                                    <field name="coupon_text" invisible="button_type != 'copy_code'"/>
+                                    <field name="url_type" readonly="button_type != 'url'"/>
+                                    <field name="static_website_url"
+                                           readonly="button_type != 'url' or url_type != 'static'"/>
+                                    <field name="dynamic_website_url"
+                                           readonly="button_type != 'url' or url_type != 'dynamic'"/>
+                                    <field name="phone_number" readonly="button_type != 'phone'"/>
+                                </list>
+                            </field>
+                        </group>
+
+                        <group>
+                            <field name="wa_carousel_ids" invisible="type != 'carousel'">
+                                <list string="Carousel">
+                                    <field name="header_formate"/>
+                                    <field name="attachment_ids"/>
+                                    <field name="carousel_body"/>
+                                    <field name="wa_button_ids"/>
+                                    <field name="variables_ids"/>
+                                </list>
+                            </field>
+                        </group>
+
+<!--                        <group>-->
+<!--                            <field name="limit_offer_ids" invisible="type != 'limited_time_offer'">-->
+<!--                                <list string="Limited Time Offer">-->
+<!--                                    <field name="exp_date"/>-->
+<!--                                </list>-->
+<!--                            </field>-->
+<!--                        </group>-->
+
+                        <group invisible="type != 'interactive' or interactive_type != 'list'">
+                            <field name="interactive_list_ids">
+                                <list string="List Items">
+                                    <field name="main_title"/>
+                                    <field name="title_ids"/>
+                                </list>
+                            </field>
+                        </group>
+
+                        <group invisible="type != 'interactive' or interactive_type != 'button'">
+                            <field name="interactive_button_ids">
+                                <list string="Button Items" editable="bottom">
+                                    <field name="title"/>
+                                    <field name="component_id" invisible="1"/>
+
+                                </list>
+                            </field>
+                        </group>
+
+                        <group invisible="type != 'interactive' or interactive_type != 'product_list'">
+                            <field name="catalog_id"/>
+                            <field name="interactive_product_list_ids">
+                                <list string="Product list Items">
+                                    <field name="main_title"/>
+                                    <field name="product_list_ids"/>
+                                </list>
+                            </field>
+                        </group>
+
+                        <group>
+                            <field name="catalog_id"
+                                   invisible="type != 'interactive' or interactive_type != 'product'"/>
+                            <field name="product_retailer_id"
+                                   invisible="type != 'interactive' or interactive_type != 'product'"/>
+                        </group>
+                        <notebook>
+                            <page string="Variables" name="variables" invisible="type == 'carousel' ">
+                                <group>
+                                    <field name="variables_ids" context="{'default_model_id':model_id}"
+                                           invisible="formate == 'media'"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="components_view_list" model="ir.ui.view">
+            <field name="name">components.view.list</field>
+            <field name="model">components</field>
+            <field name="arch" type="xml">
+                <list string="Components">
+                    <field name="type"/>
+                    <field name="text"/>
+                </list>
+            </field>
+        </record>
+
+    </data>
+</odoo>

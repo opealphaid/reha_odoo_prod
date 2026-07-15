@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="whatsapp_ir_action_view_form" model="ir.ui.view">
+            <field name="name">whatsapp.ir.actions.view.form</field>
+            <field name="model">whatsapp.ir.actions</field>
+            <field name="arch" type="xml">
+                <form string="Whatsapp Action">
+                    <sheet>
+                        <group>
+                            <field name="name" />
+                            <field
+                                name="binding_model_id"
+                                domain="[('model','in',['crm.lead','discuss.channel', 'helpdesk.ticket'])]"
+                            />
+                            <field name="last_message_conf"/>
+                            <field name="message" invisible="last_message_conf != 'message'"/>
+                            <field name="wa_template_id" invisible="last_message_conf != 'template'" domain="[('model_id', '=', binding_model_id)]"/>
+                            <field name="no_operator_conf"/>
+                            <field name="no_operator_message" invisible="no_operator_conf != 'message'"/>
+                            <field name="no_operator_template" invisible="no_operator_conf != 'template'" domain="[('model_id', '=', binding_model_id)]"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,57 @@
+<odoo>
+    <record model="ir.ui.view" id="whatsapp_messaging_lists_form_view">
+        <field name="name">whatsapp.messaging.lists.form</field>
+        <field name="model">whatsapp.messaging.lists</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="contact_type" />
+                         <field
+                            name="wa_list_contacts_ids"
+                            invisible="contact_type != 'wa_list_contact'"
+                        />
+                         <field
+                            name="contact_ids"
+                            invisible="contact_type != 'base_contact'"
+                        >
+                            <list string="Contacts">
+                                <field name="name" />
+                                <field name="mobile" />
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="whatsapp_messaging_lists_list_view">
+        <field name="name">whatsapp.messaging.lists.list</field>
+        <field name="model">whatsapp.messaging.lists</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" />
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="whatsapp_messaging_lists_action">
+        <field name="name">WA Messaging Lists</field>
+        <field name="res_model">whatsapp.messaging.lists</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <menuitem
+        id="whatsapp_messaging_lists_main_menu"
+        name="WA Messaging Lists"
+        parent="whatsapp_marketing_menu"
+    />
+    <menuitem
+        id="whatsapp_messaging_lists_child_menu"
+        name="WA Messaging Lists"
+        parent="whatsapp_messaging_lists_main_menu"
+        action="whatsapp_messaging_lists_action"
+    />
+</odoo>

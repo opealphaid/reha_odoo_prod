@@ -1,0 +1,540 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* viin_social_facebook
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-24 02:24+0000\n"
+"PO-Revision-Date: 2025-12-24 02:24+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__facebook_page_about
+msgid " About Facebook Page"
+msgstr "Về trang Facebook"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.facebook_preview
+msgid "<b class=\"d-block mb-2\">Facebook Page</b>"
+msgstr "<b class=\"d-block mb-2\">Trang Facebook</b>"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__facebook_page_access_token
+msgid "Access Token"
+msgstr "Mã truy cập"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__facebook_page_access_token
+msgid "Access Token of Facebook Page"
+msgstr "Mã truy cập của trang Facebook"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__review_ids
+msgid "All Reviews"
+msgstr "Toàn bộ đánh giá"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.res_config_settings_view_form
+msgid "App ID"
+msgstr "ID ứng dụng"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.res_config_settings_view_form
+msgid "App Secret"
+msgstr "Khóa bí mật của ứng dụng"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__sync_all_post
+msgid ""
+"By default, the 100 most recent posts will be synced. If this field is checked, all posts will be synchronized.\n"
+"The sync will be processed in batches of up to 500 posts at a time via daily 'Scheduled Actions' or the buton 'Synchronize Old Posts'."
+msgstr ""
+"Theo mặc định, 100 bài đăng gần nhất sẽ được đồng bộ. Nếu trường này được đánh dấu, tất cả bài đăng sẽ được đồng bộ.\n"
+"Việc đồng bộ sẽ được xử lý nhiều lần, tối đa 500 bài đăng thông qua 'Hành động tự động' hàng ngày hoặc nút 'Đồng bộ bài đăng cũ'."
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Cancel Webhooks"
+msgstr "Hủy webhooks"
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_media.py:0
+msgid ""
+"Cannot sync because Facebook User Id or Facebook Access Token has no value."
+msgstr ""
+"Không thể đồng bộ vì Facebook User Id hoặc Facebook Access Token không có "
+"giá trị."
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_res_company
+msgid "Companies"
+msgstr "Công ty"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_res_config_settings
+msgid "Config Settings"
+msgstr "Thiết lập cấu hình"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.res_config_settings_view_form
+msgid "Configuration information from your integrated Facebook app"
+msgstr "Thông tin cấu hình từ ứng dụng Facebook đã tích hợp"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__create_uid
+msgid "Created by"
+msgstr "Tạo bởi"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__create_date
+msgid "Created on"
+msgstr "Tạo vào"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_article__display_facebook_preview
+msgid "Display Facebook Preview"
+msgstr "Hiển thị xem trước facebook"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__display_name
+msgid "Display Name"
+msgstr "Tên hiển thị"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_post_action_edit_post
+msgid "Edit Post"
+msgstr "Sửa bài đăng"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields.selection,name:viin_social_facebook.selection__social_media__social_provider__facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_article_view_search
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_post_view_search
+msgid "Facebook"
+msgstr ""
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_media__facebook_access_token
+msgid "Facebook Access Token"
+msgstr ""
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.res_config_settings_view_form
+msgid "Facebook App"
+msgstr "Ứng dụng Facebook"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_res_company__facebook_app_id
+#: model:ir.model.fields,field_description:viin_social_facebook.field_res_config_settings__facebook_app_id
+msgid "Facebook App ID"
+msgstr ""
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_res_company__facebook_client_secret
+#: model:ir.model.fields,field_description:viin_social_facebook.field_res_config_settings__facebook_client_secret
+msgid "Facebook Client Secret"
+msgstr ""
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_article.py:0
+msgid ""
+"Facebook Page: Please select a supported image format (<4Mb): *png, *jpeg. "
+"Video is not supported at this time"
+msgstr ""
+"Trang Facebook: vui lòng chọn 1 ảnh được hỗ trợ (<4Mb): *pgn, *jpeg. Video "
+"không được hỗ trợ trong thời gian này"
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_article.py:0
+msgid "Facebook Page: You cannot post image > 4Mb"
+msgstr "Trang facebook: bạn không thể đăng ảnh > 4mb"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_article__facebook_preview
+msgid "Facebook Preview"
+msgstr "Xem trước facebook"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Facebook Settings"
+msgstr "Thiết lập Facebook"
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_article.py:0
+msgid "File is not supported."
+msgstr "File không được hỗ trợ"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Get Message"
+msgstr "Lấy tin nhắn"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__id
+msgid "ID"
+msgstr ""
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__profanity_filter
+msgid ""
+"If checked, If the option is set to any valid values, prevent profanity on "
+"this Page based on the level"
+msgstr ""
+"Nếu được đánh dấu, Nếu tùy chọn được đặt thành bất kỳ giá trị hợp lệ nào, "
+"hãy ngăn chặn ngôn từ tục tĩu trên Trang này dựa trên cấp độ"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__is_published
+msgid ""
+"If checked, it means that page is published. If value is false, page is "
+"unpublished."
+msgstr ""
+"Nếu được đánh dấu, có nghĩa là trang đó đã được xuất bản. Nếu không được "
+"đánh dấu, trang sẽ không được xuất bản"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__users_can_message
+msgid "If checked, people can message this Page via a message button"
+msgstr ""
+"Nếu được đánh dấu, mọi người có thể nhắn tin đến trang thông qua nút Nhắn "
+"tin"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__users_can_tag_photos
+msgid ""
+"If checked, people who like this page can tag people in photos posted by "
+"this Page"
+msgstr ""
+"Nếu được đánh dấu, những người thích trang này có thể gắn thẻ mọi người "
+"trong ảnh được đăng bởi trang này"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__review_posts_by_other
+msgid ""
+"If checked, posts by others are hidden by default. If false, posts are "
+"visible by default"
+msgstr ""
+"Nếu được đánh dấu, bài đăng của người khác sẽ bị ẩn theo mặc định. Nếu không"
+" bài đăng sẽ hiển thị theo mặc định"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__is_published
+msgid "Is Published"
+msgstr "Đã xuất bản"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__write_uid
+msgid "Last Updated by"
+msgstr "Cập nhật lần cuối bởi"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__write_date
+msgid "Last Updated on"
+msgstr "Cập nhật lần cuối vào"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields.selection,name:viin_social_facebook.selection__social_page__profanity_filter__medium
+msgid "Medium"
+msgstr "Trung bình"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_mail_message
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__message
+msgid "Message"
+msgstr "Thông điệp"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__next_post_sync_url
+msgid "Next Post Sync Url"
+msgstr "URL đồng bộ tiếp theo"
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_page.py:0
+msgid "Notice"
+msgstr "Thông báo"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_notice
+msgid "Notice from Users on the Page"
+msgstr "Thông báo từ người dùng trên Trang"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields.selection,name:viin_social_facebook.selection__social_page__profanity_filter__off
+msgid "Off"
+msgstr "Tắt"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__page_id
+msgid "Page"
+msgstr "Trang"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Page Setting"
+msgstr "Thiết lập trang"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.facebook_preview
+msgid "Post Image"
+msgstr "Đăng ảnh"
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_page.py:0
+msgid "Post sync successful!"
+msgstr "Đồng bộ bài đăng thành công!"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__profanity_filter
+msgid "Profanity Filter"
+msgstr "Bộ lọc tục tĩu"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.facebook_preview
+msgid "Published by Facebook Page •"
+msgstr "Xuất bản bởi trang Facebook •"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Refresh"
+msgstr "Làm mới"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Register Webhooks"
+msgstr "Đăng ký Webhooks"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_review__review_date
+msgid "Review Date"
+msgstr "Ngày đánh giá"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__review_posts_by_other
+msgid "Review Post By Other"
+msgstr "ĐÁnh giá của người khác"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Reviews"
+msgstr "Đánh giá"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_post__schedule_date
+msgid "Schedule Date"
+msgstr "Lên lịch ngày"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_post__schedule_later
+msgid "Schedule later"
+msgstr "Lên lịch sau"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__subscribed_apps
+msgid "Setting technical, don't change if you don't known this information."
+msgstr "Thiết lập kỹ thuật, không thay đổi nếu bạn không biết thông tin này."
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_page.py:0
+msgid ""
+"Setup failed: An error has occurred, please contact your administrator for help.\n"
+"Error code: %(status_code)s\n"
+"%(error)s"
+msgstr ""
+"Thiết lập thất bại: Đã xảy ra lỗi, vui lòng liên hệ quản trị viên để được "
+"trợ giúp.\n"
+"Mã lỗi: %(status_code)s\n"
+"%(error)s"
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_media.py:0
+msgid "Short-lived Token is missing, please enter this field"
+msgstr "Mã ngắn hạn bị thiếu, vui lòng nhập trường này"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_article
+msgid "Social Article"
+msgstr "Bài viết"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_facebook_api
+msgid "Social Facebook Api"
+msgstr ""
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_media
+msgid "Social Media"
+msgstr "Truyền thông xã hội"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_page
+msgid "Social Page"
+msgstr "Trang xã hội"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_post
+msgid "Social Post"
+msgstr "Bài đăng trên mạng xã hội"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_media__social_provider
+msgid "Social Provider"
+msgstr "Nhà cung cấp mạng xã hội"
+
+#. module: viin_social_facebook
+#: model:ir.model,name:viin_social_facebook.model_social_review
+msgid "Social Review"
+msgstr "Đánh giá"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_article_view_search
+msgid "State"
+msgstr "Trạng thái"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields.selection,name:viin_social_facebook.selection__social_page__profanity_filter__strong
+msgid "Strong"
+msgstr "Mạnh"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__subscribed_apps
+msgid "Subscribed Apps"
+msgstr "Ứng dụng đã đăng ký"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Sync 500 older posts"
+msgstr "Đồng bộ 500 bài đăng cũ hơn"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__sync_all_post
+msgid "Sync all posts"
+msgstr "Đồng bộ tất cả bài đăng"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Sync the 25 most recent chats"
+msgstr "Đồng bộ 25 cuộc trò chuyện gần nhất"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Synchronize Old Posts"
+msgstr "Đồng bộ bài đăng cũ"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Synchronize Posts"
+msgstr "Đồng bộ bài đăng"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Synchronize the 100 most recent posts"
+msgstr "Đồng bộ 100 bài đăng gần nhất"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_page__next_post_sync_url
+msgid ""
+"Technical field, Used to save the URL of the next synchronization, avoiding calling it once causing an API limit exceeded error.\n"
+"This URL will sync with the next 500 posts following the last synced post."
+msgstr ""
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_page.py:0
+msgid "Update Page Setting Success"
+msgstr "Cập nhật thiết lập trang thành công"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_media__facebook_user_id
+msgid "User Id of Facebook"
+msgstr "ID người dùng trên facebook"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__users_can_message
+msgid "Users Can Message"
+msgstr "Người dùng có thể nhắn tin"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,field_description:viin_social_facebook.field_social_page__users_can_tag_photos
+msgid "Users Can Tag Photos"
+msgstr "Người dùng có thể gắn thẻ ảnh"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "View on Page"
+msgstr "Lượt xem của trang"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.social_page_view_form
+msgid "Webhook"
+msgstr ""
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_post.py:0
+msgid "You cannot post immediately by unchecking the Schedule later field"
+msgstr "Bạn không thể đăng ngay lập tức bằng cách bỏ chọn trường lên lịch sau"
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_review.py:0
+msgid "You do not have permission to sync reviews."
+msgstr "Bạn không có quyền để đồng bộ các đánh giá."
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_page.py:0
+msgid "You have no rights to this action."
+msgstr "Bạn không có quyền thực hiện hành động này."
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_article.py:0
+msgid "You need to schedule the post within the next 30 minutes to 70 days"
+msgstr "Bạn cần lên lịch đăng bài trong vòng 30 phút đến 70 ngày tới"
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_post.py:0
+msgid ""
+"You need to schedule the post within the next 30 minutes to 70 days (%s)"
+msgstr "Bạn cần lên lịch đăng bài trong vòng 30 phút đến 70 ngày tới (%s)"
+
+#. module: viin_social_facebook
+#: model:ir.model.fields,help:viin_social_facebook.field_social_post__schedule_date
+msgid ""
+"You need to schedule the post within the next 30 minutes to 70 days, since "
+"the post is confirmed by the user with approval permission."
+msgstr ""
+"Bạn cần lên lịch đăng bài trong vòng 30 phút đến 70 ngày tới, vì bài đăng đã"
+" được người dùng có quyền phê duyệt xác nhận."
+
+#. module: viin_social_facebook
+#. odoo-python
+#: code:addons/viin_social_facebook/models/social_post.py:0
+msgid "You only set a scheduled publish time on an unpublished post"
+msgstr ""
+"Bạn chỉ có thể đặt thời gian xuất bản theo kế hoạch cho một bài đăng chưa "
+"được xuất bản"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.facebook_preview
+msgid "image"
+msgstr "Hình ảnh"
+
+#. module: viin_social_facebook
+#: model_terms:ir.ui.view,arch_db:viin_social_facebook.facebook_preview
+msgid "• <i class=\"fa fa-globe\"/>"
+msgstr ""

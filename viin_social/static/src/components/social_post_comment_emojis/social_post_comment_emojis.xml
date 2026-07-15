@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <div t-name="viin_social.SocialPostCommentEmoji" owl="1">
+        <Picker t-props="picker"/>
+        <button class="btn border-0 rounded-pill"
+            t-att-class="{'bg-300': this.picker.state.picker === this.picker.PICKERS.EMOJI}"
+            aria-label="Emojis"
+            t-on-click="onClickAddEmoji"
+            post_id="props.post_id"
+            t-ref="emoji-button">
+            <i class="fa fa-smile-o"/>
+        </button>
+    </div>
+
+</templates>

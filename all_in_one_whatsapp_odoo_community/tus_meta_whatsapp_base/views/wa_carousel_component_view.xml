@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record id="wa_carousel_component_view_form" model="ir.ui.view">
+            <field name="name">wa.carousel.component.view.form</field>
+            <field name="model">wa.carousel.component</field>
+            <field name="arch" type="xml">
+                <form string="Carousel Template">
+                    <sheet>
+                        <group>
+                            <field name="header_formate"/>
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                            <field name="carousel_body"/>
+                            <field name="model_id" force_save="1" invisible="1"/>
+                            <field name="wa_button_ids">
+                                <list string="Buttons" editable="bottom">
+                                    <field name="button_type"/>
+                                    <field name="button_text"/>
+                                    <field name="url_type" readonly="button_type != 'url'"/>
+                                    <field name="static_website_url"
+                                           readonly="button_type != 'url' or url_type != 'static'"/>
+                                    <field name="dynamic_website_url"
+                                           readonly="button_type != 'url' or url_type != 'dynamic'"/>
+                                    <field name="phone_number" readonly="button_type != 'phone'"/>
+                                </list>
+                            </field>
+                        </group>
+                        <notebook>
+                            <page string="Variables" name="variables">
+                                <group>
+                                    <field name="variables_ids" context="{'default_model_id':model_id}">
+                                        <list string="Buttons" editable="bottom">
+                                            <field name="sequence" string="No."/>
+                                            <field name="component_type" string="Component Type"/>
+                                            <field name="field_id" domain="[('model_id', '=', model_id)]"/>
+                                            <field name="model_id" force_save="1" invisible="1"/>
+                                        </list>
+                                    </field>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="wa_carousel_component_view_list" model="ir.ui.view">
+            <field name="name">wa.carousel.component.view.list</field>
+            <field name="model">wa.carousel.component</field>
+            <field name="arch" type="xml">
+                <list string="Carousel Template">
+                    <field name="header_formate"/>
+                    <field name="attachment_ids" widget="many2many_binary"/>
+                    <field name="carousel_body"/>
+                    <field name="wa_button_ids"/>
+                </list>
+            </field>
+        </record>
+    </data>
+</odoo>
