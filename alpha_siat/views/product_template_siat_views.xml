@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend product form to add SIAT Homologation -->
+    <record id="product_template_form_view_siat" model="ir.ui.view">
+        <field name="name">product.template.form.siat</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <!-- Add SIAT homologation status in header -->
+            <div name="button_box" position="inside">
+                <button name="action_homologar_siat"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-check-circle"
+                        invisible="siat_homologado">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text text-warning">No Homologado</span>
+                        <span class="o_stat_text">SIAT</span>
+                    </div>
+                </button>
+                <button name="action_homologar_siat"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-check-circle"
+                        invisible="not siat_homologado">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text text-success">Homologado</span>
+                        <span class="o_stat_text">SIAT</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Add SIAT tab -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Homologación SIAT" name="siat_homologation">
+                    <group>
+                        <group string="Códigos SIAT">
+                            <field name="siat_actividad_economica_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   required="sale_ok or available_in_pos"/>
+                            <field name="siat_codigo_actividad" readonly="1"/>
+
+                            <field name="siat_codigo_producto_sin"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   required="sale_ok or available_in_pos"
+                                   context="{'default_codigo_actividad': siat_codigo_actividad}"/>
+                            <field name="siat_codigo_producto" readonly="1"/>
+
+                            <field name="siat_unidad_medida_id"
+                                   options="{'no_create': True, 'no_open': True}"
+                                   required="sale_ok or available_in_pos"/>
+                            <field name="siat_codigo_unidad_medida" readonly="1"/>
+                        </group>
+
+                        <group string="Estado">
+                            <field name="siat_homologado" readonly="1" widget="boolean"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <!-- Mensaje cuando NO requiere homologación (solo Purchase) -->
+                        <div class="alert alert-info" role="alert"
+                             invisible="sale_ok or available_in_pos">
+                            <strong>ℹ️ Producto de compra únicamente</strong>
+                            <p>Este producto es solo para compras y no requiere homologación SIAT.</p>
+                        </div>
+
+                        <!-- Mensaje cuando requiere homologación pero no está completo -->
+                        <div class="alert alert-warning" role="alert"
+                             invisible="siat_homologado or (not sale_ok and not available_in_pos)">
+                            <strong>⚠️ Producto no homologado</strong>
+                            <p>Este producto requiere homologación SIAT porque está disponible para venta o punto de venta. Complete todos los campos SIAT requeridos para poder facturarlo electrónicamente.</p>
+                        </div>
+
+                        <!-- Mensaje cuando está homologado -->
+                        <div class="alert alert-success" role="alert"
+                             invisible="not siat_homologado">
+                            <strong>✓ Producto homologado</strong>
+                            <p>Este producto está listo para facturación electrónica SIAT.</p>
+                        </div>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- List view - add SIAT status column -->
+    <record id="product_template_tree_view_siat" model="ir.ui.view">
+        <field name="name">product.template.tree.siat</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="default_code" position="after">
+                <field name="siat_homologado" widget="boolean" string="SIAT OK"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Search view - add SIAT filters -->
+    <record id="product_template_search_view_siat" model="ir.ui.view">
+        <field name="name">product.template.search.siat</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <filter name="inactive" position="after">
+                <separator/>
+                <filter string="Homologados SIAT" name="filter_siat_homologado"
+                        domain="[('siat_homologado', '=', True)]"/>
+                <filter string="No Homologados SIAT" name="filter_siat_no_homologado"
+                        domain="[('siat_homologado', '=', False), '|', ('sale_ok', '=', True), ('available_in_pos', '=', True)]"/>
+                <filter string="Solo Compra (Sin Homologar)" name="filter_siat_solo_compra"
+                        domain="[('siat_homologado', '=', False), ('purchase_ok', '=', True), ('sale_ok', '=', False), ('available_in_pos', '=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- Action for non-homologated products -->
+    <record id="action_product_template_siat_no_homologados" model="ir.actions.act_window">
+        <field name="name">Productos Sin Homologar</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('siat_homologado', '=', False), '|', ('sale_ok', '=', True), ('available_in_pos', '=', True)]</field>
+        <field name="context">{'search_default_filter_siat_no_homologado': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Todos los productos están homologados
+            </p>
+            <p>
+                Los productos que aparecen aquí necesitan ser homologados con códigos SIAT antes de poder ser facturados electrónicamente.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_product_siat_no_homologados"
+              name="Productos Sin Homologar"
+              parent="alpha_siat.menu_siat_root"
+              action="action_product_template_siat_no_homologados"
+              sequence="100"/>
+</odoo>

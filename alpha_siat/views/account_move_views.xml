@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Formulario de factura extendido -->
+    <record id="view_move_form_siat" model="ir.ui.view">
+        <field name="name">account.move.form.siat</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Agregar botones en el header -->
+            <xpath expr="//header" position="inside">
+
+                <!-- Botón Anular -->
+                <button name="action_anular_factura_siat"
+                        string="Anular en SIAT"
+                        type="object"
+                        class="btn-danger"
+                        invisible="not siat_facturado or siat_anulado"
+                        confirm="¿Está seguro que desea anular esta factura en SIAT? Esta acción no se puede deshacer."/>
+            </xpath>
+
+            <!-- Agregar campo Método de Pago después de invoice_date -->
+            <xpath expr="//field[@name='invoice_date']" position="after">
+                <field name="siat_metodo_pago_id"
+                       invisible="move_type not in ['out_invoice', 'out_refund']"
+                       options="{'no_create': True, 'no_open': True}"
+                       required="move_type in ['out_invoice', 'out_refund']"/>
+                <field name="siat_emails_destinatarios"
+                       invisible="move_type not in ['out_invoice', 'out_refund']"
+                       placeholder="correo1@example.com, correo2@example.com"
+                       widget="email"/>
+            </xpath>
+
+            <!-- Agregar página SIAT en el notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="SIAT" invisible="move_type not in ['out_invoice', 'out_refund']">
+                    <group>
+                        <group string="Estado Facturación SIAT">
+                            <field name="siat_facturado" widget="boolean" readonly="1"/>
+                            <field name="siat_numero_factura" readonly="1"/>
+                            <field name="siat_cuf" readonly="1"/>
+                            <field name="siat_estado_envio" readonly="1"/>
+                            <field name="siat_codigo_recepcion" readonly="1"/>
+                            <field name="siat_fecha_envio" readonly="1"/>
+                            <!-- Campos de anulación -->
+                            <field name="siat_anulado" widget="boolean" readonly="1"/>
+                            <field name="siat_fecha_anulacion" readonly="1"
+                                   invisible="not siat_anulado"/>
+                            <field name="siat_motivo_anulacion" readonly="1"
+                                   invisible="not siat_anulado"/>
+                        </group>
+
+                        <group string="Datos de Facturación">
+                            <field name="siat_metodo_pago_id" readonly="1"/>
+                            <field name="siat_emails_destinatarios" readonly="1"/>
+                            <!-- Campos de moneda extranjera -->
+                            <field name="siat_es_moneda_extranjera" widget="boolean" readonly="1"/>
+                            <field name="siat_tipo_cambio" readonly="1"
+                                   invisible="not siat_es_moneda_extranjera"/>
+                            <field name="siat_monto_total_moneda" readonly="1"
+                                   invisible="not siat_es_moneda_extranjera"
+                                   widget="monetary"/>
+                            <field name="siat_monto_total_bolivianos" readonly="1"
+                                   invisible="not siat_es_moneda_extranjera"/>
+                        </group>
+                    </group>
+
+                    <group string="Mensajes SIAT">
+                        <field name="siat_mensajes_envio" readonly="1" widget="text" nolabel="1"/>
+                    </group>
+
+                    <group string="XML Factura SIAT" invisible="not siat_xml_factura">
+                        <field name="siat_xml_factura" readonly="1" widget="text" nolabel="1"/>
+                    </group>
+                </page>
+            </xpath>
+
+            <!-- Badge de estado SIAT en la parte superior - CORREGIDO -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="siat_facturado" invisible="1"/>
+                <div class="oe_stat_button"
+                     icon="fa-check-circle"
+                     invisible="move_type not in ['out_invoice', 'out_refund']">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_value"
+                              style="color: #28a745; font-weight: bold;"
+                              invisible="not siat_facturado">✓ SIAT</span>
+                        <span class="o_stat_value"
+                              style="color: #6c757d;"
+                              invisible="siat_facturado">SIAT</span>
+                    </div>
+                </div>
+                <!-- Botón para generar PDF -->
+                <button name="action_generar_pdf_siat"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-pdf-o"
+                        invisible="not siat_facturado">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">PDF SIAT</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Vista de lista extendida -->
+    <record id="view_invoice_tree_siat" model="ir.ui.view">
+        <field name="name">account.move.tree.siat</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="siat_facturado" string="SIAT" widget="boolean" optional="show"/>
+                <field name="siat_numero_factura" string="Nro. SIAT" optional="hide"/>
+                <field name="siat_metodo_pago_id" string="Método Pago" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

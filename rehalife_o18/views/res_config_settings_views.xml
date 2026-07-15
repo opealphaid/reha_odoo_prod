@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rehalife_config_form" model="ir.ui.view">
+        <field name="name">rehalife.config.form</field>
+        <field name="model">rehalife.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuracion Rehalife">
+                <sheet>
+                    <div class="app_settings_block">
+
+                        <h2>Conexion con Backend Rehalife</h2>
+                        <div class="row mt16 o_settings_container">
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="rehalife_api_url" string="URL del Backend"/>
+                                    <div class="text-muted">
+                                        URL base del servidor, ej: http://localhost:8080
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="rehalife_api_url"
+                                               placeholder="http://localhost:8080"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="rehalife_admin_email" string="Email Administrador"/>
+                                    <div class="text-muted">
+                                        Email con el que Odoo se autentica en el backend
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="rehalife_admin_email"
+                                               placeholder="admin@rehalife.com"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="rehalife_admin_password" string="Contrasena"/>
+                                    <div class="text-muted">
+                                        Contrasena del administrador del backend
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="rehalife_admin_password"
+                                               password="True"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="row mt16">
+                            <div class="col-12">
+                                <button string="Guardar Configuracion"
+                                        name="action_save"
+                                        type="object"
+                                        class="btn btn-primary me-2"/>
+                            </div>
+                        </div>
+
+                        <h2 class="mt32">Herramientas</h2>
+                        <div class="row mt16 o_settings_container">
+
+                            <div class="col-12 col-lg-4 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Probar Conexion</span>
+                                    <div class="text-muted">
+                                        Verifica la conexion con el backend
+                                    </div>
+                                    <div class="mt8">
+                                        <button string="Probar Conexion"
+                                                name="action_test_rehalife_connection"
+                                                type="object"
+                                                class="btn btn-secondary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Ciudades</span>
+                                    <div class="text-muted">
+                                        Importa las ciudades desde el backend
+                                    </div>
+                                    <div class="mt8">
+                                        <button string="Sincronizar Ciudades"
+                                                name="action_sync_cities"
+                                                type="object"
+                                                class="btn btn-secondary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Pacientes</span>
+                                    <div class="text-muted">
+                                        Importa todos los pacientes desde el backend
+                                    </div>
+                                    <div class="mt8">
+                                        <button string="Importar Pacientes"
+                                                name="action_sync_patients"
+                                                type="object"
+                                                class="btn btn-secondary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Reservas Completadas</span>
+                                    <div class="text-muted">
+                                        Importa reservas completadas de un rango de fechas (respaldo)
+                                    </div>
+                                    <div class="mt8">
+                                        <button string="Importar Reservas Completadas"
+                                                name="action_import_reservations"
+                                                type="object"
+                                                class="btn btn-secondary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rehalife_config" model="ir.actions.act_window">
+        <field name="name">Configuracion Rehalife</field>
+        <field name="res_model">rehalife.config</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_rehalife_config_form"/>
+        <field name="target">inline</field>
+    </record>
+
+    <record id="param_rehalife_admin_user_id" model="ir.config_parameter">
+        <field name="key">rehalife.admin_user_id</field>
+        <field name="value"></field>
+    </record>
+
+</odoo>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_rehalife" model="ir.ui.view">
+        <field name="name">res.partner.form.rehalife</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="es_paciente" widget="boolean_toggle"/>
+            </xpath>
+
+            <xpath expr="//sheet//notebook" position="inside">
+                <page string="Rehalife" name="rehalife_tab"
+                      invisible="not es_paciente">
+
+                    <group string="Nombre del Paciente">
+                        <group>
+                            <field name="rehalife_first_name"
+                                   required="es_paciente"/>
+                            <field name="rehalife_last_name"
+                                   required="es_paciente"/>
+                            <field name="mother_last_name"/>
+                        </group>
+                        <group>
+                            <field name="email" required="es_paciente"/>
+                            <field name="birth_date" required="es_paciente"/>
+                            <field name="siat_tipo_documento_identidad_id"
+                                   required="es_paciente"
+                                   options="{'no_create': True}"/>
+                            <field name="vat" string="NIT/CI" required="es_paciente"/>
+                            <field name="siat_complemento"/>
+                            <field name="siat_documento_completo" readonly="1"/>
+                            <field name="rehalife_city_id"
+                                   required="es_paciente"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+
+                    <group string="Sincronizacion">
+                        <group>
+                            <field name="rehalife_external_id" readonly="1"/>
+                            <field name="rehalife_sync_state" readonly="1"/>
+                            <field name="rehalife_last_sync" readonly="1"/>
+                            <field name="rehalife_sync_error" readonly="1"
+                                   invisible="rehalife_sync_state != 'error'"/>
+                        </group>
+                        <group>
+                            <!-- Boton Crear en backend (solo si no esta sincronizado) -->
+                            <button string="Enviar al Backend"
+                                    name="action_sync_rehalife"
+                                    type="object"
+                                    class="btn btn-primary"
+                                    invisible="rehalife_external_id != False"/>
+                            <!-- Boton Actualizar en backend (solo si ya esta sincronizado) -->
+                            <button string="Actualizar en Backend"
+                                    name="action_sync_rehalife"
+                                    type="object"
+                                    class="btn btn-secondary"
+                                    invisible="not rehalife_external_id"/>
+                        </group>
+                    </group>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="action_rehalife_contacts_all" model="ir.actions.act_window">
+        <field name="name">Contactos</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No hay contactos aun</p>
+        </field>
+    </record>
+
+</odoo>

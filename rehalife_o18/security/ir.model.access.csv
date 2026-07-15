@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rehalife_city,rehalife.city,model_rehalife_city,base.group_user,1,1,1,1
+access_rehalife_config,rehalife.config,model_rehalife_config,base.group_user,1,1,1,1
+access_rehalife_sync_wizard,rehalife.sync.wizard,model_rehalife_sync_wizard,base.group_user,1,1,1,1
+access_rehalife_reservation_user,rehalife.reservation user,model_rehalife_reservation,base.group_user,1,1,1,1
+access_rehalife_reservation,rehalife.reservation,model_rehalife_reservation,,1,1,1,1
+access_rehalife_import_reservations_wizard,rehalife.import.reservations.wizard,model_rehalife_import_reservations_wizard,base.group_user,1,1,1,1
+access_alpha_siat_tipo_doc_rehalife,alpha.siat.tipo.documento.identidad rehalife,alpha_siat.model_alpha_siat_tipo_documento_identidad,base.group_user,1,0,0,0

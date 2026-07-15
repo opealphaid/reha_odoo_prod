@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record model="ir.ui.view" id="view_alpha_siat_leyenda_list">
+        <field name="name">alpha.siat.leyenda.list</field>
+        <field name="model">alpha.siat.leyenda</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="codigo_actividad"/>
+                <field name="actividad_id"/>
+                <field name="descripcion_leyenda"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="ultima_sincronizacion"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record model="ir.ui.view" id="view_alpha_siat_leyenda_form">
+        <field name="name">alpha.siat.leyenda.form</field>
+        <field name="model">alpha.siat.leyenda</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="active" widget="boolean_button" options="{'terminology': 'active'}"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="codigo_actividad"/>
+                            <field name="actividad_id" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="ultima_sincronizacion" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="descripcion_leyenda" widget="text"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record model="ir.ui.view" id="view_alpha_siat_leyenda_search">
+        <field name="name">alpha.siat.leyenda.search</field>
+        <field name="model">alpha.siat.leyenda</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="codigo_actividad"/>
+                <field name="descripcion_leyenda"/>
+                <field name="actividad_id"/>
+                <separator/>
+                <filter string="Activas" name="filter_active" domain="[('active', '=', True)]"/>
+                <filter string="Inactivas" name="filter_inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Actividad" name="group_actividad" context="{'group_by': 'codigo_actividad'}"/>
+                    <filter string="Compañía" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_alpha_siat_leyenda">
+        <field name="name">Leyendas para Facturas</field>
+        <field name="res_model">alpha.siat.leyenda</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay leyendas sincronizadas.
+            </p>
+            <p>
+                Las leyendas son textos legales (Ley N° 453) que deben aparecer en las facturas según la actividad económica. Una leyenda se selecciona aleatoriamente para cada factura.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_alpha_siat_leyenda"
+              name="Leyendas"
+              parent="menu_siat_sync_root"
+              action="action_alpha_siat_leyenda"
+              sequence="50"/>
+</odoo>

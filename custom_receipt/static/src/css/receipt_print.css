@@ -1,0 +1,80 @@
+/* CSS para forzar estilos en impresión - Complementa los estilos inline */
+
+@media print {
+    /* Forzar print-color-adjust en TODO */
+    *, *::before, *::after {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* ============================================
+       QR CODE - Máxima prioridad
+       ============================================ */
+    img[alt="QR Code"] {
+        display: block !important;
+        width: 150px !important;
+        height: 150px !important;
+        margin: 0 auto !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* ============================================
+       Badge verde - Forzar background
+       ============================================ */
+    [style*="background-color: #4CAF50"],
+    div[style*="background-color: #4CAF50"],
+    .siat-factura-info div[style*="background-color: #4CAF50"] {
+        background-color: #4CAF50 !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    [style*="background-color: #4CAF50"] *,
+    div[style*="background-color: #4CAF50"] * {
+        color: white !important;
+    }
+
+    /* ============================================
+       Asegurar visibilidad de elementos custom
+       ============================================ */
+    .siat-factura-info,
+    .custom-order-info,
+    .custom-footer,
+    .before-footer {
+        display: block !important;
+        visibility: visible !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* ============================================
+       Mantener colores específicos
+       ============================================ */
+    [style*="color: #666"] {
+        color: #666 !important;
+    }
+
+    [style*="color: #999"] {
+        color: #999 !important;
+    }
+
+    [style*="color: black"] {
+        color: black !important;
+    }
+
+    [style*="color: white"] {
+        color: white !important;
+    }
+
+    /* ============================================
+       Bordes y separadores
+       ============================================ */
+    [style*="border-top: 1px dashed black"],
+    [style*="border-bottom: 2px solid black"],
+    [style*="border: 2px solid black"] {
+        border-color: black !important;
+    }
+}

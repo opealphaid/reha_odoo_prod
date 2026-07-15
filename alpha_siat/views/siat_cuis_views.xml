@@ -1,0 +1,66 @@
+<!-- alpha_siat/views/siat_cuis_views.xml -->
+<odoo>
+    <record model="ir.ui.view" id="view_alpha_siat_cuis_list">
+        <field name="name">alpha.siat.cuis.list</field>
+        <field name="model">alpha.siat.cuis</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="company_id"/>
+                <field name="codigo_sucursal"/>
+                <field name="codigo_punto_venta"/>
+                <field name="modalidad"/>
+                <field name="cuis"/>
+                <field name="fecha_vigencia"/>
+                <field name="state"/>
+                <field name="archived"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_alpha_siat_cuis_form">
+        <field name="name">alpha.siat.cuis.form</field>
+        <field name="model">alpha.siat.cuis</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="company_id"/>
+                        <field name="codigo_sucursal"/>
+                        <field name="codigo_punto_venta"/>
+                        <field name="modalidad"/>
+                        <field name="cuis"/>
+                        <field name="fecha_vigencia"/>
+                        <field name="state"/>
+                        <field name="archived"/>
+                    </group>
+                    <notebook>
+                        <page string="Messages">
+                            <field name="mensajes"/>
+                        </page>
+                        <page string="Raw">
+                            <field name="raw_response" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.menu" id="menu_alpha_siat_cuis_root">
+        <field name="name">SIAT CUIS</field>
+        <field name="parent_id" ref="menu_siat_root"/>
+        <field name="sequence">20</field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_alpha_siat_cuis">
+        <field name="name">CUIS</field>
+        <field name="res_model">alpha.siat.cuis</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record model="ir.ui.menu" id="menu_alpha_siat_cuis">
+        <field name="name">CUIS Records</field>
+        <field name="parent_id" ref="menu_alpha_siat_cuis_root"/>
+        <field name="action" ref="action_alpha_siat_cuis"/>
+    </record>
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="custom_receipt.ImagePopup">
+        <Dialog title="props.title" size="'md'">
+            <div class="modal-body text-center">
+                <p t-if="props.body" class="mb-3">
+                    <t t-esc="props.body" />
+                </p>
+                <img t-if="props.imageUrl"
+                     t-att-src="props.imageUrl"
+                     class="img-fluid"
+                     style="max-width: 100%; max-height: 400px;"
+                     alt="Custom Image" />
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" t-on-click="onClickOk">
+                    Ok
+                </button>
+            </div>
+        </Dialog>
+    </t>
+</templates>

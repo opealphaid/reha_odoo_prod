@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_ganadero_config_form" model="ir.ui.view">
+        <field name="name">ganadero.config.form</field>
+        <field name="model">ganadero.config</field>
+        <field name="arch" type="xml">
+            <form string="Configuracion QR">
+                <sheet>
+                    <div class="app_settings_block">
+
+                        <h2>Conexion con el Servicio de Pago QR</h2>
+                        <div class="row mt16 o_settings_container">
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="ganadero_api_url" string="URL del Servicio"/>
+                                    <div class="text-muted">
+                                        URL base del servicio de QR, ej: http://10.1.232.23:8080
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="ganadero_api_url"
+                                               placeholder="http://10.1.232.23:8080"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="ganadero_api_key" string="API Key"/>
+                                    <div class="text-muted">
+                                        Clave de API (X-Api-Key) asignada por el proveedor del servicio QR
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="ganadero_api_key" password="True"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="ganadero_user" string="Usuario (Login)"/>
+                                    <div class="text-muted">
+                                        Usuario con el que Odoo se autentica en /access
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="ganadero_user"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="ganadero_password" string="Contrasena"/>
+                                    <div class="text-muted">
+                                        Contrasena del usuario de login
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="ganadero_password" password="True"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="ganadero_username_ordenes" string="Usuario para Ordenes"/>
+                                    <div class="text-muted">
+                                        Usuario enviado en el campo "userName" al crear, consultar
+                                        o anular ordenes QR (puede ser el mismo usuario de login)
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="ganadero_username_ordenes"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-6 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <label for="ganadero_account_reference" string="Cuenta (accountReference)"/>
+                                    <div class="text-muted">
+                                        Referencia de la cuenta a la que se acreditan los cobros QR
+                                    </div>
+                                    <div class="mt8">
+                                        <field name="ganadero_account_reference"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="row mt16">
+                            <div class="col-12">
+                                <button string="Guardar Configuracion"
+                                        name="action_save"
+                                        type="object"
+                                        class="btn btn-primary me-2"/>
+                                <button string="Probar Conexion"
+                                        name="action_test_connection"
+                                        type="object"
+                                        class="btn btn-secondary"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_ganadero_config" model="ir.actions.act_window">
+        <field name="name">Configuracion QR</field>
+        <field name="res_model">ganadero.config</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_ganadero_config_form"/>
+        <field name="target">inline</field>
+    </record>
+
+    <menuitem id="menu_ganadero_root"
+              name="Configuracion QR"
+              action="action_ganadero_config"
+              sequence="60"/>
+
+</odoo>

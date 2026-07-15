@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Valores por defecto de los parametros del sistema -->
+    <record id="param_rehalife_api_url" model="ir.config_parameter">
+        <field name="key">rehalife.api_url</field>
+        <field name="value">http://10.1.209.14:8072/api/v1</field>
+    </record>
+    <record id="param_rehalife_admin_email" model="ir.config_parameter">
+        <field name="key">rehalife.admin_email</field>
+        <field name="value">admin@rehalife.com</field>
+    </record>
+    <record id="param_rehalife_admin_password" model="ir.config_parameter">
+        <field name="key">rehalife.admin_password</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_rehalife_jwt_token" model="ir.config_parameter">
+        <field name="key">rehalife.jwt_token</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_rehalife_jwt_token_expiry" model="ir.config_parameter">
+        <field name="key">rehalife.jwt_token_expiry</field>
+        <field name="value"></field>
+    </record>
+</odoo>

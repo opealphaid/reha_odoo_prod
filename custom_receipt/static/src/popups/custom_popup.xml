@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="custom_receipt.CustomTestPopup">
+        <div class="popup">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">
+                            <t t-esc="props.title" />
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-center">Esto es una prueba</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" t-on-click="cancel">
+                            <t t-esc="props.cancelText" />
+                        </button>
+                        <button class="btn btn-primary" t-on-click="confirm">
+                            <t t-esc="props.confirmText" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

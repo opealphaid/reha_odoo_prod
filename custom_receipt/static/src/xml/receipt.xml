@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="pos_custom_receipt.OrderReceipt" t-inherit="point_of_sale.OrderReceipt" t-inherit-mode="extension">
+
+        <!-- Reemplazar TODO el contenido del receipt -->
+        <xpath expr="//div[hasclass('pos-receipt')]" position="replace">
+            <div class="pos-receipt" style="width: 80mm; max-width: 80mm; font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; margin: 0 auto; padding: 10px;">
+
+                <!-- Solo mostrar factura SIAT si existe -->
+                <t t-if="props.data.siat_info">
+
+                    <!-- Título FACTURA -->
+                    <div style="text-align: center; margin: 10px 0;">
+                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">FACTURA</div>
+                        <div style="font-size: 11px; font-weight: bold;">CON DERECHO A CRÉDITO FISCAL</div>
+                    </div>
+
+                    <!-- Datos del Emisor -->
+                    <div style="text-align: center; margin: 10px 0; font-size: 10px;">
+                        <div style="font-weight: bold;"><t t-esc="props.data.siat_info.empresa_razon_social"/></div>
+                        <div>Casa Matriz</div>
+                        <div>No. Punto de Venta 0</div>
+                        <div>Villa Salomé Calle 7 nogales</div>
+                        <div>Tel. 0000000</div>
+                        <div>Nuestra Señora de La Paz</div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <!-- NIT y Número de Factura -->
+                    <div style="text-align: center; margin: 10px 0;">
+                        <div style="font-weight: bold; font-size: 11px;">NIT</div>
+                        <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">
+                            <t t-esc="props.data.siat_info.empresa_nit"/>
+                        </div>
+                        <div style="font-weight: bold; font-size: 11px;">FACTURA N°</div>
+                        <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px;">
+                            <t t-esc="props.data.siat_info.numero_factura"/>
+                        </div>
+                        <div style="font-weight: bold; font-size: 9px;">CÓD. AUTORIZACIÓN</div>
+                        <div style="font-size: 8px; word-break: break-all; line-height: 1.2; margin-top: 3px;">
+                            <t t-esc="props.data.siat_info.cuf"/>
+                        </div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <!-- Datos del Cliente -->
+                    <div style="margin: 10px 0; font-size: 9px;">
+                        <div style="margin-bottom: 2px;">
+                            <strong>NOMBRE/RAZÓN SOCIAL:</strong> <t t-esc="props.data.siat_info.cliente_razon_social"/>
+                        </div>
+                        <div style="margin-bottom: 2px;">
+                            <strong>NIT/CI/CEX:</strong> <t t-esc="props.data.siat_info.cliente_nit"/>
+                        </div>
+                        <div style="margin-bottom: 2px;">
+                            <strong>COD. CLIENTE:</strong> CLI<t t-esc="props.data.siat_info.cliente_nit"/>
+                        </div>
+                        <div>
+                            <strong>FECHA DE EMISIÓN:</strong> <t t-esc="props.data.siat_info.fecha_emision"/>
+                        </div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <!-- DETALLE -->
+                    <div style="text-align: center; font-weight: bold; margin: 10px 0; font-size: 11px;">
+                        DETALLE
+                    </div>
+
+                    <!-- Productos -->
+                    <t t-foreach="props.data.orderlines" t-as="line" t-key="line.id">
+                        <div style="margin: 8px 0; font-size: 9px;">
+                            <div style="font-weight: bold;">
+                                <t t-esc="line.product_name or line.productName"/>
+                            </div>
+                            <div style="color: #666; font-size: 8px; margin: 2px 0;">
+                                Unidad de Medida: <t t-esc="line.unit_name or 'Unidad'"/>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>
+                                    <t t-esc="line.qty"/> X <t t-esc="props.formatCurrency(line.price_unit)"/> - <t t-esc="props.formatCurrency(line.discount or 0)"/>
+                                </span>
+                                <span style="font-weight: bold;">
+                                    <t t-esc="props.formatCurrency(line.price_subtotal_incl)"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- Separador punteado -->
+                    <div style="border-top: 1px dotted black; margin: 10px 0;"></div>
+
+                    <!-- Totales -->
+                    <div style="font-size: 9px;">
+                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                            <span><strong>SUBTOTAL Bs</strong></span>
+                            <span><t t-esc="props.formatCurrency(props.data.amount_total - (props.data.amount_tax or 0))"/></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                            <span><strong>DESCUENTO Bs</strong></span>
+                            <span><t t-esc="props.formatCurrency(props.data.total_discount or 0)"/></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                            <span><strong>MONTO GIFT CARD Bs</strong></span>
+                            <span>0.00</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                            <span><strong>TOTAL Bs</strong></span>
+                            <span><t t-esc="props.formatCurrency(props.data.amount_total)"/></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 5px 0; padding: 5px 0; border-top: 1px solid black; border-bottom: 1px solid black;">
+                            <span style="font-weight: bold; font-size: 10px;">MONTO A PAGAR Bs</span>
+                            <span style="font-weight: bold; font-size: 10px;"><t t-esc="props.formatCurrency(props.data.amount_total)"/></span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 3px 0;">
+                            <span><strong>IMPORTE BASE CRÉDITO FISCAL Bs</strong></span>
+                            <span><t t-esc="props.formatCurrency(props.data.amount_total)"/></span>
+                        </div>
+                    </div>
+
+                    <!-- Monto en letras -->
+                    <div style="text-align: center; margin: 10px 0; font-size: 9px; font-style: italic;">
+                        Son: [Monto en letras] Bolivianos
+                    </div>
+
+                    <!-- Separador -->
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <!-- Mensajes legales -->
+                    <div style="text-align: center; font-size: 8px; line-height: 1.4; margin: 10px 0;">
+                        <div style="font-weight: bold; margin-bottom: 5px;">
+                            ESTA FACTURA CONTRIBUYE AL DESARROLLO DEL PAÍS,<br/>
+                            EL USO ILÍCITO SERÁ SANCIONADO PENALMENTE DE<br/>
+                            ACUERDO A LEY
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <t t-if="props.data.footer">
+                                <t t-esc="props.data.footer"/>
+                            </t>
+                            <t t-else="">
+                                Ley N° 453: Tienes derecho a un trato equitativo sin discriminación en la oferta de servicios.
+                            </t>
+                        </div>
+                        <div style="margin-top: 10px; font-style: italic;">
+                            "Este documento es la Representación Gráfica de un<br/>
+                            Documento Fiscal Digital emitido en una modalidad de<br/>
+                            facturación en línea"
+                        </div>
+                    </div>
+
+                    <!-- Separador -->
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <!-- QR Code -->
+                    <t t-if="props.data.custom_qr_code">
+                        <div style="text-align: center; margin: 15px 0;">
+                            <img t-att-src="props.data.custom_qr_code"
+                                 alt="QR Code"
+                                 style="width: 120px; height: 120px; display: block; margin: 0 auto;"/>
+                        </div>
+                    </t>
+
+                </t>
+
+                <!-- Si NO hay factura SIAT, mostrar receipt normal -->
+                <t t-else="">
+                    <!-- Receipt simple sin factura -->
+                    <div style="text-align: center; margin: 20px 0;">
+                        <div style="font-weight: bold; font-size: 14px;">
+                            <t t-esc="props.data.company?.name or 'Alpha Systems S.R.L.'"/>
+                        </div>
+                        <div style="margin: 10px 0;">
+                            Orden: <t t-esc="props.data.name"/>
+                        </div>
+                    </div>
+
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <!-- Productos -->
+                    <t t-foreach="props.data.orderlines" t-as="line" t-key="line.id">
+                        <div style="margin: 5px 0; font-size: 10px;">
+                            <div><t t-esc="line.product_name or line.productName"/></div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><t t-esc="line.qty"/> x <t t-esc="props.formatCurrency(line.price_unit)"/></span>
+                                <span><t t-esc="props.formatCurrency(line.price_subtotal_incl)"/></span>
+                            </div>
+                        </div>
+                    </t>
+
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 12px;">
+                        <span>TOTAL</span>
+                        <span><t t-esc="props.formatCurrency(props.data.amount_total)"/></span>
+                    </div>
+
+                    <div style="border-top: 1px dashed black; margin: 10px 0;"></div>
+
+                    <div style="text-align: center; margin: 10px 0; font-size: 10px;">
+                        <div>Desarrollado por Alpha Systems S.R.L.</div>
+                        <div><t t-esc="props.data.date?.localized"/></div>
+                    </div>
+                </t>
+
+            </div>
+        </xpath>
+
+    </t>
+</templates>

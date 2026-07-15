@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record model="ir.ui.view" id="view_alpha_siat_motivo_anulacion_list">
+        <field name="name">alpha.siat.motivo.anulacion.list</field>
+        <field name="model">alpha.siat.motivo.anulacion</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="ultima_sincronizacion"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record model="ir.ui.view" id="view_alpha_siat_motivo_anulacion_form">
+        <field name="name">alpha.siat.motivo.anulacion.form</field>
+        <field name="model">alpha.siat.motivo.anulacion</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="active" widget="boolean_button" options="{'terminology': 'active'}"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="codigo_clasificador"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="ultima_sincronizacion" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="descripcion" widget="text"/>
+                    </group>
+                    <group>
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Uso:</strong> Estos motivos deben ser seleccionados al anular una factura o nota de crédito/débito en el sistema SIAT.
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record model="ir.ui.view" id="view_alpha_siat_motivo_anulacion_search">
+        <field name="name">alpha.siat.motivo.anulacion.search</field>
+        <field name="model">alpha.siat.motivo.anulacion</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <separator/>
+                <filter string="Activos" name="filter_active" domain="[('active', '=', True)]"/>
+                <filter string="Inactivos" name="filter_inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Compañía" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_alpha_siat_motivo_anulacion">
+        <field name="name">Motivos de Anulación</field>
+        <field name="res_model">alpha.siat.motivo.anulacion</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay motivos de anulación sincronizados.
+            </p>
+            <p>
+                Los motivos de anulación son razones válidas para cancelar facturas o notas:
+            </p>
+            <ul>
+                <li>Factura mal emitida</li>
+                <li>Nota de crédito-débito mal emitida</li>
+                <li>Datos de emisión incorrectos</li>
+                <li>Factura o nota devuelta</li>
+            </ul>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_alpha_siat_motivo_anulacion"
+              name="Motivos de Anulación"
+              parent="menu_siat_sync_root"
+              action="action_alpha_siat_motivo_anulacion"
+              sequence="70"/>
+</odoo>

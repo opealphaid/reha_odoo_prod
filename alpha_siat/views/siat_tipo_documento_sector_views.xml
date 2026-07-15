@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.ui.view" id="view_alpha_siat_tipo_documento_sector_list">
+        <field name="name">alpha.siat.tipo.documento.sector.list</field>
+        <field name="model">alpha.siat.tipo.documento.sector</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <field name="odoo_document_type" groups="base.group_system"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="ultima_sincronizacion"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_alpha_siat_tipo_documento_sector_form">
+        <field name="name">alpha.siat.tipo.documento.sector.form</field>
+        <field name="model">alpha.siat.tipo.documento.sector</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="active" widget="boolean_button" options="{'terminology': 'active'}"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="codigo_clasificador"/>
+                            <field name="descripcion"/>
+                            <field name="odoo_document_type" groups="base.group_system"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="ultima_sincronizacion" readonly="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record model="ir.ui.view" id="view_alpha_siat_tipo_documento_sector_search">
+        <field name="name">alpha.siat.tipo.documento.sector.search</field>
+        <field name="model">alpha.siat.tipo.documento.sector</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <field name="odoo_document_type"/>
+                <separator/>
+                <filter string="Activos" name="filter_active" domain="[('active', '=', True)]"/>
+                <filter string="Inactivos" name="filter_inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Compañía" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record model="ir.actions.act_window" id="action_alpha_siat_tipo_documento_sector">
+        <field name="name">Tipos Documento Sector</field>
+        <field name="res_model">alpha.siat.tipo.documento.sector</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_active': 1}</field>
+    </record>
+
+    <menuitem id="menu_alpha_siat_tipo_documento_sector"
+              name="Tipos Documento Sector"
+              parent="menu_siat_sync_root"
+              action="action_alpha_siat_tipo_documento_sector"
+              sequence="140"/>
+</odoo>

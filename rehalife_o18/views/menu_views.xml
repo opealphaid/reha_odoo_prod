@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Menú raíz -->
+    <menuitem id="menu_rehalife_root"
+              name="Rehalife"
+              sequence="50"/>
+
+    <!-- Reservas -->
+    <menuitem id="menu_rehalife_reservations"
+              name="Reservas"
+              parent="menu_rehalife_root"
+              sequence="5"
+              action="action_rehalife_reservations"/>
+
+    <!-- Contactos (todos) -->
+    <menuitem id="menu_rehalife_contacts"
+              name="Contactos"
+              parent="menu_rehalife_root"
+              sequence="10"
+              action="action_rehalife_contacts_all"/>
+
+    <!-- Configuración -->
+    <menuitem id="menu_rehalife_settings"
+              name="Configuracion"
+              parent="menu_rehalife_root"
+              sequence="30"
+              action="action_rehalife_config"/>
+
+    <!-- Sincronización (padre) -->
+    <menuitem id="menu_rehalife_sync_root"
+              name="Sincronizacion"
+              parent="menu_rehalife_root"
+              sequence="40"/>
+
+    <!-- Ciudades -->
+    <menuitem id="menu_rehalife_cities"
+              name="Ciudades"
+              parent="menu_rehalife_sync_root"
+              sequence="10"
+              action="action_rehalife_city"/>
+
+    <!-- Sincronización Masiva -->
+    <menuitem id="menu_rehalife_sync_wizard"
+              name="Sincronizacion Masiva"
+              parent="menu_rehalife_sync_root"
+              sequence="20"
+              action="action_rehalife_sync_wizard"/>
+
+    <!-- Importar Reservas Completadas (respaldo) -->
+    <menuitem id="menu_rehalife_import_reservations"
+              name="Importar Reservas Completadas"
+              parent="menu_rehalife_sync_root"
+              sequence="25"
+              action="action_rehalife_import_reservations_wizard"/>
+
+</odoo>

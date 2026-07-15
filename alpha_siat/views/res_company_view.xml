@@ -1,0 +1,339 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--res_company_view.xml - Versión con botón CUF integrado-->
+<odoo>
+    <record id="view_company_form_siat" model="ir.ui.view">
+        <field name="name">res.company.siat.form</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+
+            <!-- BOTONES SMART BUTTONS -->
+            <xpath expr="//div[@name='button_box']" position="inside">
+
+                <!-- Botón GENERAR CUF PRUEBA -->
+                <button name="action_generar_cuf_prueba"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-barcode"
+                        groups="base.group_system"
+                        help="Genera un CUF de prueba y muestra el proceso en los logs">
+                    <div class="o_field_widget o_stat_info">
+                        <span class="o_stat_text">Generar CUF</span>
+                        <span class="o_stat_text">Prueba</span>
+                    </div>
+                </button>
+
+                <!-- Botones de contadores existentes -->
+                <button name="action_open_cuis_history"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-key"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="cuis_count" widget="statinfo"/>
+                </button>
+
+                <button name="action_open_cufd_history"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-calendar-check-o"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="cufd_count" widget="statinfo" string="CUFD"/>
+                </button>
+
+                <button name="action_open_actividades"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-briefcase"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="actividad_count" widget="statinfo" string="Actividades"/>
+                </button>
+
+                <button name="action_open_actividades_documento"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="actividad_documento_count" widget="statinfo" string="Act-Doc"/>
+                </button>
+
+                <button name="action_open_leyendas"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-quote-right"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="leyenda_count" widget="statinfo" string="Leyendas"/>
+                </button>
+
+                <button name="action_open_mensajes_servicios"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-comments-o"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="mensaje_servicio_count" widget="statinfo" string="Mensajes"/>
+                </button>
+
+                <button name="action_open_productos_servicios"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-shopping-cart"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="producto_servicio_count" widget="statinfo" string="Productos"/>
+                </button>
+
+                <button name="action_open_eventos_significativos"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-exclamation-triangle"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="evento_significativo_count" widget="statinfo" string="Eventos"/>
+                </button>
+
+                <button name="action_open_motivos_anulacion"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-ban"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="motivo_anulacion_count" widget="statinfo" string="Motivos"/>
+                </button>
+
+                <button name="action_open_paises_origen"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-globe"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="pais_origen_count" widget="statinfo" string="Países"/>
+                </button>
+
+                <button name="action_open_tipos_documento_identidad"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipo_documento_identidad_count" widget="statinfo" string="Tipos Doc"/>
+                </button>
+
+                <button name="action_open_tipos_documento_sector"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipo_documento_sector_count" widget="statinfo" string="Tipos DOC SECTOR"/>
+                </button>
+
+                <button name="action_open_tipos_emision"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipo_emision_count" widget="statinfo" string="Tipos EMISION"/>
+                </button>
+
+                <button name="action_open_tipos_habitacion"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipo_habitacion_count" widget="statinfo" string="Tipos Hab"/>
+                </button>
+
+                <button name="action_open_tipos_metodo_pago"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipo_metodo_pago_count" widget="statinfo" string="Metodos Pag"/>
+                </button>
+
+                <button name="action_open_tipos_moneda"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipo_moneda_count" widget="statinfo" string="Tipo Mon"/>
+                </button>
+
+                <button name="action_open_tipos_punto_venta"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipo_punto_venta_count" widget="statinfo" string="Tipo PDV"/>
+                </button>
+
+                <button name="action_open_tipos_factura"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="tipos_factura_count" widget="statinfo" string="Tipos FAC"/>
+                </button>
+
+                <button name="action_open_unidades_medida"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-id-card"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="unidad_medida_count" widget="statinfo" string="Tipos MONEDA"/>
+                </button>
+            </xpath>
+
+            <!-- PESTAÑA SIAT BOLIVIA -->
+            <xpath expr="//notebook" position="inside">
+                <page string="SIAT Bolivia">
+                    <group>
+                        <group string="Sucursal / Punto de Venta">
+                            <field name="siat_codigo_sucursal"/>
+                            <field name="siat_codigo_punto_venta"/>
+                        </group>
+
+                        <group string="Configuration">
+                            <field name="siat_config_id"/>
+                        </group>
+
+                        <group string="CUIS">
+                            <button string="Obtener CUIS"
+                                    type="object"
+                                    name="action_get_cuis"
+                                    class="btn-primary"
+                                    icon="fa-cloud-download"
+                                    groups="base.group_system"/>
+                        </group>
+
+                        <group string="CUFD">
+                            <button string="Obtener CUFD"
+                                    type="object"
+                                    name="action_get_cufd"
+                                    class="btn-primary"
+                                    icon="fa-calendar"
+                                    groups="base.group_system"/>
+                        </group>
+
+                        <group string="Sincronización">
+                            <button string="Sincronizar Actividades"
+                                    type="object"
+                                    name="action_sync_actividades"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Actividades-Documentos"
+                                    type="object"
+                                    name="action_sync_actividades_documento_sector"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Leyendas"
+                                    type="object"
+                                    name="action_sync_leyendas"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Mensajes Servicios"
+                                    type="object"
+                                    name="action_sync_mensajes_servicios"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Productos/Servicios"
+                                    type="object"
+                                    name="action_sync_productos_servicios"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Eventos Significativos"
+                                    type="object"
+                                    name="action_sync_eventos_significativos"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Motivos Anulación"
+                                    type="object"
+                                    name="action_sync_motivos_anulacion"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Países"
+                                    type="object"
+                                    name="action_sync_paises_origen"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Tipos Documento"
+                                    type="object"
+                                    name="action_sync_tipos_documento_identidad"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar DOC SECTOR"
+                                    type="object"
+                                    name="action_sync_tipos_documento_sector"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar TIP EMISION"
+                                    type="object"
+                                    name="action_sync_tipos_emision"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Tipos Habitacion"
+                                    type="object"
+                                    name="action_sync_tipos_habitacion"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Metodos de Pago"
+                                    type="object"
+                                    name="action_sync_tipos_metodo_pago"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar Tipos Moneda"
+                                    type="object"
+                                    name="action_sync_tipos_moneda"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar PDV"
+                                    type="object"
+                                    name="action_sync_tipos_punto_venta"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar TIP FAC"
+                                    type="object"
+                                    name="action_sync_tipos_factura"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                            <button string="Sincronizar UNIDAD MEDIDAD"
+                                    type="object"
+                                    name="action_sync_unidades_medida"
+                                    class="btn-secondary"
+                                    icon="fa-refresh"
+                                    groups="base.group_system"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

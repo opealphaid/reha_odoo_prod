@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── VISTA LISTA ─── -->
+    <record id="view_rehalife_city_list" model="ir.ui.view">
+        <field name="name">rehalife.city.list</field>
+        <field name="model">rehalife.city</field>
+        <field name="arch" type="xml">
+            <list string="Ciudades">
+                <field name="name"/>
+                <field name="external_id" string="ID Externo"/>
+                <field name="description"/>
+                <field name="patient_count" string="Pacientes"/>
+                <field name="rehalife_sync_state"
+                       string="Estado Sync"
+                       widget="badge"
+                       decoration-success="rehalife_sync_state == 'synced'"
+                       decoration-warning="rehalife_sync_state == 'draft'"
+                       decoration-danger="rehalife_sync_state == 'error'"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ─── VISTA FORMULARIO ─── -->
+    <record id="view_rehalife_city_form" model="ir.ui.view">
+        <field name="name">rehalife.city.form</field>
+        <field name="model">rehalife.city</field>
+        <field name="arch" type="xml">
+            <form string="Ciudad">
+                <sheet>
+                    <!-- Stat buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_patients"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-user-md">
+                            <field name="patient_count" widget="statinfo"
+                                   string="Pacientes"/>
+                        </button>
+                    </div>
+
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nombre de la ciudad"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="description" placeholder="Descripcion opcional"/>
+                            <field name="active"/>
+                        </group>
+                        <group string="Sincronizacion con Backend">
+                            <field name="external_id" readonly="1"/>
+                            <field name="rehalife_sync_state" readonly="1"
+                                   widget="badge"
+                                   decoration-success="rehalife_sync_state == 'synced'"
+                                   decoration-warning="rehalife_sync_state == 'draft'"
+                                   decoration-danger="rehalife_sync_state == 'error'"/>
+                            <field name="rehalife_last_sync" readonly="1"/>
+                            <field name="rehalife_sync_error" readonly="1"
+                                   invisible="rehalife_sync_state != 'error'"/>
+                        </group>
+                    </group>
+
+                    <!-- Botones de sincronizacion -->
+                    <group string="Acciones Backend">
+                        <group>
+                            <!-- Boton CREAR en backend (solo si no esta sincronizado) -->
+                            <button string="Enviar al Backend"
+                                    name="action_sync_rehalife"
+                                    type="object"
+                                    class="btn btn-primary"
+                                    invisible="external_id != False"
+                                    confirm="¿Enviar esta ciudad al backend Rehalife?"/>
+
+                            <!-- Boton ACTUALIZAR en backend (solo si ya esta sincronizado) -->
+                            <button string="Actualizar en Backend"
+                                    name="action_sync_rehalife"
+                                    type="object"
+                                    class="btn btn-secondary"
+                                    invisible="not external_id"/>
+
+                            <!-- Boton ELIMINAR del backend -->
+                            <button string="Eliminar del Backend"
+                                    name="action_delete_from_backend"
+                                    type="object"
+                                    class="btn btn-danger"
+                                    invisible="not external_id"
+                                    confirm="¿Eliminar esta ciudad del backend Rehalife? El registro en Odoo se conservara."/>
+                        </group>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ─── ACCION ─── -->
+    <record id="action_rehalife_city" model="ir.actions.act_window">
+        <field name="name">Ciudades</field>
+        <field name="res_model">rehalife.city</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay ciudades registradas aun
+            </p>
+            <p>Crea una ciudad y usa el boton "Enviar al Backend" para sincronizarla.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rehalife_import_reservations_wizard_form" model="ir.ui.view">
+        <field name="name">rehalife.import.reservations.wizard.form</field>
+        <field name="model">rehalife.import.reservations.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Importar Reservas Completadas">
+                <group invisible="state == 'done'">
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+                <group invisible="state != 'done'" string="Resultado">
+                    <field name="result_message" readonly="1" nolabel="1"/>
+                </group>
+                <footer>
+                    <button name="action_import"
+                            string="Importar Reservas Completadas"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'done'"/>
+                    <button string="Cerrar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+                <field name="state" invisible="1"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rehalife_import_reservations_wizard" model="ir.actions.act_window">
+        <field name="name">Importar Reservas Completadas</field>
+        <field name="res_model">rehalife.import.reservations.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

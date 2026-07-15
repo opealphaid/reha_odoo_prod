@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="custom_receipt.QrPaymentPopup">
+        <Dialog title="'Pago con QR'" size="'md'">
+            <div class="qr-ganadero-popup text-center">
+
+                <div class="mb-3">
+                    <strong>Monto a cobrar: </strong>
+                    <span t-esc="props.currencySymbol || 'Bs'"/>
+                    <t t-esc="props.amount.toFixed(2)"/>
+                </div>
+
+                <!-- ── Generando ── -->
+                <div t-if="state.status === 'generating'" class="p-4">
+                    <div class="spinner-border text-primary" role="status"/>
+                    <p class="mt-3 mb-0">Generando codigo QR...</p>
+                </div>
+
+                <!-- ── Esperando pago (incluye expirado, ya que el QR se sigue mostrando) ── -->
+                <div t-if="state.status === 'waiting' or state.status === 'expired'">
+
+                    <img t-if="state.qrImageBase64"
+                         t-att-src="'data:image/png;base64,' + state.qrImageBase64"
+                         class="img-fluid mx-auto d-block mb-3"
+                         style="max-width:280px; width:100%; height:auto;"
+                         alt="Codigo QR de pago"/>
+
+                    <div t-if="state.status === 'waiting'" class="text-muted mb-3">
+                        Esperando confirmacion de pago...
+                        (<t t-esc="state.secondsLeft"/>s)
+                    </div>
+                    <div t-if="state.status === 'expired'" class="alert alert-warning mb-3">
+                        No se detecto el pago automaticamente. El QR sigue siendo
+                        valido: puedes verificar de nuevo o generar uno nuevo.
+                    </div>
+
+                    <div t-if="!state.confirmingCancel" class="d-flex flex-wrap justify-content-center gap-2">
+                        <button class="btn btn-secondary" t-on-click="onClickVerifyNow">
+                            <i class="fa fa-refresh me-1"/> Verificar ahora
+                        </button>
+                        <button t-if="state.status === 'expired'"
+                                class="btn btn-primary"
+                                t-on-click="onClickNewQr">
+                            <i class="fa fa-qrcode me-1"/> Generar nuevo QR
+                        </button>
+                        <button class="btn btn-outline-danger" t-on-click="onClickAskCancel">
+                            <i class="fa fa-times me-1"/> Cancelar
+                        </button>
+                    </div>
+
+                    <div t-else="" class="alert alert-danger">
+                        <p class="mb-2">¿Seguro que deseas cancelar este cobro QR?</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-secondary" t-on-click="onClickDismissCancel">
+                                No, seguir esperando
+                            </button>
+                            <button class="btn btn-danger" t-on-click="onClickConfirmCancel">
+                                Si, cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Pagado ── -->
+                <div t-if="state.status === 'paid'" class="p-2">
+                    <i class="fa fa-check-circle text-success" style="font-size:64px;"/>
+                    <h4 class="mt-3 text-success">Pago confirmado</h4>
+                    <div class="text-muted mb-3">
+                        <div t-if="state.transactionNumber">
+                            Nro. transaccion: <strong t-esc="state.transactionNumber"/>
+                        </div>
+                        <div t-if="state.payDate or state.payHour">
+                            <t t-esc="state.payDate"/> <t t-esc="state.payHour"/>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-lg" t-on-click="onClickConfirmPayment">
+                        Continuar
+                    </button>
+                </div>
+
+                <!-- ── QR anulado externamente ── -->
+                <div t-if="state.status === 'cancelled'" class="p-2">
+                    <i class="fa fa-ban text-muted" style="font-size:48px;"/>
+                    <p class="mt-3">Este cobro QR fue anulado.</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-primary" t-on-click="onClickNewQr">
+                            Generar nuevo QR
+                        </button>
+                        <button class="btn btn-secondary" t-on-click="onClickCloseAfterError">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── Error ── -->
+                <div t-if="state.status === 'error'" class="p-2">
+                    <i class="fa fa-exclamation-triangle text-danger" style="font-size:48px;"/>
+                    <p class="mt-3 text-danger" t-esc="state.errorMessage"/>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-primary" t-on-click="onClickRetryAfterError">
+                            Reintentar
+                        </button>
+                        <button class="btn btn-secondary" t-on-click="onClickCloseAfterError">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </Dialog>
+    </t>
+</templates>

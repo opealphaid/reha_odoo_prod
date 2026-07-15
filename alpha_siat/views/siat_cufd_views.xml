@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record model="ir.ui.view" id="view_alpha_siat_cufd_list">
+        <field name="name">alpha.siat.cufd.list</field>
+        <field name="model">alpha.siat.cufd</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="company_id"/>
+                <field name="codigo_sucursal"/>
+                <field name="codigo_punto_venta"/>
+                <field name="modalidad"/>
+                <field name="cufd"/>
+                <field name="fecha_vigencia"/>
+                <field name="fecha_expiracion"/>
+                <field name="state" decoration-success="state == 'valid'" decoration-danger="state == 'error'" decoration-muted="state == 'expired'"/>
+                <field name="archived"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record model="ir.ui.view" id="view_alpha_siat_cufd_form">
+        <field name="name">alpha.siat.cufd.form</field>
+        <field name="model">alpha.siat.cufd</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="valid,expired,error"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Company/Branch Info">
+                            <field name="company_id"/>
+                            <field name="codigo_sucursal"/>
+                            <field name="codigo_punto_venta"/>
+                            <field name="modalidad"/>
+                        </group>
+                        <group string="CUFD Info">
+                            <field name="cufd"/>
+                            <field name="codigo_control"/>
+                            <field name="direccion"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Validity">
+                            <field name="fecha_vigencia"/>
+                            <field name="fecha_expiracion"/>
+                            <field name="archived"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Messages">
+                            <field name="mensajes" widget="text"/>
+                        </page>
+                        <page string="Raw Response">
+                            <field name="raw_response" widget="text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_alpha_siat_cufd">
+        <field name="name">CUFD</field>
+        <field name="res_model">alpha.siat.cufd</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No CUFD records yet. CUFD codes are generated daily automatically or manually.
+            </p>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_alpha_siat_cufd"
+              name="CUFD Records"
+              parent="menu_siat_root"
+              action="action_alpha_siat_cufd"
+              sequence="30"/>
+</odoo>

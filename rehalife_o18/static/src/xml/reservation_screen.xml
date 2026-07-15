@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+  <t t-name="rehalife_o18.ReservationDialog">
+    <Dialog title="'Reservas Pendientes de Cobro'" size="'xl'">
+
+      <div>
+        <!-- ── Barra de búsqueda ── -->
+        <div class="d-flex gap-2 mb-3 p-2 bg-light rounded">
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fa fa-user"/>
+            </span>
+            <input type="text"
+                   class="form-control"
+                   placeholder="Buscar por paciente..."
+                   t-model="state.searchName"/>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fa fa-building"/>
+            </span>
+            <input type="text"
+                   class="form-control"
+                   placeholder="Buscar por sucursal..."
+                   t-model="state.searchBranch"/>
+          </div>
+          <button class="btn btn-outline-secondary"
+                  t-on-click="() => { state.searchName = ''; state.searchBranch = ''; }"
+                  title="Limpiar filtros">
+            <i class="fa fa-times"/>
+          </button>
+        </div>
+
+        <!-- ── Contenido ── -->
+        <div style="max-height:460px; overflow-y:auto;">
+
+          <div t-if="state.loading" class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"/>
+            <p class="mt-2">Cargando reservas...</p>
+          </div>
+
+          <div t-elif="filteredReservations.length === 0"
+               class="text-center p-5 text-muted">
+            <i class="fa fa-search fa-3x mb-3"/>
+            <p t-if="state.searchName or state.searchBranch">
+              No se encontraron reservas con ese filtro.
+            </p>
+            <p t-else="">No hay reservas pendientes de cobro.</p>
+          </div>
+
+          <table t-else="" class="table table-hover table-sm mb-0">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th>Paciente</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Especialidad</th>
+                <th>Doctor</th>
+                <th>Sucursal</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <t t-foreach="filteredReservations" t-as="res" t-key="res.id">
+                <tr>
+                  <td><strong><t t-esc="res.partner_id[1]"/></strong></td>
+                  <td><t t-esc="res.reservation_date"/></td>
+                  <td><t t-esc="res.reservation_time || '—'"/></td>
+                  <td><t t-esc="res.sub_specialty || '—'"/></td>
+                  <td><t t-esc="res.doctor_name || '—'"/></td>
+                  <td><t t-esc="res.branch_name || '—'"/></td>
+                  <td>
+                    <button class="btn btn-primary btn-sm"
+                            t-on-click="() => this.selectReservation(res)">
+                      Cobrar
+                    </button>
+                  </td>
+                </tr>
+              </t>
+            </tbody>
+          </table>
+
+        </div>
+
+        <!-- ── Contador ── -->
+        <div class="text-muted text-end small pt-2 pe-1"
+             t-if="!state.loading">
+          <t t-esc="filteredReservations.length"/> de
+          <t t-esc="state.reservations.length"/> reservas
+        </div>
+      </div>
+
+    </Dialog>
+  </t>
+
+  <!-- ── Botón en ProductScreen ── -->
+  <t t-name="rehalife_o18.ReservationButton"
+     t-inherit="point_of_sale.ProductScreen"
+     t-inherit-mode="extension">
+    <xpath expr="//div[hasclass('leftpane')]" position="before">
+      <button class="btn btn-warning px-4 py-2 fw-bold"
+              style="position:fixed;bottom:80px;right:20px;z-index:100;border-radius:8px;"
+              t-on-click="openReservations">
+        Reservas
+      </button>
+    </xpath>
+  </t>
+
+</templates>

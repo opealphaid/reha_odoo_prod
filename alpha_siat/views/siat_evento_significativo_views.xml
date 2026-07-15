@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record model="ir.ui.view" id="view_alpha_siat_evento_significativo_list">
+        <field name="name">alpha.siat.evento.significativo.list</field>
+        <field name="model">alpha.siat.evento.significativo</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="ultima_sincronizacion"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record model="ir.ui.view" id="view_alpha_siat_evento_significativo_form">
+        <field name="name">alpha.siat.evento.significativo.form</field>
+        <field name="model">alpha.siat.evento.significativo</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="active" widget="boolean_button" options="{'terminology': 'active'}"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="codigo_clasificador"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="ultima_sincronizacion" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="descripcion" widget="text"/>
+                    </group>
+                    <group>
+                        <div class="alert alert-info" role="alert">
+                            <strong>Uso:</strong> Los eventos significativos justifican la facturación offline (contingencia) cuando hay problemas de conectividad o sistema.
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record model="ir.ui.view" id="view_alpha_siat_evento_significativo_search">
+        <field name="name">alpha.siat.evento.significativo.search</field>
+        <field name="model">alpha.siat.evento.significativo</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <separator/>
+                <filter string="Activos" name="filter_active" domain="[('active', '=', True)]"/>
+                <filter string="Inactivos" name="filter_inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Compañía" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_alpha_siat_evento_significativo">
+        <field name="name">Eventos Significativos</field>
+        <field name="res_model">alpha.siat.evento.significativo</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay eventos significativos sincronizados.
+            </p>
+            <p>
+                Los eventos significativos son circunstancias que justifican la facturación offline (contingencia) como:
+            </p>
+            <ul>
+                <li>Corte de internet</li>
+                <li>Inaccesibilidad al servicio SIAT</li>
+                <li>Problemas de energía eléctrica</li>
+                <li>Fallas de hardware o software</li>
+                <li>Venta en zonas sin internet</li>
+            </ul>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_alpha_siat_evento_significativo"
+              name="Eventos Significativos"
+              parent="menu_siat_sync_root"
+              action="action_alpha_siat_evento_significativo"
+              sequence="60"/>
+</odoo>

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         VISTA LISTA
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_rehalife_reservation_list" model="ir.ui.view">
+        <field name="name">rehalife.reservation.list</field>
+        <field name="model">rehalife.reservation</field>
+        <field name="arch" type="xml">
+            <list string="Reservas"
+                  decoration-success="invoice_status == 'paid'"
+                  decoration-info="invoice_status == 'invoiced'"
+                  decoration-warning="status == 'COMPLETED' and invoice_status == 'pending'"
+                  decoration-danger="backend_sync_state == 'error'"
+                  decoration-muted="invoice_status == 'cancelled'">
+
+                <field name="reservation_date"/>
+                <field name="reservation_time"/>
+                <field name="partner_id"/>
+                <field name="sub_specialty"/>
+                <field name="branch_name"/>
+                <field name="attention_type"/>
+                <field name="status"/>
+                <field name="invoice_status"/>
+                <field name="invoice_id" optional="show"/>
+                <field name="pos_order_id" optional="show"/>
+                <field name="backend_sync_state" optional="show"/>
+                <field name="doctor_name" optional="hide"/>
+
+                <button name="action_send_to_pos"
+                        string="Enviar a Caja"
+                        type="object"
+                        icon="fa-desktop"
+                        invisible="invoice_status != 'pending' or status in ('CANCELLED', 'NO_SHOW')"
+                        class="btn-primary"/>
+
+                <button name="action_view_pos_order"
+                        string="Ver Orden POS"
+                        type="object"
+                        icon="fa-shopping-cart"
+                        invisible="not pos_order_id"/>
+
+                <button name="action_view_invoice"
+                        string="Ver Factura"
+                        type="object"
+                        icon="fa-eye"
+                        invisible="not invoice_id"/>
+
+                <button name="action_retry_backend_sync"
+                        string="Reintentar envío"
+                        type="object"
+                        icon="fa-refresh"
+                        invisible="backend_sync_state != 'error'"
+                        class="btn-danger"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         VISTA FORMULARIO
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_rehalife_reservation_form" model="ir.ui.view">
+        <field name="name">rehalife.reservation.form</field>
+        <field name="model">rehalife.reservation</field>
+        <field name="arch" type="xml">
+            <form string="Reserva Rehalife">
+
+                <!-- Barra de estado -->
+                <header>
+                    <field name="invoice_status" widget="statusbar"
+                           statusbar_visible="pending,invoiced,paid"/>
+
+                    <!-- ► NUEVO: Enviar a caja POS -->
+                    <button name="action_send_to_pos"
+                            string="🖥️ Enviar a Caja (POS)"
+                            type="object"
+                            class="btn-primary"
+                            invisible="invoice_status != 'pending' or status in ('CANCELLED', 'NO_SHOW')"/>
+
+                    <!-- Ver orden POS -->
+                    <button name="action_view_pos_order"
+                            string="Ver Orden POS"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="not pos_order_id"/>
+
+                    <!-- Crear factura clásica (fallback) -->
+                    <button name="action_create_invoice"
+                            string="🧾 Factura Directa"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="invoice_status != 'pending' or status in ('CANCELLED', 'NO_SHOW') or pos_order_id"/>
+
+                    <!-- Reintentar notificación al backend Next.js -->
+                    <button name="action_retry_backend_sync"
+                            string="🔄 Reintentar envío al Backend"
+                            type="object"
+                            class="btn-danger"
+                            invisible="backend_sync_state != 'error'"/>
+                </header>
+
+                <sheet>
+                    <!-- Alerta: ya facturada/pagada con factura en Odoo -->
+                    <div class="alert alert-success mb-3"
+                         role="alert"
+                         invisible="invoice_status not in ('invoiced', 'paid') or not invoice_id">
+                        <strong>✅ Factura generada:</strong>
+                        <field name="invoice_id" readonly="1" nolabel="1" widget="many2one"/>
+                    </div>
+
+                    <!-- Alerta: pagada via importacion de respaldo (sin factura en Odoo) -->
+                    <div class="alert alert-success mb-3"
+                         role="alert"
+                         invisible="invoice_status != 'paid' or invoice_id">
+                        ✅ Esta reserva ya figura como pagada (importada). No requiere facturación desde Odoo.
+                    </div>
+
+                    <!-- Alerta: no aplica factura -->
+                    <div class="alert alert-warning mb-3"
+                         role="alert"
+                         invisible="invoice_status != 'cancelled'">
+                        ⚠️ Esta reserva fue cancelada o el paciente no asistió. No aplica factura.
+                    </div>
+
+                    <!-- Alerta POS -->
+                    <div class="alert alert-info mb-3"
+                         role="alert"
+                         invisible="not pos_order_id">
+                        <strong>🖥️ Orden en caja:</strong>
+                        <field name="pos_order_ref" readonly="1" nolabel="1"/>
+                        — Estado: <field name="pos_order_state_label" readonly="1" nolabel="1"/>
+                    </div>
+
+                    <!-- Alerta: fallo la notificación de pago al backend Next.js -->
+                    <div class="alert alert-danger mb-3"
+                         role="alert"
+                         invisible="backend_sync_state != 'error'">
+                        <strong>⚠️ No se pudo notificar el pago al backend Rehalife:</strong>
+                        <field name="backend_sync_error" readonly="1" nolabel="1"/>
+                        <p class="mb-0">Corrige la causa (por ejemplo, credenciales del backend en Ajustes) y usa el botón "Reintentar envío al Backend".</p>
+                    </div>
+
+                    <!-- Grupo POS en el sheet -->
+                    <group string="Punto de Venta" invisible="not pos_order_id">
+                        <field name="pos_order_id" readonly="1"/>
+                        <field name="pos_order_ref" readonly="1"/>
+                        <field name="pos_order_state_label" readonly="1"/>
+                        <field name="backend_sync_state" readonly="1"/>
+                        <field name="backend_last_sync" readonly="1" invisible="not backend_last_sync"/>
+                    </group>
+
+                    <group>
+                        <group string="Datos del Paciente">
+                            <field name="partner_id" readonly="1"/>
+                            <field name="external_id" readonly="1"/>
+                        </group>
+                        <group string="Datos de la Cita">
+                            <field name="reservation_date" readonly="1"/>
+                            <field name="reservation_time" readonly="1"/>
+                            <field name="status" readonly="1"/>
+                            <field name="attention_type" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <group>
+                        <group string="Servicio">
+                            <field name="sub_specialty" readonly="1"/>
+                            <field name="branch_name" readonly="1"/>
+                            <field name="doctor_name" readonly="1"/>
+                        </group>
+                        <group string="Facturación">
+                            <field name="invoice_id" readonly="1"/>
+                            <field name="invoice_status" readonly="1"/>
+                            <field name="paid_amount" readonly="1" invisible="not paid_amount"/>
+                        </group>
+                    </group>
+
+                    <group string="Notas y Diagnóstico">
+                        <field name="notes" readonly="1" nolabel="1"/>
+                        <field name="diagnosis" readonly="1" nolabel="1"/>
+                    </group>
+                    
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         VISTA BÚSQUEDA
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="view_rehalife_reservation_search" model="ir.ui.view">
+        <field name="name">rehalife.reservation.search</field>
+        <field name="model">rehalife.reservation</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Reservas">
+                <field name="partner_id"/>
+                <field name="external_id"/>
+                <field name="sub_specialty"/>
+                <field name="branch_name"/>
+
+                <!-- Filtros rápidos -->
+                <filter name="pending_payment"
+                        string="Pendientes de Pago"
+                        domain="[('invoice_status', '=', 'pending'), ('status', '=', 'COMPLETED')]"/>
+                <filter name="invoiced"
+                        string="Facturadas"
+                        domain="[('invoice_status', '=', 'invoiced')]"/>
+                <filter name="paid"
+                        string="Pagadas"
+                        domain="[('invoice_status', '=', 'paid')]"/>
+                <filter name="completed"
+                        string="Completadas"
+                        domain="[('status', '=', 'COMPLETED')]"/>
+                <filter name="today"
+                        string="Hoy"
+                        domain="[('reservation_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="backend_sync_error"
+                        string="Error de Sync. Backend"
+                        domain="[('backend_sync_state', '=', 'error')]"/>
+
+                <separator/>
+
+                <!-- Agrupaciones -->
+                <group string="Agrupar por">
+                    <filter name="group_partner"
+                            string="Paciente"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_status"
+                            string="Estado Factura"
+                            context="{'group_by': 'invoice_status'}"/>
+                    <filter name="group_date"
+                            string="Fecha"
+                            context="{'group_by': 'reservation_date'}"/>
+                    <filter name="group_branch"
+                            string="Sucursal"
+                            context="{'group_by': 'branch_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         ACCIÓN DE VENTANA
+    ═══════════════════════════════════════════════════════════════ -->
+    <record id="action_rehalife_reservations" model="ir.actions.act_window">
+        <field name="name">Reservas</field>
+        <field name="res_model">rehalife.reservation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_rehalife_reservation_search"/>
+        <field name="context">{'search_default_pending_payment': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay reservas sincronizadas aún
+            </p>
+            <p>
+                Las reservas se sincronizan automáticamente desde Next.js
+                cuando cambian de estado.
+            </p>
+        </field>
+    </record>
+
+    <!-- Acción específica: solo pendientes de pago (para el cajero) -->
+    <record id="action_rehalife_reservations_pending" model="ir.actions.act_window">
+        <field name="name">Reservas Pendientes de Pago</field>
+        <field name="res_model">rehalife.reservation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_rehalife_reservation_search"/>
+        <field name="domain">[('invoice_status', '=', 'pending'), ('status', '=', 'COMPLETED')]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay reservas completadas pendientes de pago ✅
+            </p>
+        </field>
+    </record>
+
+</odoo>

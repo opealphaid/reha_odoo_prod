@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--siat_config_views.xml-->
+<odoo>
+  <record id="view_siat_config_list" model="ir.ui.view">
+    <field name="name">alpha.siat.config.list</field>
+    <field name="model">alpha.siat.config</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="name"/>
+        <field name="modalidad"/>
+        <field name="codigo_ambiente"/>
+        <field name="codigo_sistema"/>
+        <field name="url_qr"/>
+        <field name="token"/>
+      </list>
+    </field>
+  </record>
+
+  <record id="view_siat_config_form" model="ir.ui.view">
+    <field name="name">alpha.siat.config.form</field>
+    <field name="model">alpha.siat.config</field>
+    <field name="arch" type="xml">
+      <form string="SIAT Configuration">
+        <sheet>
+          <group>
+            <field name="name"/>
+          </group>
+          <group string="Authentication">
+            <field name="token" password="True"/>
+            <field name="codigo_sistema"/>
+            <field name="codigo_ambiente"/>
+            <field name="modalidad"/>
+            <field name="url_firma"
+                   widget="url"
+                   placeholder="http://host:puerto/api/firma/firmar"
+                   invisible="modalidad != '1'"/>
+          </group>
+          <group string="Web Services (WSDL)">
+            <field name="wsdl_sync_url" widget="url"/>
+            <field name="wsdl_codigos" widget="url"/>
+            <field name="wsdl_compra_venta" widget="url"/>
+          </group>
+          <group string="QR Configuration">
+            <field name="url_qr"/>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_alpha_siat_config" model="ir.actions.act_window">
+    <field name="name">SIAT Configurations</field>
+    <field name="res_model">alpha.siat.config</field>
+    <field name="view_mode">list,form</field>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+        Configure SIAT endpoints and credentials (you can have a config for production and another for tests).
+      </p>
+    </field>
+  </record>
+  <menuitem id="menu_siat_root" name="SIAT Bolivia" sequence="10"/>
+  <menuitem id="menu_siat_config" name="Configurations" parent="menu_siat_root" action="action_alpha_siat_config" sequence="10"/>
+</odoo>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Categoria del modulo -->
+    <record id="module_category_rehalife" model="ir.module.category">
+        <field name="name">Rehalife</field>
+        <field name="description">Gestion de pacientes para el consultorio Rehalife</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <!-- Grupo Administrador Rehalife -->
+    <record id="group_rehalife_admin" model="res.groups">
+        <field name="name">Administrador</field>
+        <field name="category_id" ref="module_category_rehalife"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+    <!-- Grupo Usuario Rehalife -->
+    <record id="group_rehalife_user" model="res.groups">
+        <field name="name">Usuario</field>
+        <field name="category_id" ref="module_category_rehalife"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rehalife_sync_wizard_form" model="ir.ui.view">
+        <field name="name">rehalife.sync.wizard.form</field>
+        <field name="model">rehalife.sync.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Sincronizacion Masiva Rehalife">
+                <group invisible="state == 'done'">
+                    <field name="sync_cities"/>
+                    <field name="sync_patients"/>
+                </group>
+                <group invisible="state != 'done'" string="Resultado">
+                    <field name="result_message" readonly="1" nolabel="1"/>
+                </group>
+                <footer>
+                    <button name="action_sync"
+                            string="Sincronizar"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'done'"/>
+                    <button string="Cerrar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+                <field name="state" invisible="1"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rehalife_sync_wizard" model="ir.actions.act_window">
+        <field name="name">Sincronizacion Masiva</field>
+        <field name="res_model">rehalife.sync.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

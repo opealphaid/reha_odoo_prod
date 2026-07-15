@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- List View -->
+    <record model="ir.ui.view" id="view_alpha_siat_tipo_documento_identidad_list">
+        <field name="name">alpha.siat.tipo.documento.identidad.list</field>
+        <field name="model">alpha.siat.tipo.documento.identidad</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="ultima_sincronizacion"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View -->
+    <record model="ir.ui.view" id="view_alpha_siat_tipo_documento_identidad_form">
+        <field name="name">alpha.siat.tipo.documento.identidad.form</field>
+        <field name="model">alpha.siat.tipo.documento.identidad</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <field name="active" widget="boolean_button" options="{'terminology': 'active'}"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="codigo_clasificador"/>
+                            <field name="descripcion"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="ultima_sincronizacion" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <div class="alert alert-info" role="alert">
+                            <strong>Uso:</strong> Los tipos de documento se utilizan para identificar a los clientes en las facturas.
+                            <ul>
+                                <li><strong>CI:</strong> Cédula de Identidad (personas naturales bolivianas)</li>
+                                <li><strong>CEX:</strong> Cédula de Identidad de Extranjero</li>
+                                <li><strong>PAS:</strong> Pasaporte</li>
+                                <li><strong>NIT:</strong> Número de Identificación Tributaria (empresas)</li>
+                                <li><strong>OD:</strong> Otro Documento de Identidad</li>
+                            </ul>
+                        </div>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View -->
+    <record model="ir.ui.view" id="view_alpha_siat_tipo_documento_identidad_search">
+        <field name="name">alpha.siat.tipo.documento.identidad.search</field>
+        <field name="model">alpha.siat.tipo.documento.identidad</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="codigo_clasificador"/>
+                <field name="descripcion"/>
+                <separator/>
+                <filter string="Activos" name="filter_active" domain="[('active', '=', True)]"/>
+                <filter string="Inactivos" name="filter_inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Compañía" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record model="ir.actions.act_window" id="action_alpha_siat_tipo_documento_identidad">
+        <field name="name">Tipos de Documento de Identidad</field>
+        <field name="res_model">alpha.siat.tipo.documento.identidad</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay tipos de documento sincronizados.
+            </p>
+            <p>
+                Los tipos de documento de identidad son utilizados para identificar correctamente a los clientes en las facturas:
+            </p>
+            <ul>
+                <li><strong>1 - CI:</strong> Cédula de Identidad</li>
+                <li><strong>2 - CEX:</strong> Cédula de Identidad de Extranjero</li>
+                <li><strong>3 - PAS:</strong> Pasaporte</li>
+                <li><strong>4 - OD:</strong> Otro Documento de Identidad</li>
+                <li><strong>5 - NIT:</strong> Número de Identificación Tributaria</li>
+            </ul>
+        </field>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_alpha_siat_tipo_documento_identidad"
+              name="Tipos de Documento"
+              parent="menu_siat_sync_root"
+              action="action_alpha_siat_tipo_documento_identidad"
+              sequence="90"/>
+</odoo>

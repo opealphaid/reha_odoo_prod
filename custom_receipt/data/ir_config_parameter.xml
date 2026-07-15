@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Valores por defecto de los parametros del Banco Ganadero (QR) -->
+    <record id="param_ganadero_api_url" model="ir.config_parameter">
+        <field name="key">ganadero.api_url</field>
+        <field name="value">http://10.1.232.23:8080</field>
+    </record>
+    <record id="param_ganadero_user" model="ir.config_parameter">
+        <field name="key">ganadero.user</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_ganadero_password" model="ir.config_parameter">
+        <field name="key">ganadero.password</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_ganadero_username_ordenes" model="ir.config_parameter">
+        <field name="key">ganadero.username_ordenes</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_ganadero_api_key" model="ir.config_parameter">
+        <field name="key">ganadero.api_key</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_ganadero_account_reference" model="ir.config_parameter">
+        <field name="key">ganadero.account_reference</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_ganadero_jwt_token" model="ir.config_parameter">
+        <field name="key">ganadero.jwt_token</field>
+        <field name="value"></field>
+    </record>
+    <record id="param_ganadero_jwt_token_expiry" model="ir.config_parameter">
+        <field name="key">ganadero.jwt_token_expiry</field>
+        <field name="value"></field>
+    </record>
+</odoo>

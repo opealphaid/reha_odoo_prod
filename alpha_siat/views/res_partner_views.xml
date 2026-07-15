@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario extendida para res.partner con campos SIAT -->
+    <record id="view_partner_form_siat" model="ir.ui.view">
+        <field name="name">res.partner.form.siat</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Agregar badge de homologación en la parte superior -->
+            <xpath expr="//form/sheet/div[@name='button_box']" position="inside">
+                <field name="siat_homologado_cliente" invisible="1"/>
+                <button name="action_homologar_cliente_siat"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-check-circle">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">SIAT</span>
+                        <span class="o_stat_value"
+                              invisible="not siat_homologado_cliente">
+                            <i class="fa fa-check text-success"/>
+                        </span>
+                        <span class="o_stat_value"
+                              invisible="siat_homologado_cliente">
+                            <i class="fa fa-exclamation-triangle text-warning"/>
+                        </span>
+                    </div>
+                </button>
+            </xpath>
+
+            <!-- Agregar pestaña "Datos SIAT" en el notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Datos SIAT"
+                      name="siat_data">
+
+                    <group>
+                        <group string="Información de Identificación">
+
+                            <!-- Tipo de Documento de Identidad -->
+                            <field name="siat_tipo_documento_identidad_id"
+                                   options="{'no_create': True, 'no_create_edit': True}"
+                                   placeholder="Seleccione el tipo de documento..."/>
+
+                            <!-- NIT/CI (campo nativo pero lo mostramos aquí también) -->
+                            <field name="vat"
+                                   string="NIT/CI"
+                                   placeholder="Ingrese el número de documento..."/>
+
+                            <!-- Complemento -->
+                            <field name="siat_complemento"
+                                   placeholder="Ej: 1A, 2B (opcional)"/>
+
+                            <!-- Documento Completo (computado) -->
+                            <field name="siat_documento_completo"
+                                   readonly="1"
+                                   invisible="not siat_documento_completo"/>
+
+                            <!-- Código Cliente (computado) -->
+                            <field name="codigo_cliente"
+                                   readonly="1"
+                                   invisible="not codigo_cliente"/>
+
+                        </group>
+
+                        <group string="Estado de Homologación">
+
+                            <!-- Estado de homologación -->
+                            <field name="siat_homologado_cliente"
+                                   widget="boolean"
+                                   readonly="1"/>
+
+                            <!-- Campos relacionados para referencia -->
+                            <field name="siat_codigo_tipo_documento"
+                                   readonly="1"
+                                   invisible="not siat_codigo_tipo_documento"/>
+
+                            <field name="siat_descripcion_tipo_documento"
+                                   readonly="1"
+                                   invisible="not siat_descripcion_tipo_documento"/>
+
+                        </group>
+                    </group>
+
+                    <group>
+                        <group>
+                            <div class="alert alert-info" role="alert"
+                                 invisible="siat_homologado_cliente">
+                                <i class="fa fa-info-circle"/>
+                                <strong>Atención:</strong> Este cliente necesita ser homologado con SIAT.
+                                <br/>
+                                Complete el <strong>Tipo de Documento</strong> y el <strong>NIT/CI</strong>
+                                para poder emitir facturas electrónicas.
+                            </div>
+
+                            <div class="alert alert-success" role="alert"
+                                 invisible="not siat_homologado_cliente">
+                                <i class="fa fa-check-circle"/>
+                                <strong>Cliente homologado correctamente.</strong>
+                                <br/>
+                                Este cliente está listo para facturación electrónica SIAT.
+                                <br/>
+                                <strong>Código Cliente:</strong> <field name="codigo_cliente" readonly="1" nolabel="1" class="oe_inline"/>
+                            </div>
+                        </group>
+                    </group>
+
+                    <group string="Instrucciones">
+                        <div class="o_row">
+                            <ul>
+                                <li>
+                                    <strong>Tipo de Documento:</strong> Seleccione el tipo de documento
+                                    (CI, NIT, Pasaporte, etc.) según el catálogo SIAT.
+                                </li>
+                                <li>
+                                    <strong>NIT/CI:</strong> Ingrese el número de documento sin guiones
+                                    ni espacios. Este campo es obligatorio.
+                                </li>
+                                <li>
+                                    <strong>Complemento:</strong> Para Cédulas de Identidad que tienen
+                                    complemento (ej: 1A, 2B), ingréselo aquí. Es opcional.
+                                </li>
+                                <li>
+                                    <strong>Código Cliente:</strong> Se genera automáticamente como CLI + NIT/CI
+                                    y se utiliza para la facturación electrónica SIAT.
+                                </li>
+                                <li>
+                                    Si no ve tipos de documento disponibles, sincronícelos desde
+                                    <strong>Configuración → Compañías → Sincronizar Tipos de Documento</strong>.
+                                </li>
+                            </ul>
+                        </div>
+                    </group>
+
+                </page>
+            </xpath>
+
+            <!-- Hacer el campo VAT visible en la pestaña principal -->
+            <xpath expr="//field[@name='vat']" position="attributes">
+                <attribute name="string">NIT/CI</attribute>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- Vista simplificada para homologación rápida (popup) -->
+    <record id="res_partner_homologacion_siat_form" model="ir.ui.view">
+        <field name="name">res.partner.homologacion.siat.form</field>
+        <field name="model">res.partner</field>
+        <field name="arch" type="xml">
+            <form string="Homologar Cliente SIAT">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" readonly="1"/>
+                            <field name="siat_tipo_documento_identidad_id"
+                                   required="1"
+                                   options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="vat" required="1" string="NIT/CI"/>
+                            <field name="siat_complemento"/>
+                        </group>
+                        <group>
+                            <field name="siat_documento_completo" readonly="1"/>
+                            <field name="codigo_cliente" readonly="1"/>
+                            <field name="siat_homologado_cliente" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-info" role="alert">
+                        <i class="fa fa-info-circle"/>
+                        Complete estos campos para habilitar la facturación electrónica SIAT
+                        para este cliente. El código de cliente se generará automáticamente.
+                    </div>
+                </sheet>
+                <footer>
+                    <button string="Guardar" class="btn-primary" special="save"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista de lista extendida para mostrar estado de homologación -->
+    <record id="view_partner_tree_siat" model="ir.ui.view">
+        <field name="name">res.partner.tree.siat</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+
+            <!-- Agregar columnas SIAT después de country_id -->
+            <field name="country_id" position="after">
+                <field name="siat_homologado_cliente"
+                       widget="boolean"
+                       optional="hide"
+                       string="SIAT"/>
+                <field name="siat_tipo_documento_identidad_id"
+                       optional="hide"/>
+                <field name="siat_documento_completo"
+                       optional="hide"/>
+                <field name="codigo_cliente"
+                       optional="hide"
+                       string="Código Cliente"/>
+            </field>
+
+        </field>
+    </record>
+
+    <!-- Filtro de búsqueda para clientes homologados/no homologados -->
+    <record id="view_partner_search_siat" model="ir.ui.view">
+        <field name="name">res.partner.search.siat</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//search/filter[@name='customer']" position="after">
+                <separator/>
+                <filter string="Homologados SIAT"
+                        name="siat_homologado"
+                        domain="[('siat_homologado_cliente', '=', True)]"/>
+                <filter string="Sin Homologar SIAT"
+                        name="siat_no_homologado"
+                        domain="[('siat_homologado_cliente', '=', False), ('customer_rank', '>', 0)]"/>
+            </xpath>
+
+            <xpath expr="//search/group" position="inside">
+                <filter string="Tipo Documento SIAT"
+                        name="group_tipo_documento"
+                        context="{'group_by': 'siat_tipo_documento_identidad_id'}"/>
+            </xpath>
+
+            <!-- Agregar búsqueda por código de cliente -->
+            <xpath expr="//search/field[@name='name']" position="after">
+                <field name="codigo_cliente" string="Código Cliente"/>
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
