@@ -273,7 +273,7 @@ class PurchaseBankingXlsx(models.AbstractModel):
 
     def _journal_bank_vat(self, pay):
         bk = pay.move_id.journal_id.bank_account_id
-        return (bk.bank_id.vat or '') if (bk and bk.bank_id) else ''
+        return (bk.bank_id and getattr(bk.bank_id, 'vat', '')) or ''
 
     def _payment_method_code(self, pay):
         return (pay.payment_method_id.banking_code or '') if pay.payment_method_id else ''
