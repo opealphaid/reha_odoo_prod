@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================
+         account.payment — formulario de pago
+         Inyecta los grupos de bancarización después de group2
+         ============================================================ -->
+    <record id="view_account_payment_banking_form" model="ir.ui.view">
+        <field name="name">account.payment.banking.form</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group/group[@name='group2']" position="after">
+
+                <group name="group_banking_info"
+                       string="Información de Bancarización"
+                       col="2">
+                    <field name="banking_date"/>
+                    <field name="banking_transaction_ref"/>
+                    <field name="banking_required"/>
+                    <field name="banking_operation_type"
+                           invisible="not banking_required"/>
+                    <field name="banking_payment_form"
+                           invisible="not banking_required"/>
+                    <field name="banking_nit_complement"
+                           invisible="not banking_required"/>
+                </group>
+
+                <group name="group_banking_detail"
+                       string="Detalles de Bancarización"
+                       col="2"
+                       invisible="not banking_required">
+                    <field name="banking_sale_type"
+                           invisible="banking_operation_type != 'sale'"/>
+                    <field name="banking_purchase_type"
+                           invisible="banking_operation_type != 'purchase'"/>
+                    <field name="banking_support_doc_type"/>
+                    <field name="banking_support_doc_number"/>
+                    <field name="banking_contract_number"/>
+                    <field name="banking_credit_account"
+                           invisible="banking_operation_type != 'purchase'"/>
+                    <field name="banking_credit_entity_nit"
+                           invisible="banking_operation_type != 'purchase'"/>
+                </group>
+
+            </xpath>
+        </field>
+    </record>
+
+
+</odoo>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_sales_iva" model="ir.actions.report">
+        <field name="name">Libro Ventas IVA</field>
+        <field name="model">accounting_community.iva.wizard</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">accounting_community.report_sales_iva_xlsx</field>
+        <field name="report_file">accounting_community.report_sales_iva_xlsx</field>
+        <field name="binding_model_id" ref="model_accounting_community_iva_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_purchase_iva" model="ir.actions.report">
+        <field name="name">Libro Compras IVA</field>
+        <field name="model">accounting_community.iva.wizard</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">accounting_community.report_purchase_iva_xlsx</field>
+        <field name="report_file">accounting_community.report_purchase_iva_xlsx</field>
+        <field name="binding_model_id" ref="model_accounting_community_iva_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <template id="accountentry_second_template">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="o">
+                    <div style="height: 100%;" class="p-3">
+                        <div class="page">
+                            <t t-set="accountentry_group" t-value="o.run_sql2()"/>
+                            <t t-set="accountentry_lines" t-value="o.get_account_lines_individual()"/>
+                            <t t-set="accountentry_total" t-value="o.get_account_totals_individual()"/>
+                            <head>
+                                <meta charset="UTF-8"></meta>
+                            </head>
+                            <div class="container p-3" align="left" style="height:8% !important;">
+                                <table class="table table-condensed" style="width:100% !important;">
+                                    <tbody style="font-size: 13px !important;">
+                                        <tr>
+                                            <th style="width:30%"/>
+                                            <th style="width:40%"/>
+                                            <th style="width:30%"/>
+                                        </tr>
+                                        <tr t-foreach="accountentry_group" t-as="part">
+                                            <th colspan="3" align="left" style="font-size: 22px !important;">
+                                                <span t-esc="part['name']"/>
+                                            </th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="container p-3" align="left" style="height:10%; font-size: 12px !important;">
+                                <table class="table table-condensed" style="width:100% !important;">
+                                    <tbody style="font-size: 14px !important;">
+                                        <tr>
+                                            <th style="width:10%"/>
+                                            <th style="width:60%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                        </tr>
+                                        <tr/>
+                                        <tr/>
+                                        <tr>
+                                            <th align="left"><p>Diario:</p></th>
+                                            <td><span t-field="o.journal_id"/></td>
+                                            <th align="left">Fecha Contable:</th>
+                                            <td><span t-field="o.date"/></td>
+                                        </tr>
+                                        <tr>
+                                            <th align="left">Referencia:</th>
+                                            <td><span t-field="o.partner_id"/></td>
+                                            <th align="left">Tipo de Cambio:</th>
+                                            <td>6.96</td>
+                                        </tr>
+                                        <tr>
+                                            <th align="left">Glosa:</th>
+                                            <td colspan="3">
+                                                <div t-if="o.journal_id.code == 'INV'">
+                                                    Nro Fact: <span t-field="o.siat_numero_factura"/> - <span t-field="o.ref"/>
+                                                </div>
+                                                <div t-else="">
+                                                    <span t-field="o.ref"/>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="container p-3" align="center" style="height:66%;font-size: 12px !important;">
+                                <table class="table table-condensed" style="width:100% !important;" FRAME="hsides" RULES="none">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:40%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                        </tr>
+                                        <tr>
+                                            <th align="left">Código y Nombre de la Cuenta</th>
+                                            <th colspan="2" align="center">*****BOLIVIANOS*****</th>
+                                            <th colspan="2" align="center">*****DOLARES*****</th>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <th align="center">Debe</th>
+                                            <th align="center">Haber</th>
+                                            <th align="center">Debe</th>
+                                            <th align="center">Haber</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                                <table class="table table-condensed" style="width:100% !important;">
+                                    <tbody style="text-align:center; font-size: 13px">
+                                        <tr>
+                                            <th style="width:40%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                        </tr>
+                                        <tr t-foreach="accountentry_lines" t-as="det">
+                                            <td align="left">
+                                                <span t-esc="det['code']"/> - <span t-esc="det['name']"/>
+                                            </td>
+                                            <td align="right"><t t-esc="'{0:,.2f}'.format(float(det['debito']))"/></td>
+                                            <td align="right"><t t-esc="'{0:,.2f}'.format(float(det['credito']))"/></td>
+                                            <td align="right"><t t-esc="'{0:,.2f}'.format(float(det['debitosus']))"/></td>
+                                            <td align="right"><t t-esc="'{0:,.2f}'.format(float(det['creditosus']))"/></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div t-if="o.page_break == 1" class="container p-3" align="center" style="height:100% !important; page-break-before:always; display:flex !important; align-items: flex-end !important;">
+                                <div class="container p-3" align="center" style="height:85% !important;"/>
+                                <div class="container p-3" align="center" style="height:15% !important;">
+                                    <table class="table table-condensed" style="width:100% !important;" align="center">
+                                        <tbody>
+                                            <tr>
+                                                <th style="width:40%"/>
+                                                <th style="width:15%"/>
+                                                <th style="width:15%"/>
+                                                <th style="width:15%"/>
+                                                <th style="width:15%"/>
+                                            </tr>
+                                            <tr t-foreach="accountentry_total" t-as="tot">
+                                                <th align="left">Totales de Comprobante</th>
+                                                <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['debito']))"/></th>
+                                                <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['credito']))"/></th>
+                                                <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['debitosus']))"/></th>
+                                                <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['creditosus']))"/></th>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div t-else="" class="container p-3" align="center" style="height:15% !important;">
+                                <table class="table table-condensed" style="width:100% !important;" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width:40%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                            <th style="width:15%"/>
+                                        </tr>
+                                        <tr t-foreach="accountentry_total" t-as="tot">
+                                            <th align="left">Totales de Comprobante</th>
+                                            <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['debito']))"/></th>
+                                            <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['credito']))"/></th>
+                                            <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['debitosus']))"/></th>
+                                            <th align="right"><t t-esc="'{0:,.2f}'.format(float(tot['creditosus']))"/></th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <table class="table table-condensed" style="width:100%; font-size: 12px !important;" align="center">
+                                    <tbody>
+                                        <tr>
+                                            <th style="width:22%"/>
+                                            <th style="width:22%"/>
+                                            <th style="width:22%"/>
+                                            <th style="width:22%"/>
+                                            <th style="width:12%"/>
+                                        </tr>
+                                        <tr>
+                                            <td align="center">Hecho por</td>
+                                            <td align="center">Verificado Jefe Contabilidad</td>
+                                            <td align="center">Gerente Adm. y Financiera</td>
+                                            <td align="center">Gerencia General</td>
+                                            <td align="center">Firma Interesado</td>
+                                        </tr>
+                                        <tr>
+                                            <td align="center"><br/><br/><br/>________________</td>
+                                            <td align="center"><br/><br/><br/>________________</td>
+                                            <td align="center"><br/><br/><br/>________________</td>
+                                            <td align="center"><br/><br/><br/>________________</td>
+                                            <td align="center"><br/><br/><br/>______________________________</td>
+                                        </tr>
+                                        <tr>
+                                            <td align="center"><p t-field="o.create_uid"/></td>
+                                            <td align="center">Lizbeth Rojas</td>
+                                            <td align="center">Cecilio Montaño</td>
+                                            <td align="center">Mario Eduardo Strack</td>
+                                            <td align="center"><br/>Nombre:_______________________</td>
+                                        </tr>
+                                        <tr>
+                                            <td align="center"></td>
+                                            <td align="center"></td>
+                                            <td align="center"></td>
+                                            <td align="center"></td>
+                                            <td align="center"><br/>CI:___________________________</td>
+                                        </tr>
+                                    </tbody>
+                                    <hr/>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+    </data>
+</odoo>

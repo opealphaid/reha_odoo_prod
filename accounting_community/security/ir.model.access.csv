@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_bankbook_wizard,Access Bankbook Wizard,model_accounting_community_bankbook_wizard,,1,1,1,1
+access_banking_wizard,Access Banking Wizard,model_accounting_community_banking_wizard,,1,1,1,1
+access_iva_wizard,Access IVA Report Wizard,model_accounting_community_iva_wizard,,1,1,1,1

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_bankbook" model="ir.actions.report">
+        <field name="name">Libreta Bancaria</field>
+        <field name="model">accounting_community.bankbook.wizard</field>
+        <field name="report_type">xlsx</field>
+        <field name="report_name">accounting_community.report_bankbook_xlsx</field>
+        <field name="report_file">accounting_community.report_bankbook_xlsx</field>
+        <field name="binding_model_id" ref="model_accounting_community_bankbook_wizard"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

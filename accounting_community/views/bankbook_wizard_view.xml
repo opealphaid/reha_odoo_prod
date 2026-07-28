@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Wizard form view -->
+    <record id="view_bankbook_wizard_form" model="ir.ui.view">
+        <field name="name">accounting_community.bankbook.wizard.form</field>
+        <field name="model">accounting_community.bankbook.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Libreta Bancaria">
+                <group>
+                    <field name="start_date"/>
+                    <field name="end_date"/>
+                    <field name="account"/>
+                </group>
+                <footer>
+                    <button name="action_print_bankbook" string="Generar Reporte" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Window action to open the wizard -->
+    <record id="action_bankbook_wizard" model="ir.actions.act_window">
+        <field name="name">Libreta Bancaria</field>
+        <field name="res_model">accounting_community.bankbook.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="view_id" ref="view_bankbook_wizard_form"/>
+    </record>
+
+    <!-- Menu items -->
+    <menuitem
+        id="menu_accounting_community_root"
+        name="Accounting Community"
+        parent="account.menu_finance_reports"
+        sequence="50"
+    />
+
+    <menuitem
+        id="menu_bankbook_report"
+        name="Libreta Bancaria"
+        parent="menu_accounting_community_root"
+        action="action_bankbook_wizard"
+        sequence="10"
+    />
+</odoo>
