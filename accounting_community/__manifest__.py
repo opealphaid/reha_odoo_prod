@@ -31,5 +31,10 @@
         'reports/accountentry_migracion.xml',
         'reports/accountentry_migracion_templates.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'accounting_community/static/src/js/action_manager.js',
+        ],
+    },
     'installable': True,
 }
