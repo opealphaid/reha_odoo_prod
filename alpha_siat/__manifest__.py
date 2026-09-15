@@ -8,9 +8,12 @@
     "depends": ["base", "account","product","stock", "point_of_sale"],
     "data": [
         "security/ir.model.access.csv",
+        "data/ir_cron_data.xml",
         "views/siat_config_views.xml",
+        "views/siat_sucursal_views.xml",
         "views/siat_cuis_views.xml",
         "views/res_company_view.xml",
+        "views/res_users_views.xml",
         'views/siat_cufd_views.xml',  # Add this
         'views/siat_actividad_views.xml',
         'views/siat_actividad_documento_sector_views.xml',
@@ -34,9 +37,9 @@
         'views/purchase_invoice_views.xml',
         'views/account_move_views.xml',
         #'views/account_move_anulacion_views.xml'
-        # 'data/ir_cron_data.xml',  # Add this
     ],
     "installable": True,
     "application": False,
     "auto_install": False,
+    "post_init_hook": "post_init_hook",
 }

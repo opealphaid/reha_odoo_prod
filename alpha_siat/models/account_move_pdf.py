@@ -262,17 +262,33 @@ class AccountMove(models.Model):
         return Paragraph("LOGO", getSampleStyleSheet()['Normal'])
 
     def _get_datos_empresa(self):
-        """Retorna datos de la empresa"""
+        """Retorna datos de la empresa — mismos valores que se enviaron en la
+        cabecera de la factura a SIAT (municipio, dirección, teléfono), leídos
+        de la Sucursal SIAT con la que se emitió ESTA factura en particular
+        (cada sucursal tiene su propia dirección/teléfono/municipio)."""
         company = self.company_id
+        sucursal = self.siat_sucursal_id
+
+        if sucursal:
+            codigo_punto_venta = sucursal.codigo_punto_venta
+            direccion_completa = sucursal.get_siat_direccion_completa()
+            telefono = sucursal.get_siat_telefono()
+            municipio = sucursal.get_siat_municipio()
+        else:
+            # Factura antigua sin Sucursal SIAT asignada: usar los datos de la compañía
+            codigo_punto_venta = company.siat_codigo_punto_venta or 0
+            direccion_completa = company.street or 'Sin dirección'
+            telefono = company.phone or '0000000'
+            municipio = company.city or 'Nuestra Senora de La Paz'
 
         datos_html = f"""
         <para align=center>
         <b>{company.name}</b><br/>
         <b>CASA MATRIZ</b><br/>
-        No. Punto de Venta {company.siat_codigo_punto_venta or 0}<br/>
-        {company.street or 'Sin dirección'}<br/>
-        Tel: {company.phone or 'Sin teléfono'}<br/>
-        <b>{company.city or 'CIUDAD'}</b>
+        No. Punto de Venta {codigo_punto_venta}<br/>
+        {direccion_completa}<br/>
+        Tel: {telefono}<br/>
+        <b>{municipio}</b>
         </para>
         """
 
@@ -341,8 +357,8 @@ class AccountMove(models.Model):
             ],
             [
                 Paragraph(f"<b>Razón Social:</b>", style_small),
-                Paragraph(partner.name, style_small),
-                Paragraph(partner.vat or '', style_small),
+                Paragraph(partner.siat_razon_social_facturacion, style_small),
+                Paragraph(partner.siat_nit_facturacion or '', style_small),
             ],
             [
                 Paragraph("", style_small),

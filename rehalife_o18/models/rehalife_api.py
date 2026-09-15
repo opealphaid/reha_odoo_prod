@@ -205,3 +205,20 @@ class RehalifeAPI(models.AbstractModel):
         endpoint = '/reservations?startDate=%s&endDate=%s&status=COMPLETED' % (date_from, date_to)
         result = self._request('GET', endpoint)
         return result.get('data', [])
+
+    def get_service_types(self):
+        """GET /service-types — Retorna tipos de servicio ACTIVOS (paginado)."""
+        all_items = []
+        page = 0
+        size = 200
+        while True:
+            endpoint = '/service-types?status=true&page=%s&size=%s' % (page, size)
+            result = self._request('GET', endpoint)
+            data = result.get('data') or {}
+            content = data.get('content', [])
+            all_items.extend(content)
+            total_pages = data.get('totalPages', 1)
+            page += 1
+            if page >= total_pages or not content:
+                break
+        return all_items

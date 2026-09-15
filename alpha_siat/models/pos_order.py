@@ -1,4 +1,5 @@
 import logging
+import traceback
 from odoo import models, api, fields
 from odoo.exceptions import UserError, ValidationError
 from lxml import etree
@@ -27,6 +28,13 @@ class PosOrder(models.Model):
         string="Numero Factura SIAT",
         readonly=True,
         help="Numero de factura para SIAT"
+    )
+
+    siat_sucursal_id = fields.Many2one(
+        'alpha.siat.sucursal',
+        string="Sucursal SIAT",
+        readonly=True,
+        help="Sucursal y punto de venta SIAT usada para emitir esta factura"
     )
 
     siat_estado_envio = fields.Char(
@@ -110,34 +118,14 @@ class PosOrder(models.Model):
 
         orders = super().create(vals_list)
 
-        for order in orders:
-            if order.to_invoice:
-                try:
-                    _logger.info(f"[CREATE] Generando factura para orden {order.name}")
-                    xml_generado = order._generar_xml_factura_siat()
-
-                    if not xml_generado:
-                        error_msg = (
-                            "ERROR GENERANDO FACTURA\n\n"
-                            "No se pudo generar la factura electrónica.\n"
-                            "La venta no puede completarse."
-                        )
-                        _logger.error(f"[CREATE] {error_msg}")
-                        raise UserError(error_msg)
-
-                    _logger.info(f"[CREATE] ✓ Factura generada exitosamente para orden {order.name}")
-
-                except UserError:
-                    raise
-                except Exception as e:
-                    error_msg = (
-                        f"ERROR GENERANDO FACTURA\n\n"
-                        f"Ocurrió un error al generar la factura:\n"
-                        f"{str(e)}\n\n"
-                        f"La venta no puede completarse."
-                    )
-                    _logger.error(f"[CREATE] Error: {error_msg}", exc_info=True)
-                    raise UserError(error_msg)
+        # NOTA: La generación/envío de la factura SIAT ya NO se dispara aquí.
+        # En este punto el account.move nativo de la orden puede no existir
+        # todavía (se crea recién en _generate_pos_order_invoice, llamado más
+        # adelante por _process_saved_order), lo que hacía fallar la
+        # reconciliación nativa con "You can only reconcile posted entries.".
+        # Ver el override de _generate_pos_order_invoice() más abajo, que
+        # dispara la facturación SIAT solo después de que Odoo ya creó,
+        # posteó y reconcilió el invoice nativamente.
 
         return orders
 
@@ -160,6 +148,7 @@ class PosOrder(models.Model):
                         'partner_id': order.partner_id.id,
                         'company_id': order.company_id.id,
                         'session_id': order.session_id.id,
+                        'user_id': order.user_id.id,
                         'to_invoice': to_invoice,
                         'lines': [(0, 0, {
                             'product_id': line.product_id.id,
@@ -194,44 +183,13 @@ class PosOrder(models.Model):
             state = vals.get('state')
             to_invoice = vals.get('to_invoice', order.to_invoice)
 
-            should_generate = (
-                    state in ['paid', 'done'] and
-                    to_invoice and
-                    not order.siat_xml_factura
-            )
-
-            if should_generate:
-                try:
-                    _logger.info("=" * 100)
-                    _logger.info(f"[WRITE-FACTURACION] Generando factura para orden {order.name}")
-                    _logger.info("=" * 100)
-
-                    xml_generado = order._generar_xml_factura_siat()
-
-                    if xml_generado:
-                        _logger.info(f"[WRITE-FACTURACION] ✓ Factura generada exitosamente para orden {order.name}")
-                    else:
-                        error_msg = (
-                            "ERROR GENERANDO FACTURA\n\n"
-                            "No se pudo generar la factura electrónica.\n"
-                            "La venta no puede completarse."
-                        )
-                        _logger.error(f"[WRITE-FACTURACION] {error_msg}")
-                        raise UserError(error_msg)
-
-                except UserError:
-                    raise
-                except Exception as e:
-                    error_msg = (
-                        f"ERROR GENERANDO FACTURA\n\n"
-                        f"Ocurrió un error al generar la factura:\n"
-                        f"{str(e)}\n\n"
-                        f"La venta no puede completarse."
-                    )
-                    _logger.error(f"[WRITE-FACTURACION] Error: {error_msg}", exc_info=True)
-                    raise UserError(error_msg)
-
-            elif state in ['paid', 'done'] and not to_invoice:
+            # NOTA: Ya NO se dispara _generar_xml_factura_siat() desde aquí.
+            # Cuando el estado pasa a 'paid'/'done', el account.move nativo
+            # todavía puede no existir o seguir en 'draft' (se crea/postea
+            # recién en _generate_pos_order_invoice, llamado después por
+            # _process_saved_order del core de point_of_sale). Ver el
+            # override de _generate_pos_order_invoice() más abajo.
+            if state in ['paid', 'done'] and not to_invoice:
                 _logger.info(f"[WRITE] Orden {order.name} - Estado: {state} - NO requiere factura")
 
             if 'account_move' in vals:
@@ -246,6 +204,7 @@ class PosOrder(models.Model):
                                 'siat_xml_factura': order.siat_xml_factura,
                                 'siat_cuf': order.siat_cuf,
                                 'siat_numero_factura': order.siat_numero_factura,
+                                'siat_sucursal_id': order.siat_sucursal_id.id,
                                 'siat_estado_envio': order.siat_estado_envio,
                                 'siat_codigo_recepcion': order.siat_codigo_recepcion,
                                 'siat_mensajes_envio': order.siat_mensajes_envio,
@@ -256,6 +215,102 @@ class PosOrder(models.Model):
 
                         except Exception as e:
                             _logger.error(f"[SYNC] Error: {str(e)}", exc_info=True)
+        return result
+
+    def _generate_pos_order_invoice(self, *args, **kwargs):
+        """Override: deja que Odoo cree, postee y reconcilie el invoice nativo
+        primero, y recién después dispara la facturación SIAT. Evita el
+        "You can only reconcile posted entries." que ocurría cuando
+        _generar_xml_factura_siat() se disparaba desde create()/write() antes
+        de que el account.move existiera o estuviera posteado.
+        """
+        # TEMPORAL: solo para capturar el traceback exacto del error nativo
+        # "You can only reconcile posted entries." Revertir una vez conseguido.
+        try:
+            result = super()._generate_pos_order_invoice(*args, **kwargs)
+        except Exception:
+            _logger.error("TRACEBACK COMPLETO DEL ERROR NATIVO:\n%s", traceback.format_exc())
+            raise
+
+        for order in self:
+            if not order.to_invoice:
+                continue
+
+            if order.siat_xml_factura:
+                _logger.info(
+                    f"[SIAT-INVOICE] Orden {order.name} ya tiene factura SIAT generada, se omite reenvío"
+                )
+                continue
+
+            if not order.account_move or order.account_move.state != 'posted':
+                _logger.warning(
+                    f"[SIAT-INVOICE] Orden {order.name} no tiene un account.move posteado todavía "
+                    f"(account_move: {order.account_move.name if order.account_move else False}, "
+                    f"state: {order.account_move.state if order.account_move else 'N/A'}); "
+                    f"se omite la facturación SIAT en este paso."
+                )
+                continue
+
+            _logger.info("=" * 100)
+            _logger.info(f"[SIAT-INVOICE] Generando factura SIAT para orden {order.name} (invoice ya posteado)")
+            _logger.info("=" * 100)
+
+            # IMPORTANTE: a esta altura el account.move ya fue creado, posteado y
+            # reconciliado por el flujo nativo de point_of_sale (super() de arriba).
+            # Si el envío a SIAT falla acá (red, servicio caído, rechazo), NO se
+            # relanza la excepción: la venta y la factura ya están correctas en
+            # Odoo y no deben revertirse por un problema del lado de SIAT. Queda
+            # registrada como pendiente de reintento (ver _generar_xml_factura_siat
+            # / _enviar_factura_a_siat: si no llegan a setear siat_estado_envio
+            # '908' + siat_codigo_recepcion, el campo existente
+            # account.move.siat_facturado queda en False) y se puede reintentar
+            # manualmente con el botón/acción ya existente
+            # account.move.action_enviar_factura_siat() desde Invoicing.
+            try:
+                xml_generado = order._generar_xml_factura_siat()
+
+                if xml_generado:
+                    _logger.info(f"[SIAT-INVOICE] ✓ Factura SIAT generada exitosamente para orden {order.name}")
+                else:
+                    raise UserError(
+                        "_generar_xml_factura_siat() no devolvió un XML válido (retorno vacío)."
+                    )
+
+            except Exception as e:
+                factura_nombre = order.account_move.name if order.account_move else '(sin nombre)'
+                _logger.error(
+                    f"[SIAT-INVOICE] Envío a SIAT fallido para orden {order.name} / factura {factura_nombre}: "
+                    f"{str(e)}\n"
+                    f"La venta y la factura NO se revierten (ya fueron creadas/posteadas/reconciliadas "
+                    f"nativamente). Queda pendiente de reintento manual desde Invoicing > {factura_nombre} > "
+                    f"'Enviar a SIAT' (action_enviar_factura_siat).",
+                    exc_info=True
+                )
+
+                # Dejar constancia del motivo del fallo en la propia factura para
+                # poder diagnosticar el reintento sin ir a los logs del servidor.
+                # Reutiliza el campo existente siat_mensajes_envio; no se crea
+                # ningún campo/estado nuevo. siat_facturado (compute existente)
+                # ya queda en False porque siat_estado_envio/siat_codigo_recepcion
+                # no se llegaron a setear con éxito.
+                if order.account_move:
+                    try:
+                        order.account_move.write({
+                            'siat_mensajes_envio': order.siat_mensajes_envio or str(e),
+                        })
+                    except Exception as sync_error:
+                        _logger.error(
+                            f"[SIAT-INVOICE] Ademas, no se pudo registrar el error en la factura "
+                            f"{factura_nombre}: {sync_error}"
+                        )
+
+                # TODO: notificar esto al cajero en el POS como un aviso NO bloqueante
+                # (ej. "Venta completada. El envío a SIAT falló y quedó pendiente de
+                # reintento"), en vez de que solo quede en el log del servidor. Requiere
+                # tocar el frontend del POS (JS) para mostrar el aviso de forma no
+                # bloqueante a partir del resultado de sync_from_ui / un evento de
+                # pos.bus.mixin; queda pendiente como mejora futura.
+
         return result
 
     def _validar_requisitos_siat(self, vals):
@@ -330,8 +385,35 @@ class PosOrder(models.Model):
                 'tipo': 'danger'
             }
 
+        # Validar que el NIT/CI de Facturación no sea '0' (valor inválido, distinto del sentinel '0000000')
+        if partner.siat_nit_facturacion == '0':
+            return {
+                'success': False,
+                'message': (
+                    f"NIT DE FACTURACIÓN INVÁLIDO\n\n"
+                    f"El cliente '{partner.name}' tiene configurado '0' como NIT/CI para "
+                    f"Facturación, que no es válido para SIAT.\n\n"
+                    f"Corrígelo en: Contactos > {{cliente}} > pestaña Datos SIAT > NIT/CI para "
+                    f"Facturación, usando '0000000' si no tiene datos de facturación configurados, "
+                    f"o su NIT/CI real de facturación."
+                ),
+                'tipo': 'danger'
+            }
+
+        # Validar/resolver Sucursal SIAT (según el cajero de la orden)
+        user_id_val = vals.get('user_id')
+        cajero = self.env['res.users'].browse(user_id_val) if user_id_val else self.env.user
+        try:
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_user(company, user=cajero)
+        except UserError as e:
+            return {
+                'success': False,
+                'message': str(e),
+                'tipo': 'danger'
+            }
+
         # Validar CUFD
-        cufd = self._obtener_cufd_valido_por_company(company)
+        cufd = self._obtener_cufd_valido_por_company(company, sucursal)
         if not cufd:
             return {
                 'success': False,
@@ -456,16 +538,22 @@ class PosOrder(models.Model):
         except Exception as e:
             raise ValidationError(f"Error inesperado al firmar XML: {str(e)}")
 
-    def _obtener_cufd_valido_por_company(self, company):
-        """Obtiene un CUFD valido para la compania especificada"""
+    def _obtener_cufd_valido_por_company(self, company, sucursal=None):
+        """Obtiene un CUFD valido para la sucursal especificada (o la sucursal
+        por defecto de la compania si no se indica una)"""
 
-        _logger.info(f"Buscando CUFD valido para compania: {company.name}")
+        if sucursal is None:
+            sucursal = self.env['alpha.siat.sucursal'].get_default_sucursal(company)
+
+        _logger.info(f"Buscando CUFD valido para compania: {company.name} / sucursal: {sucursal.name}")
 
         cufd_model = self.env['alpha.siat.cufd']
 
-        # Buscar CUFD válido en estado 'valid'
+        # Buscar CUFD válido en estado 'valid', scoped a esta sucursal/PDV
         cufd_valido = cufd_model.search([
             ('company_id', '=', company.id),
+            ('codigo_sucursal', '=', sucursal.codigo_sucursal),
+            ('codigo_punto_venta', '=', sucursal.codigo_punto_venta),
             ('state', '=', 'valid')
         ], limit=1, order='fecha_vigencia desc')
 
@@ -521,47 +609,33 @@ class PosOrder(models.Model):
 
         raise UserError(error_msg)
 
+    def _resolver_siat_sucursal(self):
+        """Resuelve y persiste la Sucursal SIAT de esta orden, según el
+        cajero que la generó (order.user_id), con fallback al usuario actual.
+
+        Si ya estaba asignada (ej. reintento) se reutiliza la misma.
+        """
+        self.ensure_one()
+        if self.siat_sucursal_id:
+            return self.siat_sucursal_id
+
+        cajero = self.user_id or self.env.user
+        sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_user(self.company_id, user=cajero)
+        self.write({'siat_sucursal_id': sucursal.id})
+        return sucursal
+
     def _obtener_numero_factura(self):
-        """Obtiene el siguiente numero de factura para la compania"""
+        """Obtiene el siguiente numero de factura SIAT, correlativo por
+        Sucursal SIAT — delega en alpha.siat.sucursal (misma fuente que usan
+        las facturas de Invoicing, para no mantener dos contadores separados
+        que podrían desincronizarse)."""
         self.ensure_one()
 
-        company = self.company_id
+        sucursal = self._resolver_siat_sucursal()
+        siguiente_numero = sucursal.get_next_numero_factura()
 
-        # Buscar la ultima orden POS con numero de factura SIAT
-        ultima_orden = self.search([
-            ('company_id', '=', company.id),
-            ('siat_numero_factura', '>', 0)
-        ], order='siat_numero_factura desc', limit=1)
-
-        if ultima_orden:
-            siguiente_numero = ultima_orden.siat_numero_factura + 1
-            _logger.info(f"Siguiente numero de factura: {siguiente_numero} (basado en ultima orden)")
-        else:
-            siguiente_numero = 1
-            _logger.info(f"Primer numero de factura: {siguiente_numero}")
-
+        _logger.info(f"Siguiente numero de factura SIAT: {siguiente_numero} (sucursal: {sucursal.name})")
         return siguiente_numero
-
-    def _generar_cuf_dinamico(self, numero_factura):
-        """Genera el CUF dinamicamente usando el generador de CUF"""
-        self.ensure_one()
-
-        try:
-            cuf_generator = self.env['alpha.siat.cuf.generator']
-            resultado = cuf_generator.generar_cuf(
-                company_id=self.company_id.id,
-                numero_factura=numero_factura
-            )
-
-            if resultado and resultado.get('cuf'):
-                _logger.info(f"CUF generado exitosamente: {resultado['cuf']}")
-                return resultado
-            else:
-                raise ValidationError("No se pudo generar el CUF")
-
-        except Exception as e:
-            _logger.error(f"Error generando CUF: {str(e)}", exc_info=True)
-            raise ValidationError(f"Error al generar CUF: {str(e)}")
 
     def _log_pos_order_details(self, vals):
         """Muestra los detalles de la orden de forma legible"""
@@ -611,7 +685,9 @@ class PosOrder(models.Model):
             if not partner.vat:
                 raise ValidationError(f"El cliente {partner.name} no tiene NIT/CI configurado")
 
-            cufd_record = self._obtener_cufd_valido_por_company(company)
+            sucursal = self._resolver_siat_sucursal()
+
+            cufd_record = self._obtener_cufd_valido_por_company(company, sucursal)
             if not cufd_record:
                 _logger.error("No se pudo obtener CUFD valido al generar XML")
                 return None
@@ -629,7 +705,7 @@ class PosOrder(models.Model):
 
             # Generar CUF dinamicamente CON LA FECHA/HORA EXACTA
             _logger.info("Generando CUF dinamico con fecha/hora sincronizada...")
-            cuf_resultado = self._generar_cuf_dinamico(numero_factura, ahora_bolivia)
+            cuf_resultado = self._generar_cuf_dinamico(numero_factura, ahora_bolivia, sucursal)
             cuf_generado = cuf_resultado['cuf']
 
             _logger.info(f"CUF generado: {cuf_generado}")
@@ -657,20 +733,20 @@ class PosOrder(models.Model):
 
             etree.SubElement(cabecera, 'nitEmisor').text = str(company.vat)
             etree.SubElement(cabecera, 'razonSocialEmisor').text = company.name[:200]
-            etree.SubElement(cabecera, 'municipio').text = 'Nuestra Senora de La Paz'
-            etree.SubElement(cabecera, 'telefono').text = company.phone[:25] if company.phone else '0000000'
+            etree.SubElement(cabecera, 'municipio').text = sucursal.get_siat_municipio()
+            etree.SubElement(cabecera, 'telefono').text = sucursal.get_siat_telefono()
 
             etree.SubElement(cabecera, 'numeroFactura').text = str(numero_factura)
 
             etree.SubElement(cabecera, 'cuf').text = cuf_generado
             etree.SubElement(cabecera, 'cufd').text = cufd_record.cufd
 
-            etree.SubElement(cabecera, 'codigoSucursal').text = str(company.siat_codigo_sucursal or 0)
-            etree.SubElement(cabecera, 'direccion').text = (company.street or 'Sin direccion')[:500]
+            etree.SubElement(cabecera, 'codigoSucursal').text = str(sucursal.codigo_sucursal or 0)
+            etree.SubElement(cabecera, 'direccion').text = sucursal.get_siat_direccion_completa()[:500]
 
             codigo_punto_venta = etree.SubElement(cabecera, 'codigoPuntoVenta')
-            if company.siat_codigo_punto_venta:
-                codigo_punto_venta.text = str(company.siat_codigo_punto_venta)
+            if sucursal.codigo_punto_venta:
+                codigo_punto_venta.text = str(sucursal.codigo_punto_venta)
             else:
                 codigo_punto_venta.set('{http://www.w3.org/2001/XMLSchema-instance}nil', 'true')
 
@@ -680,10 +756,10 @@ class PosOrder(models.Model):
 
             _logger.info(f"Fecha emision XML: {fecha_emision}")
 
-            etree.SubElement(cabecera, 'nombreRazonSocial').text = partner.name[:500]
+            etree.SubElement(cabecera, 'nombreRazonSocial').text = partner.siat_razon_social_facturacion[:500]
             etree.SubElement(cabecera, 'codigoTipoDocumentoIdentidad').text = str(
                 partner.siat_codigo_tipo_documento or 5)
-            etree.SubElement(cabecera, 'numeroDocumento').text = str(partner.vat)[:20]
+            etree.SubElement(cabecera, 'numeroDocumento').text = str(partner.siat_nit_facturacion)[:20]
 
             complemento_elem = etree.SubElement(cabecera, 'complemento')
             if partner.siat_complemento:
@@ -804,7 +880,7 @@ class PosOrder(models.Model):
             _logger.error(f"Error generando XML: {str(e)}", exc_info=True)
             return None
 
-    def _generar_cuf_dinamico(self, numero_factura, fecha_hora_bolivia):
+    def _generar_cuf_dinamico(self, numero_factura, fecha_hora_bolivia, sucursal=None):
         """Genera el CUF dinamicamente usando el generador de CUF"""
         self.ensure_one()
 
@@ -813,7 +889,8 @@ class PosOrder(models.Model):
             resultado = cuf_generator.generar_cuf(
                 company_id=self.company_id.id,
                 numero_factura=numero_factura,
-                fecha_hora_emision=fecha_hora_bolivia  # NUEVO PARAMETRO
+                fecha_hora_emision=fecha_hora_bolivia,  # NUEVO PARAMETRO
+                sucursal=sucursal or self._resolver_siat_sucursal()
             )
 
             if resultado and resultado.get('cuf'):
@@ -873,10 +950,12 @@ class PosOrder(models.Model):
                 _logger.error(error_msg)
                 raise ValidationError(error_msg)
 
+            sucursal = self._resolver_siat_sucursal()
+
             # Obtener CUIS válido
             cuis_model = self.env['alpha.siat.cuis']
             try:
-                cuis = cuis_model.get_or_fetch_cuis(company, codigo_modalidad=int(config.modalidad))
+                cuis = cuis_model.get_or_fetch_cuis(company, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
                 _logger.info(f"CUIS obtenido: {cuis[:20]}...")
             except Exception as e:
                 error_msg = (
@@ -899,7 +978,8 @@ class PosOrder(models.Model):
                 config=config,
                 cuis=cuis,
                 cufd=cufd_record.cufd,
-                xml_string=xml_string
+                xml_string=xml_string,
+                sucursal=sucursal
             )
 
             # Verificar si hubo error en el envío
@@ -939,6 +1019,7 @@ class PosOrder(models.Model):
                     'siat_xml_factura': self.siat_xml_factura,
                     'siat_cuf': self.siat_cuf,
                     'siat_numero_factura': self.siat_numero_factura,
+                    'siat_sucursal_id': self.siat_sucursal_id.id,
                     'siat_estado_envio': datos_siat['siat_estado_envio'],
                     'siat_codigo_recepcion': datos_siat['siat_codigo_recepcion'],
                     'siat_mensajes_envio': datos_siat['siat_mensajes_envio'],
@@ -1035,8 +1116,8 @@ class PosOrder(models.Model):
             'siat_estado': self.siat_estado_envio or '',
             'empresa_nit': company.vat or '',
             'empresa_razon_social': company.name or '',
-            'cliente_nit': self.partner_id.vat or '',
-            'cliente_razon_social': self.partner_id.name or '',
+            'cliente_nit': self.partner_id.siat_nit_facturacion or '',
+            'cliente_razon_social': self.partner_id.siat_razon_social_facturacion or '',
         }
 
         return result

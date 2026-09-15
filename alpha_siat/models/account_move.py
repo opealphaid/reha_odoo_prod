@@ -31,6 +31,13 @@ class AccountMove(models.Model):
         copy=False,
         help='Número de factura asignado para SIAT'
     )
+    siat_sucursal_id = fields.Many2one(
+        'alpha.siat.sucursal',
+        string='Sucursal SIAT',
+        readonly=True,
+        copy=False,
+        help='Sucursal y punto de venta SIAT usada para emitir esta factura'
+    )
     siat_estado_envio = fields.Char(
         string='Estado Envío SIAT',
         readonly=True,
@@ -429,6 +436,29 @@ class AccountMove(models.Model):
                 f"Configure el NIT/CI en: Contactos > {{cliente}} > Campo 'NIT/Identificación Fiscal'"
             )
 
+        # 1.1 Validar datos de facturación (NIT/CI y Razón Social para Facturación)
+        # Si quedaron en los valores por defecto ('0' / 'S/N') se permite facturar igual,
+        # no son un requisito bloqueante.
+        nit_facturacion_vacio = not self.partner_id.siat_nit_facturacion or self.partner_id.siat_nit_facturacion == '0000000'
+        razon_social_facturacion_vacia = not self.partner_id.siat_razon_social_facturacion or self.partner_id.siat_razon_social_facturacion == 'S/N'
+        if nit_facturacion_vacio and razon_social_facturacion_vacia:
+            _logger.info(
+                f"Cliente '{self.partner_id.name}' tiene los datos de facturación en sus valores "
+                f"por defecto (NIT/CI: '{self.partner_id.siat_nit_facturacion}', "
+                f"Razón Social: '{self.partner_id.siat_razon_social_facturacion}'); se permite facturar igual."
+            )
+
+        # 1.2 Validar que el NIT/CI de Facturación no sea '0' (valor inválido, distinto del sentinel '0000000')
+        if self.partner_id.siat_nit_facturacion == '0':
+            raise UserError(
+                f"NIT DE FACTURACIÓN INVÁLIDO\n\n"
+                f"El cliente '{self.partner_id.name}' tiene configurado '0' como NIT/CI para "
+                f"Facturación, que no es válido para SIAT.\n\n"
+                f"Corrígelo en: Contactos > {{cliente}} > pestaña Datos SIAT > NIT/CI para "
+                f"Facturación, usando '0000000' si no tiene datos de facturación configurados, "
+                f"o su NIT/CI real de facturación."
+            )
+
         # 2. Validar compañía
         if not self.company_id.vat:
             raise UserError(
@@ -485,6 +515,9 @@ class AccountMove(models.Model):
                 "Vaya a: Productos > {producto} > Pestaña SIAT"
             )
 
+        # 7.5 Validar/resolver Sucursal SIAT (por usuario) antes de seguir
+        self._resolver_siat_sucursal()
+
         # 8. Validar CUFD
         cufd_record = self._obtener_cufd_valido_invoice()
         if not cufd_record:
@@ -500,11 +533,31 @@ class AccountMove(models.Model):
 
         _logger.info("✓ Todas las validaciones pasaron correctamente")
 
+    def _resolver_siat_sucursal(self):
+        """Resuelve y persiste la Sucursal SIAT de esta factura.
+
+        Si ya estaba asignada (ej. sincronizada desde una orden de POS, o de
+        un intento anterior de envío), se reutiliza la misma en vez de
+        recalcularla — así un reintento no cambia de sucursal/numeración a
+        mitad de camino solo porque lo reintenta un usuario distinto.
+        """
+        self.ensure_one()
+        if self.siat_sucursal_id:
+            return self.siat_sucursal_id
+
+        sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_user(self.company_id)
+        self.write({'siat_sucursal_id': sucursal.id})
+        return sucursal
+
     def _obtener_cufd_valido_invoice(self):
-        """Obtiene un CUFD válido para la factura"""
+        """Obtiene un CUFD válido para la Sucursal SIAT de esta factura"""
+        sucursal = self.siat_sucursal_id or self.env['alpha.siat.sucursal'].get_sucursal_for_user(self.company_id)
+
         cufd_model = self.env['alpha.siat.cufd']
         cufd_valido = cufd_model.search([
             ('company_id', '=', self.company_id.id),
+            ('codigo_sucursal', '=', sucursal.codigo_sucursal),
+            ('codigo_punto_venta', '=', sucursal.codigo_punto_venta),
             ('state', '=', 'valid')
         ], limit=1, order='fecha_vigencia desc')
 
@@ -531,21 +584,14 @@ class AccountMove(models.Model):
         return None
 
     def _obtener_numero_factura_invoice(self):
-        """Obtiene el siguiente número de factura para SIAT"""
+        """Obtiene el siguiente número de factura para SIAT, correlativo por
+        Sucursal SIAT (sucursal+punto de venta) — no un contador global."""
         self.ensure_one()
 
-        ultima_factura = self.search([
-            ('company_id', '=', self.company_id.id),
-            ('siat_numero_factura', '!=', False),
-            ('move_type', '=', 'out_invoice')
-        ], order='siat_numero_factura desc', limit=1)
+        sucursal = self._resolver_siat_sucursal()
+        siguiente_numero = sucursal.get_next_numero_factura()
 
-        if ultima_factura:
-            siguiente_numero = ultima_factura.siat_numero_factura + 1
-        else:
-            siguiente_numero = 1
-
-        _logger.info(f"Número de factura SIAT asignado: {siguiente_numero}")
+        _logger.info(f"Número de factura SIAT asignado: {siguiente_numero} (sucursal: {sucursal.name})")
         return siguiente_numero
 
     def _generar_cuf_dinamico_invoice(self, numero_factura, fecha_hora_bolivia):
@@ -557,7 +603,8 @@ class AccountMove(models.Model):
             resultado = cuf_generator.generar_cuf(
                 company_id=self.company_id.id,
                 numero_factura=numero_factura,
-                fecha_hora_emision=fecha_hora_bolivia
+                fecha_hora_emision=fecha_hora_bolivia,
+                sucursal=self._resolver_siat_sucursal()
             )
 
             if resultado and resultado.get('cuf'):
@@ -597,6 +644,7 @@ class AccountMove(models.Model):
         try:
             company = self.company_id
             partner = self.partner_id
+            sucursal = self._resolver_siat_sucursal()
 
             cufd_record = self._obtener_cufd_valido_invoice()
             if not cufd_record:
@@ -642,17 +690,17 @@ class AccountMove(models.Model):
             # Datos del emisor
             etree.SubElement(cabecera, 'nitEmisor').text = str(company.vat)
             etree.SubElement(cabecera, 'razonSocialEmisor').text = company.name[:200]
-            etree.SubElement(cabecera, 'municipio').text = 'Nuestra Senora de La Paz'
-            etree.SubElement(cabecera, 'telefono').text = company.phone[:25] if company.phone else '0000000'
+            etree.SubElement(cabecera, 'municipio').text = sucursal.get_siat_municipio()
+            etree.SubElement(cabecera, 'telefono').text = sucursal.get_siat_telefono()
             etree.SubElement(cabecera, 'numeroFactura').text = str(numero_factura)
             etree.SubElement(cabecera, 'cuf').text = cuf_generado
             etree.SubElement(cabecera, 'cufd').text = cufd_record.cufd
-            etree.SubElement(cabecera, 'codigoSucursal').text = str(company.siat_codigo_sucursal or 0)
-            etree.SubElement(cabecera, 'direccion').text = (company.street or 'Sin direccion')[:500]
+            etree.SubElement(cabecera, 'codigoSucursal').text = str(sucursal.codigo_sucursal or 0)
+            etree.SubElement(cabecera, 'direccion').text = sucursal.get_siat_direccion_completa()[:500]
 
             codigo_punto_venta = etree.SubElement(cabecera, 'codigoPuntoVenta')
-            if company.siat_codigo_punto_venta:
-                codigo_punto_venta.text = str(company.siat_codigo_punto_venta)
+            if sucursal.codigo_punto_venta:
+                codigo_punto_venta.text = str(sucursal.codigo_punto_venta)
             else:
                 codigo_punto_venta.set('{http://www.w3.org/2001/XMLSchema-instance}nil', 'true')
 
@@ -660,10 +708,10 @@ class AccountMove(models.Model):
             etree.SubElement(cabecera, 'fechaEmision').text = fecha_emision
 
             # Datos del cliente
-            etree.SubElement(cabecera, 'nombreRazonSocial').text = partner.name[:500]
+            etree.SubElement(cabecera, 'nombreRazonSocial').text = partner.siat_razon_social_facturacion[:500]
             etree.SubElement(cabecera, 'codigoTipoDocumentoIdentidad').text = str(
                 partner.siat_codigo_tipo_documento or 5)
-            etree.SubElement(cabecera, 'numeroDocumento').text = str(partner.vat)[:20]
+            etree.SubElement(cabecera, 'numeroDocumento').text = str(partner.siat_nit_facturacion)[:20]
 
             complemento_elem = etree.SubElement(cabecera, 'complemento')
             if partner.siat_complemento:
@@ -912,9 +960,11 @@ class AccountMove(models.Model):
             if not config:
                 raise ValidationError("No se encontró configuración SIAT")
 
+            sucursal = self._resolver_siat_sucursal()
+
             # Obtener CUIS
             cuis_model = self.env['alpha.siat.cuis']
-            cuis = cuis_model.get_or_fetch_cuis(company, codigo_modalidad=int(config.modalidad))
+            cuis = cuis_model.get_or_fetch_cuis(company, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
 
             # Enviar factura
             client = self.env['alpha.siat.client'].sudo()
@@ -923,7 +973,8 @@ class AccountMove(models.Model):
                 config=config,
                 cuis=cuis,
                 cufd=cufd_record.cufd,
-                xml_string=xml_string
+                xml_string=xml_string,
+                sucursal=sucursal
             )
 
             # Verificar resultado
@@ -1060,13 +1111,23 @@ class AccountMove(models.Model):
             _logger.info(f"NIT: {company.vat}")
             _logger.info(f"CUF a anular: {self.siat_cuf}")
 
+            # Usar la MISMA sucursal con la que se emitió esta factura (no la
+            # del usuario que anula, que puede ser distinta)
+            sucursal = self.siat_sucursal_id
+            if not sucursal:
+                _logger.warning(
+                    "Factura %s sin siat_sucursal_id registrado; usando sucursal "
+                    "por defecto de la compañía para la anulación.", self.name
+                )
+                sucursal = self.env['alpha.siat.sucursal'].get_default_sucursal(company)
+
             # Obtener CUIS
             cuis_model = self.env['alpha.siat.cuis']
-            cuis = cuis_model.get_or_fetch_cuis(company, codigo_modalidad=int(config.modalidad))
+            cuis = cuis_model.get_or_fetch_cuis(company, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
 
             # Obtener CUFD
             cufd_model = self.env['alpha.siat.cufd']
-            cufd = cufd_model.get_or_fetch_cufd(company)
+            cufd = cufd_model.get_or_fetch_cufd(company, sucursal=sucursal)
 
             _logger.info(f"CUIS: {cuis[:20]}...")
             _logger.info(f"CUFD: {cufd[:20]}...")
@@ -1074,9 +1135,9 @@ class AccountMove(models.Model):
             # Preparar datos de anulación
             datos_anulacion = {
                 'codigoAmbiente': int(config.codigo_ambiente),
-                'codigoPuntoVenta': company.siat_codigo_punto_venta or 0,
+                'codigoPuntoVenta': sucursal.codigo_punto_venta or 0,
                 'codigoSistema': config.codigo_sistema or '',
-                'codigoSucursal': company.siat_codigo_sucursal or 0,
+                'codigoSucursal': sucursal.codigo_sucursal or 0,
                 'nit': (company.vat or '').strip(),
                 'codigoDocumentoSector': 1,
                 'codigoEmision': 1,

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form_rehalife_seguros" model="ir.ui.view">
+        <field name="name">sale.order.form.rehalife.seguros</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_facturar_notas_conformidad" string="Facturar NC" type="object"
+                        class="btn-primary" invisible="not es_pedido_marco"/>
+            </xpath>
+
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_notas_conformidad"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-file-text-o"
+                        invisible="nota_conformidad_count == 0">
+                    <field name="nota_conformidad_count" widget="statinfo" string="Notas Conformidad"/>
+                </button>
+            </xpath>
+
+            <xpath expr="//group[@name='order_details']" position="inside">
+                <field name="es_pedido_marco"/>
+                <field name="periodo" invisible="not es_pedido_marco"/>
+                <field name="nombre_periodo" invisible="not es_pedido_marco" readonly="1"/>
+            </xpath>
+
+            <field name="order_line" position="before">
+                <div class="alert alert-info" role="alert" invisible="not es_pedido_marco">
+                    <strong>Pedido de Venta Marco:</strong> el "Unit Price"/
+                    "Precio Unitario" de cada línea representa el
+                    <strong>% que la aseguradora cubre</strong> de ese
+                    servicio (0 a 100), no un monto en Bs. — ej. 50 = cubre
+                    el 50%. El monto real (en Bs.) se calcula solo, por
+                    Nota de Conformidad, como precio del servicio × ese %.
+                </div>
+            </field>
+
+            <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="after">
+                <field name="qty_conformidad" optional="show" readonly="1"/>
+                <field name="qty_confirmada" optional="show" readonly="1"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- mode="primary": el "Customer" nativo pasa a ser la Aseguradora en
+         un Pedido de Venta Marco (decisión confirmada con el usuario,
+         2026-09-12 — antes había un campo `aseguradora_id` aparte,
+         redundante con partner_id; se borró y todo lo que lo usaba ahora
+         apunta a partner_id). Relabeled + domain solo para esta vista
+         primary (ligada a action_rehalife_seguros_pedidos_marco_form más
+         abajo) — NO se toca el campo nativo `partner_id` ni su label en el
+         resto de Sales Orders/Quotations de Odoo. -->
+    <record id="view_order_form_rehalife_seguros_pedido_marco" model="ir.ui.view">
+        <field name="name">sale.order.form.rehalife.seguros.pedido.marco</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="attributes">
+                <attribute name="string">Aseguradora</attribute>
+                <attribute name="domain">[('is_aseguradora', '=', True)]</attribute>
+                <attribute name="placeholder">Buscar aseguradora...</attribute>
+            </field>
+        </field>
+    </record>
+
+    <!-- mode="primary" (no "extension"): a propósito, para que la columna
+         "Nombre del Periodo" solo aparezca en la lista de Pedidos de Venta
+         Marco (ver action_rehalife_seguros_pedidos_marco_list más abajo), no
+         en la lista general de Sales Orders/Quotations de todo Odoo. -->
+    <record id="view_order_tree_rehalife_seguros" model="ir.ui.view">
+        <field name="name">sale.order.list.rehalife.seguros</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_tree"/>
+        <field name="mode">primary</field>
+        <field name="arch" type="xml">
+            <data>
+                <!-- Botón de impresión múltiple (TODO: filtrar por estado en
+                     una iteración futura — hoy imprime cualquier selección
+                     tal cual). Al estar en <header> de una vista
+                     mode="primary" dedicada a esta lista, actúa sobre los
+                     registros seleccionados (active_ids) sin lógica Python
+                     adicional: el reporte QWeb genera un solo PDF con un
+                     t-foreach="docs" por pedido. No aparece en la lista
+                     genérica de Sales Orders/Quotations. -->
+                <xpath expr="//list" position="inside">
+                    <header>
+                        <button name="%(rehalife_seguros.action_report_pedido_venta_marco)d"
+                                string="Imprimir Pedidos Marco (PDF)"
+                                type="action"
+                                class="btn-primary"/>
+                    </header>
+                </xpath>
+                <field name="partner_id" position="after">
+                    <field name="nombre_periodo" optional="show"/>
+                </field>
+            </data>
+        </field>
+    </record>
+
+    <record id="view_order_search_rehalife_seguros" model="ir.ui.view">
+        <field name="name">sale.order.search.rehalife.seguros</field>
+        <field name="model">sale.order</field>
+        <field name="arch" type="xml">
+            <search string="Pedidos de Venta Marco">
+                <field name="name"/>
+                <field name="partner_id" string="Aseguradora"/>
+                <field name="nombre_periodo"/>
+                <filter name="pendientes" string="Pendientes"
+                        domain="[('state', '=', 'sale'), ('invoice_status', '!=', 'invoiced')]"/>
+                <filter name="facturados_completo" string="Facturados Completo"
+                        domain="[('invoice_status', '=', 'invoiced')]"/>
+                <separator/>
+                <group string="Agrupar por">
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_periodo" string="Periodo"
+                            context="{'group_by': 'periodo'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rehalife_seguros_pedidos_marco" model="ir.actions.act_window">
+        <field name="name">Pedidos de Venta Marco</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('es_pedido_marco', '=', True)]</field>
+        <field name="context">{'default_es_pedido_marco': True, 'search_default_pendientes': 1}</field>
+        <field name="search_view_id" ref="view_order_search_rehalife_seguros"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aún no hay Pedidos de Venta Marco</p>
+        </field>
+    </record>
+
+    <record id="action_rehalife_seguros_pedidos_marco_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_order_tree_rehalife_seguros"/>
+        <field name="act_window_id" ref="action_rehalife_seguros_pedidos_marco"/>
+    </record>
+
+    <record id="action_rehalife_seguros_pedidos_marco_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_order_form_rehalife_seguros_pedido_marco"/>
+        <field name="act_window_id" ref="action_rehalife_seguros_pedidos_marco"/>
+    </record>
+
+</odoo>

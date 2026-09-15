@@ -1,4 +1,6 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_alpha_siat_sucursal,alpha.siat.sucursal,model_alpha_siat_sucursal,base.group_system,1,1,1,1
+access_alpha_siat_sucursal_user,alpha.siat.sucursal.user,model_alpha_siat_sucursal,base.group_user,1,0,0,0
 access_alpha_siat_config,alpha.siat.config,model_alpha_siat_config,base.group_system,1,1,1,1
 access_alpha_siat_cuis,alpha.siat.cuis,model_alpha_siat_cuis,base.group_system,1,1,1,1
 access_alpha_siat_cuis_user,alpha.siat.cuis.user,model_alpha_siat_cuis,base.group_user,1,0,0,0

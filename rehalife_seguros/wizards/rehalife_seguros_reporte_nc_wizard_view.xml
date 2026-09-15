@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rehalife_seguros_reporte_nc_wizard_form" model="ir.ui.view">
+        <field name="name">rehalife.seguros.reporte.nc.wizard.form</field>
+        <field name="model">rehalife.seguros.reporte.nc.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reporte de Notas de Conformidad">
+                <group>
+                    <p class="text-muted">
+                        Genera un PDF de solo consulta con las Notas de Conformidad de un
+                        Pedido de Venta Marco (no modifica ningún registro). El rango de
+                        fechas se calcula automáticamente según el período del Pedido de
+                        Venta Marco elegido. Filtrá opcionalmente por estado.
+                    </p>
+                    <!-- Se puede buscar/mostrar por "Nombre del Periodo" (ej.
+                         "Alianza-Sep26"), no solo por el número de pedido —
+                         ver _search_display_name/_compute_display_name en
+                         rehalife_seguros_sale_order.py (aplica a nivel de
+                         modelo, no hace falta nada especial en este campo). -->
+                    <field name="pedido_marco_id"/>
+                    <field name="estado"/>
+                    <field name="fecha_desde"/>
+                    <field name="fecha_hasta"/>
+                </group>
+                <footer>
+                    <button name="action_generar_pdf"
+                            string="Generar PDF"
+                            type="object"
+                            class="btn-primary"/>
+                    <button string="Cerrar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rehalife_seguros_reporte_nc_wizard" model="ir.actions.act_window">
+        <field name="name">Reportes</field>
+        <field name="res_model">rehalife.seguros.reporte.nc.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

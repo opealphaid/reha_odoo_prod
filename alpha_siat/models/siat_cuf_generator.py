@@ -86,7 +86,7 @@ class SiatCufGenerator(models.AbstractModel):
         return hex_resultado
 
     @api.model
-    def generar_cuf(self, company_id=None, numero_factura=1, fecha_hora_emision=None):
+    def generar_cuf(self, company_id=None, numero_factura=1, fecha_hora_emision=None, sucursal=None):
 
         _logger.info("=" * 80)
         _logger.info("INICIANDO GENERACIÓN DE CUF (Código Único de Factura)")
@@ -110,6 +110,10 @@ class SiatCufGenerator(models.AbstractModel):
 
         _logger.info(f"Configuración SIAT: {config.name}")
 
+        if sucursal is None:
+            sucursal = self.env['alpha.siat.sucursal'].get_default_sucursal(company)
+        _logger.info(f"Sucursal SIAT: {sucursal.name} (Suc. {sucursal.codigo_sucursal} / PDV {sucursal.codigo_punto_venta})")
+
         nit_raw = (company.vat or '').strip()
         if not nit_raw:
             raise UserError(f"La compañía '{company.name}' no tiene NIT configurado")
@@ -127,8 +131,8 @@ class SiatCufGenerator(models.AbstractModel):
         fecha_hora = now.strftime("%Y%m%d%H%M%S%f")[:-3]  # yyyyMMddHHmmssSSS
         _logger.info(f"Fecha/Hora formateada para CUF: {fecha_hora}")
 
-        sucursal_raw = company.siat_codigo_sucursal or 0
-        sucursal = self.completar_ceros(sucursal_raw, 4)
+        sucursal_raw = sucursal.codigo_sucursal or 0
+        sucursal_str = self.completar_ceros(sucursal_raw, 4)
 
 
         modalidad = config.modalidad or '1'
@@ -145,14 +149,14 @@ class SiatCufGenerator(models.AbstractModel):
         numero_factura_formateado = self.completar_ceros(numero_factura, 10)
 
 
-        pos_raw = company.siat_codigo_punto_venta or 0
+        pos_raw = sucursal.codigo_punto_venta or 0
         pos = self.completar_ceros(pos_raw, 4)
 
 
         cadena_sin_verificador = (
                 nit +
                 fecha_hora +
-                sucursal +
+                sucursal_str +
                 modalidad +
                 tipo_emision +
                 tipo_factura +
@@ -183,10 +187,12 @@ class SiatCufGenerator(models.AbstractModel):
 
         cufd_model = self.env['alpha.siat.cufd']
         try:
-            cufd_codigo = cufd_model.get_or_fetch_cufd(company)
+            cufd_codigo = cufd_model.get_or_fetch_cufd(company, sucursal=sucursal)
 
             cufd_record = cufd_model.search([
                 ('company_id', '=', company.id),
+                ('codigo_sucursal', '=', sucursal.codigo_sucursal),
+                ('codigo_punto_venta', '=', sucursal.codigo_punto_venta),
                 ('cufd', '=', cufd_codigo),
                 ('state', '=', 'valid')
             ], limit=1, order='fecha_vigencia desc')
@@ -214,7 +220,8 @@ class SiatCufGenerator(models.AbstractModel):
             'cuf': cuf_final,
             'nit': nit,
             'fecha_hora': fecha_hora,
-            'sucursal': sucursal,
+            'sucursal': sucursal_str,
+            'sucursal_id': sucursal.id,
             'modalidad': modalidad,
             'tipo_emision': tipo_emision,
             'tipo_factura': tipo_factura,

@@ -1,5 +1,7 @@
 # alpha_siat/models/__init__.py
+from . import siat_sucursal
 from . import res_company
+from . import res_users
 from . import siat_config
 from . import siat_client
 from . import siat_cuis

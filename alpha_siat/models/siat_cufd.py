@@ -103,11 +103,13 @@ class SiatCufd(models.Model):
             )
 
     @api.model
-    def get_or_fetch_cufd(self, company, codigo_modalidad=None, safety_minutes=30, force_new=False):
+    def get_or_fetch_cufd(self, company, sucursal=None, codigo_modalidad=None, safety_minutes=30, force_new=False):
         """
         Get valid CUFD or fetch a new one if expired/missing.
 
         :param company: res.company record
+        :param sucursal: alpha.siat.sucursal record (if omitted, resolves the
+            company's single default sucursal)
         :param codigo_modalidad: modalidad code (1 or 2)
         :param safety_minutes: minutes before expiration to fetch new CUFD
         :param force_new: if True, always generate a new CUFD even if valid one exists
@@ -125,17 +127,20 @@ class SiatCufd(models.Model):
                 "and assign it to the company or create one globally."
             )
 
+        if sucursal is None:
+            sucursal = self.env['alpha.siat.sucursal'].get_default_sucursal(company)
+
         modalidad = codigo_modalidad or (config.modalidad and str(config.modalidad)) or None
         if modalidad and isinstance(modalidad, int):
             modalidad = str(modalidad)
 
-        sucursal = int(company.siat_codigo_sucursal or 0)
-        punto = int(company.siat_codigo_punto_venta or 0)
+        codigo_sucursal = int(sucursal.codigo_sucursal or 0)
+        codigo_punto_venta = int(sucursal.codigo_punto_venta or 0)
 
         # First get CUIS (required for CUFD request)
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(company, codigo_modalidad=int(modalidad))
+            cuis = cuis_model.get_or_fetch_cuis(company, sucursal=sucursal, codigo_modalidad=int(modalidad))
         except Exception as e:
             raise UserError(f"Cannot obtain CUFD without valid CUIS: {e}")
 
@@ -149,8 +154,8 @@ class SiatCufd(models.Model):
 
             rec = self.search([
                 ('company_id', '=', company.id),
-                ('codigo_sucursal', '=', sucursal),
-                ('codigo_punto_venta', '=', punto),
+                ('codigo_sucursal', '=', codigo_sucursal),
+                ('codigo_punto_venta', '=', codigo_punto_venta),
                 ('modalidad', '=', modalidad),
                 ('state', '=', 'valid'),
                 ('archived', '=', False),
@@ -160,7 +165,7 @@ class SiatCufd(models.Model):
                 fv = rec.fecha_vigencia
                 expiration = fv + timedelta(hours=24) if fv else None
                 if expiration and expiration > (now_dt + safety_delta):
-                    _logger.info("Using existing valid CUFD for company %s", company.name)
+                    _logger.info("Using existing valid CUFD for company %s / sucursal %s", company.name, sucursal.name)
                     return rec.cufd
                 else:
                     _logger.info("CUFD expired or about to expire, fetching new one")
@@ -168,15 +173,15 @@ class SiatCufd(models.Model):
 
         # Fetch new CUFD
         client = self.env['alpha.siat.client'].sudo()
-        resp = client.call_cufd(company, config, cuis)
+        resp = client.call_cufd(company, config, cuis, sucursal)
 
         if not resp or resp.get('error'):
             # Create error record
             try:
                 self.create({
                     'company_id': company.id,
-                    'codigo_sucursal': sucursal,
-                    'codigo_punto_venta': punto,
+                    'codigo_sucursal': codigo_sucursal,
+                    'codigo_punto_venta': codigo_punto_venta,
                     'modalidad': modalidad,
                     'cufd': resp.get('codigo') if resp and resp.get('codigo') else '',
                     'codigo_control': '',
@@ -196,13 +201,13 @@ class SiatCufd(models.Model):
             )
 
         # Archive previous valid CUFDs
-        self._mark_existing_as_archived(company.id, sucursal, punto, modalidad)
+        self._mark_existing_as_archived(company.id, codigo_sucursal, codigo_punto_venta, modalidad)
 
         # Create new CUFD record
         new_vals = {
             'company_id': company.id,
-            'codigo_sucursal': sucursal,
-            'codigo_punto_venta': punto,
+            'codigo_sucursal': codigo_sucursal,
+            'codigo_punto_venta': codigo_punto_venta,
             'modalidad': modalidad,
             'cufd': resp['codigo'],
             'codigo_control': resp.get('codigoControl', ''),
@@ -220,23 +225,28 @@ class SiatCufd(models.Model):
     @api.model
     def cron_generate_daily_cufd(self):
         """
-        Cron job to generate CUFD daily for all companies with SIAT configuration.
+        Cron job to generate CUFD daily for every active Sucursal SIAT
+        belonging to a company with SIAT configuration.
         Should be scheduled to run once per day.
         """
         _logger.info("Starting daily CUFD generation cron job")
 
-        companies = self.env['res.company'].search([
-            ('siat_config_id', '!=', False)
+        sucursales = self.env['alpha.siat.sucursal'].search([
+            ('active', '=', True),
+            ('company_id.siat_config_id', '!=', False),
         ])
 
-        for company in companies:
+        for sucursal in sucursales:
             try:
-                _logger.info("Generating CUFD for company: %s", company.name)
-                self.get_or_fetch_cufd(company)
+                _logger.info(
+                    "Generating CUFD for company: %s / sucursal: %s",
+                    sucursal.company_id.name, sucursal.name
+                )
+                self.get_or_fetch_cufd(sucursal.company_id, sucursal=sucursal)
             except Exception as e:
                 _logger.error(
-                    "Failed to generate CUFD for company %s: %s",
-                    company.name, str(e)
+                    "Failed to generate CUFD for company %s / sucursal %s: %s",
+                    sucursal.company_id.name, sucursal.name, str(e)
                 )
 
         _logger.info("Completed daily CUFD generation cron job")

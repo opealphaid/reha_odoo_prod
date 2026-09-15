@@ -62,7 +62,7 @@ class SiatCuis(models.Model):
             raise UserError("Cannot request CUIS. Missing required configuration/fields: %s" % (", ".join(missing)))
 
     @api.model
-    def get_or_fetch_cuis(self, company, codigo_modalidad=None, safety_minutes=5):
+    def get_or_fetch_cuis(self, company, sucursal=None, codigo_modalidad=None, safety_minutes=5):
         if isinstance(company, (int,)):
             company = self.env['res.company'].browse(company)
         if not company or not company.exists():
@@ -71,19 +71,22 @@ class SiatCuis(models.Model):
         if not config:
             raise UserError("SIAT configuration not found. Please create a SIAT configuration and assign it to the company or create one globally.")
 
+        if sucursal is None:
+            sucursal = self.env['alpha.siat.sucursal'].get_default_sucursal(company)
+
         modalidad = codigo_modalidad or (config.modalidad and str(config.modalidad)) or None
         if modalidad and isinstance(modalidad, int):
             modalidad = str(modalidad)
 
-        sucursal = int(company.siat_codigo_sucursal or 0)
-        punto = int(company.siat_codigo_punto_venta or 0)
+        codigo_sucursal = int(sucursal.codigo_sucursal or 0)
+        codigo_punto_venta = int(sucursal.codigo_punto_venta or 0)
         self._validate_before_request(company, config, modalidad)
         safety_delta = timedelta(minutes=int(safety_minutes))
         now_dt = fields.Datetime.now()
         rec = self.search([
             ('company_id', '=', company.id),
-            ('codigo_sucursal', '=', sucursal),
-            ('codigo_punto_venta', '=', punto),
+            ('codigo_sucursal', '=', codigo_sucursal),
+            ('codigo_punto_venta', '=', codigo_punto_venta),
             ('modalidad', '=', modalidad),
             ('state', '=', 'valid'),
             ('archived', '=', False),
@@ -96,13 +99,13 @@ class SiatCuis(models.Model):
             else:
                 rec.write({'state': 'expired', 'archived': True})
         client = self.env['alpha.siat.client'].sudo()
-        resp = client.call_cuis(company, config)
+        resp = client.call_cuis(company, config, sucursal)
         if not resp or resp.get('error'):
             try:
                 self.create({
                     'company_id': company.id,
-                    'codigo_sucursal': sucursal,
-                    'codigo_punto_venta': punto,
+                    'codigo_sucursal': codigo_sucursal,
+                    'codigo_punto_venta': codigo_punto_venta,
                     'modalidad': modalidad,
                     'cuis': resp.get('codigo') if resp and resp.get('codigo') else '',
                     'fecha_vigencia': fields.Datetime.now(),
@@ -114,11 +117,11 @@ class SiatCuis(models.Model):
             except Exception as e:
                 _logger.exception("Failed to create CUIS error record: %s", e)
             raise UserError("Error obtaining CUIS: %s" % ((resp.get('mensajes') if resp else 'No response') or 'Unknown error'))
-        self._mark_existing_as_archived(company.id, sucursal, punto, modalidad)
+        self._mark_existing_as_archived(company.id, codigo_sucursal, codigo_punto_venta, modalidad)
         new_vals = {
             'company_id': company.id,
-            'codigo_sucursal': sucursal,
-            'codigo_punto_venta': punto,
+            'codigo_sucursal': codigo_sucursal,
+            'codigo_punto_venta': codigo_punto_venta,
             'modalidad': modalidad,
             'cuis': resp['codigo'],
             'fecha_vigencia': resp.get('vigencia') or fields.Datetime.now(),

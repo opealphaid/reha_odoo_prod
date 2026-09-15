@@ -8,6 +8,23 @@ _logger = logging.getLogger(__name__)
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
+    @api.model
+    def _default_siat_tipo_documento_identidad_id(self):
+        tipo_doc_model = self.env['alpha.siat.tipo.documento.identidad']
+
+        # Preferir CI (codigo_clasificador=1) de la compañía activa
+        tipo = tipo_doc_model.search([
+            ('codigo_clasificador', '=', 1),
+            ('company_id', '=', self.env.company.id),
+            ('active', '=', True),
+        ], limit=1)
+
+        # Si no hay tipos sincronizados aún, caer a cualquier tipo activo disponible
+        if not tipo:
+            tipo = tipo_doc_model.search([('active', '=', True)], limit=1)
+
+        return tipo.id if tipo else False
+
     # SIAT Homologation Fields for Customers
     siat_tipo_documento_identidad_id = fields.Many2one(
         'alpha.siat.tipo.documento.identidad',
@@ -15,13 +32,14 @@ class ResPartner(models.Model):
         help='Tipo de documento de identidad según catálogo SIAT',
         domain="[('active', '=', True)]",
         index=True,
-        required=True  # Obligatorio
+        required=True,  # Obligatorio
+        default=lambda self: self._default_siat_tipo_documento_identidad_id()
     )
 
-    # Make VAT (NIT/CI) required for customers with SIAT
+    # Make VAT (CI) required for customers with SIAT
     vat = fields.Char(
-        string='NIT/CI',
-        help='Número de Identificación Tributaria o Cédula de Identidad',
+        string='CI',
+        help='Cédula de Identidad',
         index=True,
         tracking=True,
         required=True  # Obligatorio
@@ -31,6 +49,18 @@ class ResPartner(models.Model):
         string='Complemento',
         size=10,
         help='Complemento del documento de identidad (ej: 1A, 2B)',
+        tracking=True
+    )
+
+    siat_razon_social_facturacion = fields.Char(
+        string='Razón Social para Facturación',
+        help='Nombre a utilizar en la factura SIAT, independiente de la identidad real del contacto',
+        tracking=True
+    )
+
+    siat_nit_facturacion = fields.Char(
+        string='NIT/CI para Facturación',
+        help='Número de documento a utilizar en la factura SIAT, independiente del NIT/CI real (vat)',
         tracking=True
     )
 
@@ -72,26 +102,26 @@ class ResPartner(models.Model):
         readonly=True
     )
 
-    @api.depends('vat', 'siat_complemento')
+    @api.depends('siat_nit_facturacion', 'siat_complemento')
     def _compute_siat_documento_completo(self):
 
         for partner in self:
-            if partner.vat:
+            if partner.siat_nit_facturacion:
                 if partner.siat_complemento:
-                    partner.siat_documento_completo = f"{partner.vat}-{partner.siat_complemento}"
+                    partner.siat_documento_completo = f"{partner.siat_nit_facturacion}-{partner.siat_complemento}"
                 else:
-                    partner.siat_documento_completo = partner.vat
+                    partner.siat_documento_completo = partner.siat_nit_facturacion
             else:
                 partner.siat_documento_completo = False
 
-    @api.depends('vat')
+    @api.depends('siat_nit_facturacion')
     def _compute_codigo_cliente(self):
 
         for partner in self:
-            if partner.vat:
-                # Limpiar el VAT de guiones y espacios
-                vat_clean = partner.vat.replace('-', '').replace(' ', '')
-                partner.codigo_cliente = f"CLI{vat_clean}"
+            if partner.siat_nit_facturacion:
+                # Limpiar el NIT/CI de facturación de guiones y espacios
+                nit_clean = partner.siat_nit_facturacion.replace('-', '').replace(' ', '')
+                partner.codigo_cliente = f"CLI{nit_clean}"
             else:
                 partner.codigo_cliente = False
 
@@ -111,6 +141,14 @@ class ResPartner(models.Model):
 
     @api.onchange('siat_tipo_documento_identidad_id')
     def _onchange_siat_tipo_documento_identidad(self):
+
+        # Solo advertir si alguien cambia manualmente el tipo de documento en un
+        # contacto YA GUARDADO, no cuando se autocompleta por default al crear uno nuevo
+        es_registro_existente = bool(self._origin.id)
+        cambio_manual = self._origin.siat_tipo_documento_identidad_id != self.siat_tipo_documento_identidad_id
+
+        if not (es_registro_existente and cambio_manual):
+            return
 
         if self.siat_tipo_documento_identidad_id:
             tipo = self.siat_tipo_documento_identidad_id.descripcion.upper()
@@ -133,6 +171,17 @@ class ResPartner(models.Model):
                         'message': _('Para NIT, ingrese el número sin guiones ni espacios.')
                     }
                 }
+
+    @api.constrains('siat_nit_facturacion')
+    def _check_siat_nit_facturacion(self):
+
+        for partner in self:
+            if partner.siat_nit_facturacion == '0':
+                raise ValidationError(_(
+                    "NIT/CI para Facturación inválido: '0' no es un valor válido para SIAT.\n\n"
+                    "Usa '0000000' si no tienes datos de facturación configurados, o el NIT/CI "
+                    "real para facturación de este cliente."
+                ))
 
     @api.constrains('vat', 'siat_tipo_documento_identidad_id', 'customer_rank')
     def _check_siat_customer_fields(self):
@@ -271,3 +320,12 @@ class ResPartner(models.Model):
 
         company = self.env.company
         return company.action_sync_tipos_documento_identidad()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('siat_razon_social_facturacion'):
+                vals['siat_razon_social_facturacion'] = 'S/N'
+            if not vals.get('siat_nit_facturacion'):
+                vals['siat_nit_facturacion'] = '0000000'
+        return super().create(vals_list)

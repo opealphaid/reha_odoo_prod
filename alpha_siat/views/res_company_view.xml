@@ -23,6 +23,16 @@
                     </div>
                 </button>
 
+                <!-- Botón Sucursales SIAT -->
+                <button name="action_open_sucursales"
+                        type="object"
+                        class="oe_stat_button"
+                        icon="fa-map-marker"
+                        groups="base.group_system"
+                        context="{'default_company_id': id}">
+                    <field name="sucursal_count" widget="statinfo" string="Sucursales"/>
+                </button>
+
                 <!-- Botones de contadores existentes -->
                 <button name="action_open_cuis_history"
                         type="object"

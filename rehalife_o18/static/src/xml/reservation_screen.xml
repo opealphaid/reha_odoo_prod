@@ -5,6 +5,18 @@
     <Dialog title="'Reservas Pendientes de Cobro'" size="'xl'">
 
       <div>
+        <!-- ── Tabs ── -->
+        <div class="d-flex gap-2 mb-2">
+          <button t-att-class="state.tab === 'reservas' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'"
+                  t-on-click="() => state.tab = 'reservas'">
+            Reservas
+          </button>
+          <button t-att-class="state.tab === 'facturas' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'"
+                  t-on-click="() => state.tab = 'facturas'">
+            Facturas para Aseguradoras
+          </button>
+        </div>
+
         <!-- ── Barra de búsqueda ── -->
         <div class="d-flex gap-2 mb-3 p-2 bg-light rounded">
           <div class="input-group">
@@ -13,10 +25,10 @@
             </span>
             <input type="text"
                    class="form-control"
-                   placeholder="Buscar por paciente..."
+                   t-att-placeholder="state.tab === 'reservas' ? 'Buscar por paciente...' : 'Buscar por aseguradora...'"
                    t-model="state.searchName"/>
           </div>
-          <div class="input-group">
+          <div class="input-group" t-if="state.tab === 'reservas'">
             <span class="input-group-text">
               <i class="fa fa-building"/>
             </span>
@@ -32,8 +44,8 @@
           </button>
         </div>
 
-        <!-- ── Contenido ── -->
-        <div style="max-height:460px; overflow-y:auto;">
+        <!-- ── Contenido: Reservas ── -->
+        <div style="max-height:460px; overflow-y:auto;" t-if="state.tab === 'reservas'">
 
           <div t-if="state.loading" class="text-center p-5">
             <div class="spinner-border text-primary" role="status"/>
@@ -58,12 +70,13 @@
                 <th>Especialidad</th>
                 <th>Doctor</th>
                 <th>Sucursal</th>
+                <th>Paciente Paga</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               <t t-foreach="filteredReservations" t-as="res" t-key="res.id">
-                <tr>
+                <tr t-att-class="isAdded(res) ? 'table-warning' : ''">
                   <td><strong><t t-esc="res.partner_id[1]"/></strong></td>
                   <td><t t-esc="res.reservation_date"/></td>
                   <td><t t-esc="res.reservation_time || '—'"/></td>
@@ -71,7 +84,20 @@
                   <td><t t-esc="res.doctor_name || '—'"/></td>
                   <td><t t-esc="res.branch_name || '—'"/></td>
                   <td>
-                    <button class="btn btn-primary btn-sm"
+                    <t t-if="res.modalidad === 'seguro'">
+                      <t t-esc="res.monto_a_pagar_paciente.toFixed(2)"/> Bs.
+                      <span t-if="!res.monto_cobertura_seguro" class="badge bg-warning text-dark ms-1"
+                            title="Sin Cobertura configurada para esta aseguradora/servicio">
+                        ⚠️ sin cobertura
+                      </span>
+                    </t>
+                    <t t-else="">—</t>
+                  </td>
+                  <td>
+                    <span t-if="isAdded(res)" class="badge bg-success me-1">
+                      ✓ Ya agregada
+                    </span>
+                    <button t-att-class="isAdded(res) ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm'"
                             t-on-click="() => this.selectReservation(res)">
                       Cobrar
                     </button>
@@ -83,11 +109,71 @@
 
         </div>
 
+        <!-- ── Contenido: Facturas para Aseguradoras (solo consulta) ── -->
+        <div style="max-height:460px; overflow-y:auto;" t-if="state.tab === 'facturas'">
+
+          <div t-if="state.loadingFacturas" class="text-center p-5">
+            <div class="spinner-border text-primary" role="status"/>
+            <p class="mt-2">Cargando facturas...</p>
+          </div>
+
+          <div t-elif="filteredFacturasAseguradoras.length === 0"
+               class="text-center p-5 text-muted">
+            <i class="fa fa-search fa-3x mb-3"/>
+            <p t-if="state.searchName">
+              No se encontraron facturas con ese filtro.
+            </p>
+            <p t-else="">No hay facturas de aseguradoras pendientes de pago.</p>
+          </div>
+
+          <table t-else="" class="table table-hover table-sm mb-0">
+            <thead class="table-light sticky-top">
+              <tr>
+                <th>Aseguradora</th>
+                <th>Referencia</th>
+                <th>Importe</th>
+                <th>Estado</th>
+                <th>Pago</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <t t-foreach="filteredFacturasAseguradoras" t-as="factura" t-key="factura.id">
+                <tr>
+                  <td><strong><t t-esc="factura.partner_id[1]"/></strong></td>
+                  <td><t t-esc="factura.invoice_origin || factura.name || '—'"/></td>
+                  <td><t t-esc="factura.amount_total"/></td>
+                  <td><t t-esc="moveStateLabel(factura.state)"/></td>
+                  <td><t t-esc="paymentStateLabel(factura.payment_state)"/></td>
+                  <td>
+                    <button class="btn btn-outline-primary btn-sm"
+                            t-on-click="() => this.openFactura(factura)">
+                      Ver Factura
+                    </button>
+                  </td>
+                </tr>
+              </t>
+            </tbody>
+          </table>
+
+          <p class="text-muted small px-2 pt-2">
+            Cada factura corresponde a una Nota de Conformidad aprobada — se
+            genera y se cobra desde Seguros (Notas de Conformidad /
+            Contabilidad), no desde este POS.
+          </p>
+
+        </div>
+
         <!-- ── Contador ── -->
         <div class="text-muted text-end small pt-2 pe-1"
-             t-if="!state.loading">
+             t-if="state.tab === 'reservas' and !state.loading">
           <t t-esc="filteredReservations.length"/> de
           <t t-esc="state.reservations.length"/> reservas
+        </div>
+        <div class="text-muted text-end small pt-2 pe-1"
+             t-if="state.tab === 'facturas' and !state.loadingFacturas">
+          <t t-esc="filteredFacturasAseguradoras.length"/> de
+          <t t-esc="state.facturasAseguradoras.length"/> facturas
         </div>
       </div>
 

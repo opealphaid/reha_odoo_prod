@@ -7,6 +7,7 @@
         <field name="arch" type="xml">
             <xpath expr="//sheet" position="inside">
                 <group string="Facturacion SIAT" invisible="not siat_xml_factura">
+                    <field name="siat_sucursal_id"/>
                     <field name="siat_cuf"/>
                     <field name="siat_xml_factura" widget="ace" options="{'mode': 'xml'}"/>
                 </group>

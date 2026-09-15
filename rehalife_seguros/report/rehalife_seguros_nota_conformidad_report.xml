@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_nota_conformidad" model="ir.actions.report">
+        <field name="name">Nota de Conformidad</field>
+        <field name="model">rehalife.nota.conformidad</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rehalife_seguros.report_nota_conformidad_document</field>
+        <field name="report_file">rehalife_seguros.report_nota_conformidad_document</field>
+        <field name="binding_model_id" ref="model_rehalife_nota_conformidad"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Nota de Conformidad - %s' % (object.name)</field>
+    </record>
+
+    <!-- Rediseño 2026-09-15 (corregido el mismo día): formato
+         administrativo/financiero a pedido del usuario, sin sección
+         clínica (decisión confirmada: el reporte queda 100% así).
+         "Cliente" = la aseguradora (decisión confirmada).
+
+         CORRECCIÓN: el primer intento quitó `web.external_layout` para
+         armar un header 100% a mano — eso rompió la codificación de
+         caracteres (acentos/ñ salían como "Ã©", "Ã±", y los espacios
+         `&#160;` como "Â") en el PDF generado por wkhtmltopdf. Se volvió a
+         `web.external_layout` (el mismo que ya usaba el reporte viejo,
+         comprobado que renderiza bien los acentos) — el logo/nombre/
+         dirección de la empresa los pone ese layout solo (header nativo,
+         fijo en cada página), y "NOTA DE CONFORMIDAD" + Número/Moneda/
+         Fecha se arman como bloque propio dentro de la página, debajo del
+         header nativo (no se puede poner al lado del logo: el header de
+         `external_layout` es un bloque aparte que wkhtmltopdf imprime fijo
+         arriba de cada página, no comparte fila con el contenido). También
+         se quitaron todos los `&#160;` (espacios normales en su lugar) —
+         eran la otra fuente del texto corrupto ("Â").
+
+         El t-foreach de docs sigue fuera de cualquier per-doc layout,
+         dentro de un solo `web.html_container` — seleccionar varias NC en
+         la lista sigue generando un solo PDF combinado (no se tocó). -->
+    <template id="report_nota_conformidad_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-size: 10.5px; color: #212529;">
+
+                        <!-- ── Título + datos del documento ── -->
+                        <table style="width: 100%; border-bottom: 2px solid #1F3864; padding-bottom: 8px; margin-bottom: 10px;">
+                            <tr>
+                                <td style="width: 50%;"/>
+                                <td style="width: 50%; vertical-align: top; text-align: right;">
+                                    <div style="font-size: 20px; font-weight: bold; color: #2E75B6;">
+                                        NOTA DE CONFORMIDAD
+                                    </div>
+                                    <table style="width: 100%; margin-top: 6px;">
+                                        <tr>
+                                            <td style="text-align: right; color: #2E75B6; font-weight: bold; white-space: nowrap;">Número :</td>
+                                            <td style="text-align: right;"><span t-field="doc.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: right; color: #2E75B6; font-weight: bold; white-space: nowrap;">Moneda :</td>
+                                            <td style="text-align: right;"><span t-field="doc.currency_id.name"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: right; color: #2E75B6; font-weight: bold; white-space: nowrap;">Fecha :</td>
+                                            <td style="text-align: right;"><span t-field="doc.fecha_emision"/></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ── Cliente (aseguradora) | Pedido de Venta Marco / Vendedor ── -->
+                        <table style="width: 100%; margin-bottom: 10px;">
+                            <tr>
+                                <td style="width: 60%; vertical-align: top;">
+                                    <table style="width: 100%;">
+                                        <tr>
+                                            <td style="width: 90px;"><strong>Cliente</strong></td>
+                                            <td>
+                                                :
+                                                <span t-field="doc.aseguradora_id.vat"/>
+                                                <t t-if="doc.aseguradora_id.vat"> | </t>
+                                                <span t-field="doc.aseguradora_id.name"/>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Dirección</strong></td>
+                                            <td>: <span t-field="doc.aseguradora_id.street"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Teléfono</strong></td>
+                                            <td>: <span t-field="doc.aseguradora_id.phone"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Correo</strong></td>
+                                            <td>: <span t-field="doc.aseguradora_id.email"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Contacto</strong></td>
+                                            <td>:</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width: 40%; vertical-align: top;">
+                                    <table style="width: 100%;">
+                                        <tr>
+                                            <td style="width: 110px;"><strong>Pedidos de venta</strong></td>
+                                            <td>
+                                                :
+                                                <span t-field="doc.pedido_marco_id.name"/>
+                                                <t t-if="doc.pedido_marco_id.date_order"> | <span t-field="doc.pedido_marco_id.date_order" t-options="{'widget': 'date'}"/></t>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Vendedor</strong></td>
+                                            <td>: <span t-field="doc.pedido_marco_id.user_id.name"/></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ── Tabla del servicio (una sola línea: la propia NC) ── -->
+                        <table class="table table-sm" style="width: 100%; border-collapse: collapse; margin-bottom: 0;">
+                            <thead>
+                                <!-- color/font-weight puestos en CADA th, a propósito: el
+                                     CSS de Bootstrap (`.table th`) le gana en especificidad
+                                     al `color` heredado del <tr>, por eso antes salía en un
+                                     azul clarito en vez de blanco. -->
+                                <tr style="background-color: #1F3864;">
+                                    <th style="padding: 4px 6px; color: #fff; font-weight: bold;">CÓDIGO</th>
+                                    <th style="padding: 4px 6px; color: #fff; font-weight: bold;">DESCRIPCIÓN</th>
+                                    <th style="padding: 4px 6px; color: #fff; font-weight: bold;">UM</th>
+                                    <th style="padding: 4px 6px; text-align: right; color: #fff; font-weight: bold;">CANT.</th>
+                                    <th style="padding: 4px 6px; text-align: right; color: #fff; font-weight: bold;">P.UNITARIO</th>
+                                    <th style="padding: 4px 6px; text-align: right; color: #fff; font-weight: bold;">SUBTOTAL</th>
+                                    <th style="padding: 4px 6px; text-align: right; color: #fff; font-weight: bold;">DESCUENTO</th>
+                                    <th style="padding: 4px 6px; text-align: right; color: #fff; font-weight: bold;">TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #ccc;">
+                                    <td style="padding: 4px 6px;"><span t-field="doc.product_id.default_code"/></td>
+                                    <td style="padding: 4px 6px;"><span t-field="doc.servicio_nombre"/></td>
+                                    <td style="padding: 4px 6px;"><span t-field="doc.product_id.uom_id.name"/></td>
+                                    <td style="padding: 4px 6px; text-align: right;"><span t-field="doc.cantidad"/></td>
+                                    <td style="padding: 4px 6px; text-align: right;"><span t-field="doc.monto_cubierto" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                    <td style="padding: 4px 6px; text-align: right;"><span t-field="doc.importe_total" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                    <td style="padding: 4px 6px; text-align: right;">0.00</td>
+                                    <td style="padding: 4px 6px; text-align: right;"><span t-field="doc.importe_total" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- ── Observaciones | Totales ── -->
+                        <table style="width: 100%; margin-top: 10px;">
+                            <tr>
+                                <td style="width: 55%; vertical-align: top; padding-right: 12px;">
+                                    <table style="width: 100%; border: 1px solid #ccc; border-collapse: collapse;">
+                                        <tr style="background-color: #1F3864; color: #fff;">
+                                            <td style="padding: 3px 6px;"><strong>Observaciones</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="height: 55px; padding: 4px 6px;"> </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                                <td style="width: 45%; vertical-align: top;">
+                                    <table style="width: 100%;">
+                                        <tr>
+                                            <td style="text-align: right;">Subtotal :</td>
+                                            <td style="text-align: right; width: 100px;"><span t-field="doc.importe_total" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="text-align: right;">Descuento :</td>
+                                            <td style="text-align: right;">0.00</td>
+                                        </tr>
+                                        <tr style="font-weight: bold; font-size: 14px;">
+                                            <td style="text-align: right; border-top: 1px solid #000;">TOTAL :</td>
+                                            <td style="text-align: right; border-top: 1px solid #000;"><span t-field="doc.importe_total" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- ── Usuario / Fecha de registro ── -->
+                        <!-- A propósito NO usan doc.create_uid/doc.create_date (quién y
+                             cuándo se CREÓ el registro en Odoo) — el usuario pidió que
+                             "Usuario" refleje quién genera el PDF en este momento, así
+                             que los dos campos (Usuario + Fecha registro) toman la sesión
+                             actual (env.user) y la hora actual, no la del registro. -->
+                        <table style="width: 100%; margin-top: 10px;">
+                            <tr>
+                                <td style="width: 50%;"><strong>Usuario</strong> : <span t-esc="env.user.name"/></td>
+                                <td style="width: 50%;"><strong>Fecha registro</strong> : <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M:%S')"/></td>
+                            </tr>
+                        </table>
+
+                        <!-- ── Firmas ── -->
+                        <table style="width: 100%; margin-top: 55px;">
+                            <tr>
+                                <td style="width: 50%; text-align: center; border-top: 1px solid #000; padding-top: 4px;">
+                                    ELABORADO POR
+                                </td>
+                                <td style="width: 50%; text-align: center; border-top: 1px solid #000; padding-top: 4px;">
+                                    RECIBIDO POR<br/>
+                                    Nombre: ..................................................<br/>
+                                    CI: ..................................................
+                                </td>
+                            </tr>
+                        </table>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

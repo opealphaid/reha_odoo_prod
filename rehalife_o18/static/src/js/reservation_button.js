@@ -11,17 +11,32 @@ import { usePos } from "@point_of_sale/app/store/pos_hook";
 export class ReservationDialog extends Component {
     static template = "rehalife_o18.ReservationDialog";
     static components = { Dialog };
-    static props = { close: Function, onSelect: Function };
+    static props = {
+        close: Function,
+        onSelect: Function,
+        addedReservationIds: { type: Set, optional: true },
+    };
 
     setup() {
         this.orm   = useService("orm");
+        this.addedReservationIds = this.props.addedReservationIds || new Set();
         this.state = useState({
+            tab: 'reservas',
             reservations: [],
             loading: true,
+            facturasAseguradoras: [],
+            loadingFacturas: true,
             searchName:   '',
             searchBranch: '',
         });
-        onMounted(() => this._load());
+        onMounted(() => {
+            this._load();
+            this._loadFacturasAseguradoras();
+        });
+    }
+
+    isAdded(res) {
+        return this.addedReservationIds.has(res.id);
     }
 
     get filteredReservations() {
@@ -39,24 +54,87 @@ export class ReservationDialog extends Component {
     });
 }
 
+    get filteredFacturasAseguradoras() {
+        const name = this.state.searchName.toLowerCase().trim();
+        return this.state.facturasAseguradoras.filter(factura => {
+            const aseguradoraName = (factura.partner_id[1] || '').toLowerCase();
+            return !name || aseguradoraName.includes(name);
+        });
+    }
+
+    // Etiquetas en español para account.move.state (borrador/publicada).
+    moveStateLabel(value) {
+        const labels = { draft: 'Borrador', posted: 'Publicada', cancel: 'Cancelada' };
+        return labels[value] || value || '—';
+    }
+
+    // Etiquetas en español para account.move.payment_state (no todos los
+    // valores nativos de Odoo se traducen solos en un searchRead).
+    paymentStateLabel(value) {
+        const labels = {
+            not_paid: 'Sin Pagar',
+            in_payment: 'En Proceso de Pago',
+            paid: 'Pagada',
+            partial: 'Pago Parcial',
+            reversed: 'Revertida',
+        };
+        return labels[value] || value || '—';
+    }
+
     async _load() {
         try {
             this.state.reservations = await this.orm.searchRead(
                 "rehalife.reservation",
                 [
                     ["invoice_status", "=", "pending"],
-                    ["status",         "=", "COMPLETED"],
+                    ["status",         "in", ["IN_ROOM", "IN_CONSULTATION", "COMPLETED"]],
                 ],
                 [
                     "id", "partner_id", "reservation_date",
                     "reservation_time", "sub_specialty",
                     "doctor_name", "branch_name",
+                    "service_type_external_id", "service_type_name",
+                    "modalidad", "monto_a_pagar_paciente", "monto_cobertura_seguro",
                 ],
                 { limit: 50, order: "reservation_date desc" }
             );
         } finally {
             this.state.loading = false;
         }
+    }
+
+    // Solo consulta y enlace al backend — la facturación se dispara al
+    // aprobar cada Nota de Conformidad (una factura por NC, ver
+    // rehalife.nota.conformidad.action_aprobar), no se cobra desde el POS
+    // (decisión confirmada con el usuario). Se consulta account.move
+    // directo (no sale.order/Pedido Marco): un Pedido Marco puede tener
+    // ahora varias facturas —una por NC aprobada—, ya no una sola.
+    async _loadFacturasAseguradoras() {
+        try {
+            this.state.facturasAseguradoras = await this.orm.searchRead(
+                "account.move",
+                [
+                    ["move_type", "=", "out_invoice"],
+                    ["state", "!=", "cancel"],
+                    ["partner_id.is_aseguradora", "=", true],
+                    ["payment_state", "!=", "paid"],
+                ],
+                [
+                    "id", "name", "partner_id", "invoice_origin",
+                    "amount_total", "state", "payment_state",
+                ],
+                { limit: 50, order: "id desc" }
+            );
+        } finally {
+            this.state.loadingFacturas = false;
+        }
+    }
+
+    openFactura(factura) {
+        window.open(
+            `/web#id=${factura.id}&model=account.move&view_type=form`,
+            "_blank"
+        );
     }
 
     async selectReservation(res) {
@@ -75,7 +153,15 @@ patch(ProductScreen.prototype, {
     },
 
     openReservations() {
+        const order = this._pos.selectedOrder;
+        const addedReservationIds = new Set(
+            (order?.lines || [])
+                .map(line => line.rehalife_reservation_id?.id ?? line.rehalife_reservation_id)
+                .filter(Boolean)
+        );
+
         this._dialog.add(ReservationDialog, {
+            addedReservationIds,
             onSelect: async (res) => {
                 const pos = this._pos;
                 const orm = this._orm;
@@ -109,14 +195,37 @@ patch(ProductScreen.prototype, {
                     console.warn("[Reservas] Error cargando partner:", e);
                 }
 
-                // ── 2. Agregar línea con producto Consulta ────────────────
+                // ── 2. Agregar línea con el producto del servicio real ────
                 try {
-                    const products = await orm.searchRead(
-                        "product.product",
-                        [["name", "=", "Consulta"], ["active", "=", true]],
-                        ["id", "list_price"],
-                        { limit: 1 }
-                    );
+                    let products = [];
+
+                    if (res.service_type_external_id) {
+                        products = await orm.searchRead(
+                            "product.product",
+                            [
+                                ["product_tmpl_id.rehalife_external_id", "=", res.service_type_external_id],
+                                ["product_tmpl_id.available_in_pos", "=", true],
+                                ["active", "=", true],
+                            ],
+                            ["id", "list_price"],
+                            { limit: 1 }
+                        );
+                        if (!products.length) {
+                            console.warn(
+                                "[Reservas] Servicio aún no homologado/activo en POS, usando fallback 'Consulta':",
+                                res.service_type_name || res.service_type_external_id
+                            );
+                        }
+                    }
+
+                    if (!products.length) {
+                        products = await orm.searchRead(
+                            "product.product",
+                            [["name", "=", "Consulta"], ["active", "=", true]],
+                            ["id", "list_price"],
+                            { limit: 1 }
+                        );
+                    }
 
                     if (!products.length) {
                         console.warn("[Reservas] Producto Consulta no encontrado en DB");
@@ -132,25 +241,50 @@ patch(ProductScreen.prototype, {
                     }
 
                     if (product) {
+                        const patientName = Array.isArray(res.partner_id)
+                            ? res.partner_id[1]
+                            : "";
+
+                        // Modalidad Seguro (HU-12): el paciente solo paga su
+                        // parte — precio del servicio menos lo que cubre la
+                        // aseguradora, calculado en Odoo (NO en el frontend)
+                        // a partir de la Nota de Conformidad de la reserva
+                        // (rehalife.reservation._compute_cobertura_seguro).
+                        // El monto que cubre la aseguradora NO se cobra en
+                        // esta orden de POS — se factura aparte, al
+                        // aprobarse esa Nota de Conformidad.
+                        const esSeguro = res.modalidad === "seguro";
+                        const priceUnit = esSeguro
+                            ? res.monto_a_pagar_paciente
+                            : (products[0].list_price || 0);
+                        let nombreLinea = `Reserva — ${res.sub_specialty || "General"} (${patientName})`;
+                        if (esSeguro) {
+                            nombreLinea += ` — Seguro cubre ${res.monto_cobertura_seguro.toFixed(2)} Bs.`;
+                            if (!res.monto_cobertura_seguro) {
+                                nombreLinea += " ⚠️ SIN NOTA DE CONFORMIDAD TODAVÍA — verificar el Pedido de Venta Marco de la reserva";
+                                console.warn(
+                                    "[Reservas] Sin Nota de Conformidad (o sin monto configurado en su línea " +
+                                    "del Pedido de Venta Marco) para esta reserva — cobrando el precio " +
+                                    "completo al paciente. Reserva:", res.id
+                                );
+                            }
+                        }
+
                         pos.models["pos.order.line"].create({
                             order_id:   order,
                             product_id: product,
                             qty:        1,
-                            price_unit: products[0].list_price || 0,
+                            price_unit: priceUnit,
+                            rehalife_reservation_id: res.id,
+                            full_product_name: nombreLinea,
                         });
-                        console.log("[Reservas] ✅ Producto Consulta agregado, precio:", products[0].list_price);
+                        console.log("[Reservas] ✅ Producto agregado, precio:", priceUnit);
+                        console.log(`[Reservas] ✅ Reserva ${res.id} vinculada a la línea`);
                     } else {
                         console.warn("[Reservas] Producto no disponible en POS (verificar 'available_in_pos')");
                     }
                 } catch (e) {
                     console.warn("[Reservas] Error agregando producto:", e);
-                }
-
-                try {
-                    order._rehalife_reservation_id = res.id;
-                    console.log(`[Reservas] ✅ Reserva ${res.id} vinculada a la orden`);
-                } catch (e) {
-                    console.warn("[Reservas] Error guardando nota:", e);
                 }
             },
         });

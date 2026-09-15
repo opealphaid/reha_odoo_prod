@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_rehalife_nota_conformidad_user,rehalife.nota.conformidad user,model_rehalife_nota_conformidad,base.group_user,1,1,1,0
+access_rehalife_nota_conformidad_approver,rehalife.nota.conformidad approver,model_rehalife_nota_conformidad,group_rehalife_seguros_approver,1,1,1,1
+access_rehalife_seguros_sync_wizard,rehalife.seguros.sync.wizard,model_rehalife_seguros_sync_wizard,base.group_user,1,1,1,1
+access_rehalife_seguros_reporte_nc_wizard,rehalife.seguros.reporte.nc.wizard,model_rehalife_seguros_reporte_nc_wizard,base.group_user,1,1,1,1

@@ -28,13 +28,6 @@
                 <field name="backend_sync_state" optional="show"/>
                 <field name="doctor_name" optional="hide"/>
 
-                <button name="action_send_to_pos"
-                        string="Enviar a Caja"
-                        type="object"
-                        icon="fa-desktop"
-                        invisible="invoice_status != 'pending' or status in ('CANCELLED', 'NO_SHOW')"
-                        class="btn-primary"/>
-
                 <button name="action_view_pos_order"
                         string="Ver Orden POS"
                         type="object"
@@ -70,13 +63,6 @@
                 <header>
                     <field name="invoice_status" widget="statusbar"
                            statusbar_visible="pending,invoiced,paid"/>
-
-                    <!-- ► NUEVO: Enviar a caja POS -->
-                    <button name="action_send_to_pos"
-                            string="🖥️ Enviar a Caja (POS)"
-                            type="object"
-                            class="btn-primary"
-                            invisible="invoice_status != 'pending' or status in ('CANCELLED', 'NO_SHOW')"/>
 
                     <!-- Ver orden POS -->
                     <button name="action_view_pos_order"

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_rehalife_seguros_root"
+              name="Seguros"
+              sequence="60"/>
+
+    <menuitem id="menu_rehalife_seguros_pedidos_marco"
+              name="Pedidos de Venta Marco"
+              parent="menu_rehalife_seguros_root"
+              sequence="10"
+              action="action_rehalife_seguros_pedidos_marco"/>
+
+    <menuitem id="menu_rehalife_seguros_nota_conformidad"
+              name="Notas de Conformidad"
+              parent="menu_rehalife_seguros_root"
+              sequence="20"
+              action="action_rehalife_seguros_nota_conformidad"/>
+
+    <menuitem id="menu_rehalife_seguros_aseguradoras"
+              name="Aseguradoras"
+              parent="menu_rehalife_seguros_root"
+              sequence="30"
+              action="action_rehalife_seguros_aseguradoras"/>
+
+    <menuitem id="menu_rehalife_seguros_config"
+              name="Configuración"
+              parent="menu_rehalife_seguros_root"
+              sequence="40"
+              action="action_rehalife_seguros_sync_wizard"/>
+
+    <!-- Un solo wizard por ahora — si más adelante se agregan más reportes,
+         conviene convertir esto en un menú padre sin acción propia con
+         sub-items debajo. -->
+    <menuitem id="menu_rehalife_seguros_reportes"
+              name="Reportes"
+              parent="menu_rehalife_seguros_root"
+              sequence="55"
+              action="action_rehalife_seguros_reporte_nc_wizard"/>
+
+</odoo>

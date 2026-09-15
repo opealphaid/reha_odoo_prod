@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--res_users_views.xml-->
+<odoo>
+  <record id="view_users_form_siat" model="ir.ui.view">
+    <field name="name">res.users.form.siat</field>
+    <field name="model">res.users</field>
+    <field name="inherit_id" ref="base.view_users_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//notebook" position="inside">
+        <page string="SIAT Bolivia" groups="base.group_system">
+          <group>
+            <field name="siat_sucursal_id"/>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+</odoo>

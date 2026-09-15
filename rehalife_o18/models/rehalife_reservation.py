@@ -16,13 +16,17 @@ class RehalifeReservation(models.Model):
     reservation_date    = fields.Date(string='Fecha')
     reservation_time    = fields.Char(string='Hora')
     status              = fields.Selection([
-        ('PENDING',    'Pendiente'),
-        ('COMPLETED',  'Completada'),
-        ('CANCELLED',  'Cancelada'),
-        ('NO_SHOW',    'No asistió'),
+        ('PENDING',         'Pendiente'),
+        ('IN_ROOM',         'En Sala'),
+        ('IN_CONSULTATION', 'En Consulta'),
+        ('COMPLETED',       'Completada'),
+        ('CANCELLED',       'Cancelada'),
+        ('NO_SHOW',         'No asistió'),
     ], string='Estado', default='PENDING')
     attention_type  = fields.Char(string='Tipo de Atención')
     sub_specialty   = fields.Char(string='Sub-especialidad')
+    service_type_external_id = fields.Char(string='ID Externo Tipo de Servicio')
+    service_type_name        = fields.Char(string='Tipo de Servicio')
     branch_name     = fields.Char(string='Sucursal')
     doctor_name     = fields.Char(string='Doctor')
     notes           = fields.Text(string='Notas')
@@ -131,69 +135,6 @@ class RehalifeReservation(models.Model):
                 'Por favor abre una sesión en POS antes de enviar la orden.'
             )
         return session
-
-    # ─── Acción principal: Enviar a POS ──────────────────────────────────────
-    def action_send_to_pos(self):
-        self.ensure_one()
-
-        if self.status in ('CANCELLED', 'NO_SHOW'):
-            raise UserError('No se puede enviar a caja una reserva cancelada o con ausencia.')
-
-        if self.pos_order_id and self.pos_order_id.state not in ('cancel',):
-            raise UserError(
-                f'Esta reserva ya tiene la orden POS {self.pos_order_id.name}. '
-                'No se puede generar una segunda orden.'
-            )
-
-        if self.invoice_status in ('invoiced', 'paid'):
-            raise UserError('Esta reserva ya fue facturada o pagada.')
-
-        session = self._get_open_pos_session()
-        product = self._get_or_create_consulta_product()
-
-        if not product.product_tmpl_id.available_in_pos:
-            product.product_tmpl_id.available_in_pos = True
-
-        price = product.list_price or 0.0
-
-        pos_order_vals = {
-            'session_id': session.id,
-            'partner_id': self.partner_id.id,
-            'state': 'draft',
-            'amount_tax': 0.0,
-            'amount_total': price,
-            'amount_paid': 0.0,
-            'amount_return': 0.0,
-            'lines': [(0, 0, {
-                'product_id': product.id,
-                'full_product_name': f'Consulta — {self.sub_specialty or "General"}',
-                'qty': 1,
-                'price_unit': price,
-                'price_subtotal': price,
-                'price_subtotal_incl': price,
-                'tax_ids': [(5, 0, 0)],
-            })],
-        }
-
-        pos_order = self.env['pos.order'].create(pos_order_vals)
-
-        self.write({
-            'pos_order_id': pos_order.id,
-            'invoice_status': 'invoiced',
-        })
-
-        _logger.info(
-            'Orden POS %s creada para reserva %s (paciente: %s)',
-            pos_order.name, self.external_id, self.partner_id.name,
-        )
-
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'pos.order',
-            'res_id': pos_order.id,
-            'view_mode': 'form',
-            'target': 'current',
-        }
 
     # ─── Ver la orden POS vinculada ──────────────────────────────────────────
     def action_view_pos_order(self):
@@ -379,6 +320,8 @@ class RehalifeReservation(models.Model):
             'status': vals.get('status', 'PENDING'),
             'attention_type': vals.get('attention_type'),
             'sub_specialty': vals.get('sub_specialty'),
+            'service_type_external_id': vals.get('service_type_external_id'),
+            'service_type_name': vals.get('service_type_name'),
             'branch_name': vals.get('branch_name'),
             'doctor_name': vals.get('doctor_name'),
             'notes': vals.get('notes'),
@@ -443,6 +386,8 @@ class RehalifeReservation(models.Model):
             'status': 'COMPLETED',
             'attention_type': raw.get('attentionType'),
             'sub_specialty': raw.get('subSpecialtyName'),
+            'service_type_external_id': raw.get('serviceTypeId'),
+            'service_type_name': raw.get('serviceType'),
             'branch_name': raw.get('branchName'),
             'doctor_name': doctor.get('fullName'),
             'notes': raw.get('notes'),

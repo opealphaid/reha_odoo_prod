@@ -212,7 +212,7 @@ patch(OrderReceipt.prototype, {
                     const partner = await this.orm.read(
                         "res.partner",
                         [order.partner_id[0]],
-                        ["vat", "name"]
+                        ["siat_razon_social_facturacion", "siat_nit_facturacion"]
                     );
 
                     console.log("🏢 Compañía:", company[0]);
@@ -235,8 +235,8 @@ patch(OrderReceipt.prototype, {
                         estado: order.siat_estado_envio || '',
                         empresa_nit: company[0].vat,
                         empresa_razon_social: company[0].name,
-                        cliente_nit: partner[0].vat || '',
-                        cliente_razon_social: partner[0].name,
+                        cliente_nit: partner[0].siat_nit_facturacion || '',
+                        cliente_razon_social: partner[0].siat_razon_social_facturacion,
                     };
 
                     // GUARDAR EN CACHE para que persista al imprimir

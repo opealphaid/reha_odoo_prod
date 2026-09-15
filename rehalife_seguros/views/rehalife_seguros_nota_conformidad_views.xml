@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_nota_conformidad_list" model="ir.ui.view">
+        <field name="name">rehalife.nota.conformidad.list</field>
+        <field name="model">rehalife.nota.conformidad</field>
+        <field name="arch" type="xml">
+            <list string="Notas de Conformidad" decoration-muted="estado == 'regularizada'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="aseguradora_id"/>
+                <field name="pedido_marco_id"/>
+                <field name="cantidad"/>
+                <field name="porcentaje_cobertura" optional="show"/>
+                <field name="monto_cubierto" optional="show"/>
+                <field name="importe_total"/>
+                <field name="fecha_emision"/>
+                <field name="paciente_atendido" widget="boolean_toggle" readonly="1"/>
+                <field name="estado" widget="badge"
+                       decoration-info="estado == 'pendiente'"
+                       decoration-success="estado in ('aprobada', 'facturada', 'pagada')"
+                       decoration-danger="estado == 'rechazada'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_nota_conformidad_form" model="ir.ui.view">
+        <field name="name">rehalife.nota.conformidad.form</field>
+        <field name="model">rehalife.nota.conformidad</field>
+        <field name="arch" type="xml">
+            <form string="Nota de Conformidad">
+                <header>
+                    <button name="action_aprobar" string="Aprobar" type="object"
+                            class="btn-primary" invisible="estado != 'pendiente'"/>
+                    <button name="action_rechazar" string="Rechazar" type="object"
+                            invisible="estado != 'pendiente'"/>
+                    <button name="action_generar_factura" string="Generar Factura" type="object"
+                            class="btn-primary"
+                            invisible="estado != 'aprobada' or factura_id"/>
+                    <button name="action_regularizar" string="Regularizar" type="object"
+                            confirm="¿Regularizar (anular) esta Nota de Conformidad?"
+                            invisible="factura_id or estado in ('regularizada',)"/>
+                    <button name="%(rehalife_seguros.action_report_nota_conformidad)d"
+                            string="Imprimir" type="action" class="btn-secondary"/>
+                    <field name="estado" widget="statusbar"
+                           statusbar_visible="pendiente,aprobada,facturada,pagada"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Administrativo">
+                            <field name="partner_id"/>
+                            <field name="aseguradora_id"/>
+                            <field name="reservation_id"/>
+                            <field name="paciente_atendido" readonly="1"/>
+                            <field name="pedido_marco_id"/>
+                            <field name="pedido_marco_line_id"/>
+                            <field name="product_id"/>
+                        </group>
+                        <group string="Importes">
+                            <field name="currency_id" invisible="1"/>
+                            <field name="cantidad"/>
+                            <field name="porcentaje_cobertura"/>
+                            <field name="monto_cubierto" widget="monetary"/>
+                            <field name="importe_total" widget="monetary"/>
+                            <field name="fecha_emision"/>
+                            <field name="factura_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Datos Clínicos" name="clinico">
+                            <group>
+                                <group>
+                                    <field name="institucion_id"/>
+                                    <field name="documento_identidad"/>
+                                    <field name="fecha_nacimiento"/>
+                                    <field name="fecha_atencion"/>
+                                    <field name="servicio_nombre"/>
+                                </group>
+                                <group>
+                                    <field name="medico_nombre"/>
+                                    <field name="medico_matricula"/>
+                                </group>
+                            </group>
+                            <group>
+                                <field name="diagnostico"/>
+                                <field name="procedimientos"/>
+                                <field name="estudios_complementarios"/>
+                                <field name="tratamiento_indicado"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_nota_conformidad_search" model="ir.ui.view">
+        <field name="name">rehalife.nota.conformidad.search</field>
+        <field name="model">rehalife.nota.conformidad</field>
+        <field name="arch" type="xml">
+            <search string="Notas de Conformidad">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="aseguradora_id"/>
+                <field name="pedido_marco_id"/>
+
+                <filter name="pendientes" string="Pendientes de Aprobación"
+                        domain="[('estado', '=', 'pendiente')]"/>
+                <filter name="aprobadas" string="Aprobadas"
+                        domain="[('estado', '=', 'aprobada')]"/>
+                <filter name="facturadas" string="Facturadas"
+                        domain="[('estado', '=', 'facturada')]"/>
+                <filter name="pagadas" string="Pagadas"
+                        domain="[('estado', '=', 'pagada')]"/>
+                <filter name="regularizadas" string="Regularizadas"
+                        domain="[('estado', '=', 'regularizada')]"/>
+
+                <separator/>
+
+                <filter name="paciente_atendido" string="Paciente Atendido"
+                        domain="[('paciente_atendido', '=', True)]"/>
+                <filter name="paciente_no_atendido" string="Paciente Sin Atender Todavía"
+                        domain="[('paciente_atendido', '=', False)]"/>
+
+                <separator/>
+
+                <group string="Agrupar por">
+                    <filter name="group_estado" string="Estado"
+                            context="{'group_by': 'estado'}"/>
+                    <filter name="group_aseguradora" string="Aseguradora"
+                            context="{'group_by': 'aseguradora_id'}"/>
+                    <filter name="group_pedido_marco" string="Pedido de Venta Marco"
+                            context="{'group_by': 'pedido_marco_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rehalife_seguros_nota_conformidad" model="ir.actions.act_window">
+        <field name="name">Notas de Conformidad</field>
+        <field name="res_model">rehalife.nota.conformidad</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nota_conformidad_search"/>
+        <field name="context">{'search_default_pendientes': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aún no hay Notas de Conformidad</p>
+        </field>
+    </record>
+
+    <record id="action_rehalife_seguros_nota_conformidad_aprobadas" model="ir.actions.act_window">
+        <field name="name">Notas de Conformidad Aprobadas</field>
+        <field name="res_model">rehalife.nota.conformidad</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_nota_conformidad_search"/>
+        <field name="domain">[('estado', 'in', ('aprobada', 'facturada', 'pagada'))]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aún no hay Notas de Conformidad aprobadas</p>
+        </field>
+    </record>
+
+</odoo>

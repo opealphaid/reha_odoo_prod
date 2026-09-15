@@ -9,9 +9,7 @@
             <field name="code">model.cron_generate_daily_cufd()</field>
             <field name="interval_number">1</field>
             <field name="interval_type">days</field>
-            <field name="numbercall">-1</field>
             <field name="active" eval="True"/>
-            <field name="doall" eval="False"/>
             <!-- Run at 1:00 AM every day -->
             <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).replace(hour=1, minute=0, second=0)"/>
         </record>

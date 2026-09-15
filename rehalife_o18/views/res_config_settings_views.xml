@@ -112,6 +112,21 @@
 
                             <div class="col-12 col-lg-4 o_setting_box">
                                 <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Servicios</span>
+                                    <div class="text-muted">
+                                        Sincroniza los tipos de servicio del backend como productos
+                                    </div>
+                                    <div class="mt8">
+                                        <button string="Sincronizar Servicios (Productos)"
+                                                name="action_sync_service_types"
+                                                type="object"
+                                                class="btn btn-secondary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4 o_setting_box">
+                                <div class="o_setting_right_pane">
                                     <span class="o_form_label">Reservas Completadas</span>
                                     <div class="text-muted">
                                         Importa reservas completadas de un rango de fechas (respaldo)

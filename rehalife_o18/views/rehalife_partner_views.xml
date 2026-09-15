@@ -26,12 +26,7 @@
                         <group>
                             <field name="email" required="es_paciente"/>
                             <field name="birth_date" required="es_paciente"/>
-                            <field name="siat_tipo_documento_identidad_id"
-                                   required="es_paciente"
-                                   options="{'no_create': True}"/>
-                            <field name="vat" string="NIT/CI" required="es_paciente"/>
-                            <field name="siat_complemento"/>
-                            <field name="siat_documento_completo" readonly="1"/>
+                            <field name="vat" string="CI" required="es_paciente"/>
                             <field name="rehalife_city_id"
                                    required="es_paciente"
                                    options="{'no_create': True}"/>

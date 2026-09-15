@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_rehalife_seguros" model="ir.ui.view">
+        <field name="name">res.partner.form.rehalife.seguros</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="is_aseguradora" widget="boolean_toggle"/>
+            </xpath>
+
+            <xpath expr="//sheet//notebook" position="inside">
+                <page string="Seguros" name="rehalife_seguros_tab">
+
+                    <group string="Póliza del Paciente" invisible="is_aseguradora">
+                        <group>
+                            <field name="aseguradora_id"/>
+                            <field name="numero_poliza"/>
+                        </group>
+                        <group>
+                            <field name="poliza_vigencia_desde"/>
+                            <field name="poliza_vigencia_hasta"/>
+                        </group>
+                    </group>
+
+                    <group string="Pacientes Asegurados" invisible="not is_aseguradora">
+                        <field name="paciente_ids" nolabel="1">
+                            <list>
+                                <field name="name"/>
+                                <field name="numero_poliza"/>
+                                <field name="poliza_vigencia_desde"/>
+                                <field name="poliza_vigencia_hasta"/>
+                                <field name="phone"/>
+                                <field name="email"/>
+                            </list>
+                        </field>
+                    </group>
+
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="action_rehalife_seguros_aseguradoras" model="ir.actions.act_window">
+        <field name="name">Aseguradoras</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_aseguradora', '=', True)]</field>
+        <field name="context">{'default_is_aseguradora': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Aún no hay aseguradoras registradas</p>
+        </field>
+    </record>
+
+</odoo>

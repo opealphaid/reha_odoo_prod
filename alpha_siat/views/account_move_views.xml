@@ -11,6 +11,14 @@
             <!-- Agregar botones en el header -->
             <xpath expr="//header" position="inside">
 
+                <!-- Botón Reenviar (factura posteada pero aún no aceptada por SIAT,
+                     ej. una venta de POS que se completó igual porque el envío a SIAT falló) -->
+                <button name="action_enviar_factura_siat"
+                        string="Reenviar a SIAT"
+                        type="object"
+                        class="btn-primary"
+                        invisible="siat_facturado or state != 'posted'"/>
+
                 <!-- Botón Anular -->
                 <button name="action_anular_factura_siat"
                         string="Anular en SIAT"
@@ -38,6 +46,7 @@
                     <group>
                         <group string="Estado Facturación SIAT">
                             <field name="siat_facturado" widget="boolean" readonly="1"/>
+                            <field name="siat_sucursal_id" readonly="1"/>
                             <field name="siat_numero_factura" readonly="1"/>
                             <field name="siat_cuf" readonly="1"/>
                             <field name="siat_estado_envio" readonly="1"/>
@@ -101,6 +110,17 @@
                         <span class="o_stat_text">PDF SIAT</span>
                     </div>
                 </button>
+            </xpath>
+
+            <!-- Alerta si el envío anterior a SIAT falló (factura posteada pero
+                 siat_facturado=False), visible junto al botón "Reenviar a SIAT" -->
+            <xpath expr="//div[@name='button_box']" position="after">
+                <div class="alert alert-warning" role="alert"
+                     invisible="siat_facturado or not siat_mensajes_envio">
+                    <i class="fa fa-exclamation-triangle"/>
+                    <strong>El envío anterior a SIAT falló:</strong>
+                    <field name="siat_mensajes_envio" readonly="1" nolabel="1" class="oe_inline"/>
+                </div>
             </xpath>
         </field>
     </record>

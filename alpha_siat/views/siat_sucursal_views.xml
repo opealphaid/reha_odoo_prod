@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--siat_sucursal_views.xml-->
+<odoo>
+  <record id="view_siat_sucursal_list" model="ir.ui.view">
+    <field name="name">alpha.siat.sucursal.list</field>
+    <field name="model">alpha.siat.sucursal</field>
+    <field name="arch" type="xml">
+      <list>
+        <field name="name"/>
+        <field name="company_id" groups="base.group_multi_company"/>
+        <field name="codigo_sucursal"/>
+        <field name="codigo_punto_venta"/>
+        <field name="active" widget="boolean_toggle"/>
+      </list>
+    </field>
+  </record>
+
+  <record id="view_siat_sucursal_form" model="ir.ui.view">
+    <field name="name">alpha.siat.sucursal.form</field>
+    <field name="model">alpha.siat.sucursal</field>
+    <field name="arch" type="xml">
+      <form string="Sucursal SIAT">
+        <header>
+          <button name="action_get_cuis" type="object" string="Obtener CUIS" class="btn-primary"/>
+          <button name="action_get_cufd" type="object" string="Obtener CUFD" class="btn-secondary"/>
+        </header>
+        <sheet>
+          <group>
+            <group string="Identificación">
+              <field name="name"/>
+              <field name="company_id" groups="base.group_multi_company"/>
+              <field name="codigo_sucursal"/>
+              <field name="codigo_punto_venta"/>
+              <field name="active"/>
+            </group>
+            <group string="Dirección (para la factura SIAT y la nuestra)">
+              <field name="state_id" placeholder="Departamento"/>
+              <field name="city" placeholder="Municipio"/>
+              <field name="street" placeholder="Unidad Vecinal, Calle, Nro."/>
+              <field name="phone" placeholder="Teléfono"/>
+            </group>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_alpha_siat_sucursal" model="ir.actions.act_window">
+    <field name="name">Sucursales SIAT</field>
+    <field name="res_model">alpha.siat.sucursal</field>
+    <field name="view_mode">list,form</field>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+        Registre cada sucursal y punto de venta habilitado ante SIAT.
+        Luego asigne una a cada usuario en Ajustes &gt; Usuarios.
+      </p>
+    </field>
+  </record>
+
+  <menuitem id="menu_siat_sucursal" name="Sucursales" parent="menu_siat_root"
+            action="action_alpha_siat_sucursal" sequence="5"
+            groups="base.group_system"/>
+</odoo>

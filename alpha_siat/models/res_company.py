@@ -20,6 +20,7 @@ class ResCompany(models.Model):
         default=0,
         help="Código de punto de venta for this company/branch"
     )
+    sucursal_count = fields.Integer(string="Sucursales SIAT count", compute="_compute_sucursal_count")
     cuis_count = fields.Integer(string="CUIS count", compute="_compute_cuis_count")
     cufd_count = fields.Integer(string="CUFD count", compute="_compute_cufd_count")
     actividad_count = fields.Integer(string="Actividades count", compute="_compute_actividad_count")
@@ -87,6 +88,22 @@ class ResCompany(models.Model):
         string="Tipos Emisión count",
         compute="_compute_tipo_emision_count"
     )
+
+    @api.depends()
+    def _compute_sucursal_count(self):
+        for company in self:
+            company.sucursal_count = self.env['alpha.siat.sucursal'].search_count([('company_id', '=', company.id)])
+
+    def action_open_sucursales(self):
+        self.ensure_one()
+        return {
+            'name': 'Sucursales SIAT',
+            'type': 'ir.actions.act_window',
+            'res_model': 'alpha.siat.sucursal',
+            'view_mode': 'list,form',
+            'domain': [('company_id', '=', self.id)],
+            'context': {'default_company_id': self.id},
+        }
 
     @api.depends()
     def _compute_cuis_count(self):

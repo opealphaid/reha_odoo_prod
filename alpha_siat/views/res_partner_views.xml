@@ -34,17 +34,20 @@
                       name="siat_data">
 
                     <group>
-                        <group string="Información de Identificación">
+                        <group string="Datos de Facturación">
+
+                            <!-- Razón Social para Facturación -->
+                            <field name="siat_razon_social_facturacion"
+                                   placeholder="Nombre a utilizar en la factura..."/>
 
                             <!-- Tipo de Documento de Identidad -->
                             <field name="siat_tipo_documento_identidad_id"
                                    options="{'no_create': True, 'no_create_edit': True}"
                                    placeholder="Seleccione el tipo de documento..."/>
 
-                            <!-- NIT/CI (campo nativo pero lo mostramos aquí también) -->
-                            <field name="vat"
-                                   string="NIT/CI"
-                                   placeholder="Ingrese el número de documento..."/>
+                            <!-- NIT/CI para Facturación -->
+                            <field name="siat_nit_facturacion"
+                                   placeholder="Ingrese el número de documento a facturar..."/>
 
                             <!-- Complemento -->
                             <field name="siat_complemento"
@@ -88,8 +91,11 @@
                                 <i class="fa fa-info-circle"/>
                                 <strong>Atención:</strong> Este cliente necesita ser homologado con SIAT.
                                 <br/>
-                                Complete el <strong>Tipo de Documento</strong> y el <strong>NIT/CI</strong>
-                                para poder emitir facturas electrónicas.
+                                Si la <strong>Razón Social para Facturación</strong> y el
+                                <strong>NIT/CI para Facturación</strong> quedan en <strong>S/N</strong> y
+                                <strong>0</strong> respectivamente, no se podrá homologar ni facturar
+                                correctamente. Complete estos datos junto con el
+                                <strong>Tipo de Documento</strong> para poder emitir facturas electrónicas.
                             </div>
 
                             <div class="alert alert-success" role="alert"

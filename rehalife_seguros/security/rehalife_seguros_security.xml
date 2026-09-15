@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_rehalife_seguros" model="ir.module.category">
+        <field name="name">Rehalife Seguros</field>
+    </record>
+
+    <record id="group_rehalife_seguros_approver" model="res.groups">
+        <field name="name">Aprobación de Notas de Conformidad</field>
+        <field name="category_id" ref="module_category_rehalife_seguros"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">
+            Usuarios que pueden aprobar/rechazar Notas de Conformidad y facturarlas
+            hacia la aseguradora desde el Pedido de Venta Marco.
+        </field>
+    </record>
+</odoo>

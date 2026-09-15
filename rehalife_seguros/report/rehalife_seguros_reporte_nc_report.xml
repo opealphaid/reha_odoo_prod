@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Sin binding_model_id: se invoca solo desde el botón "Generar PDF"
+         del wizard (ver rehalife_seguros_reporte_nc_wizard_view.xml), no
+         debe aparecer en ningún menú "Print" de otro modelo. -->
+    <record id="action_report_reporte_nc" model="ir.actions.report">
+        <field name="name">Reporte de Notas de Conformidad</field>
+        <field name="model">rehalife.seguros.reporte.nc.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rehalife_seguros.report_reporte_nc_document</field>
+        <field name="report_file">rehalife_seguros.report_reporte_nc_document</field>
+        <field name="print_report_name">'Reporte NC - %s' % (object.pedido_marco_id.name)</field>
+    </record>
+
+    <template id="report_reporte_nc_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <t t-set="notas" t-value="doc._get_notas_conformidad()"/>
+                    <!-- doc.estado (el filtro del wizard) usa selection=lambda
+                         — doc._fields['estado'].selection devolvería la
+                         lambda cruda, no la lista resuelta ("'function'
+                         object is not iterable"). fields_get() sí resuelve
+                         selecciones dinámicas correctamente. -->
+                    <t t-set="estados_labels" t-value="dict(doc.fields_get(['estado'])['estado']['selection'])"/>
+                    <div class="page">
+                        <h2 class="text-center">REPORTE DE NOTAS DE CONFORMIDAD</h2>
+
+                        <table class="table table-sm" style="margin-top: 20px;">
+                            <tr>
+                                <td><strong>Pedido de Venta Marco:</strong> <span t-field="doc.pedido_marco_id.name"/></td>
+                                <td><strong>Aseguradora:</strong> <span t-field="doc.pedido_marco_id.partner_id.name"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Período:</strong> <span t-field="doc.pedido_marco_id.nombre_periodo"/></td>
+                                <td>
+                                    <strong>Filtro Estado:</strong>
+                                    <t t-if="doc.estado"><span t-esc="estados_labels.get(doc.estado)"/></t>
+                                    <t t-else="">Todos los estados</t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>Fecha de Emisión Desde:</strong>
+                                    <t t-if="doc.fecha_desde"><span t-field="doc.fecha_desde"/></t>
+                                    <t t-else="">—</t>
+                                </td>
+                                <td>
+                                    <strong>Fecha de Emisión Hasta:</strong>
+                                    <t t-if="doc.fecha_hasta"><span t-field="doc.fecha_hasta"/></t>
+                                    <t t-else="">—</t>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <t t-if="not notas">
+                            <p class="text-center text-muted" style="margin-top: 40px;">
+                                No hay Notas de Conformidad que coincidan con los filtros seleccionados.
+                            </p>
+                        </t>
+                        <t t-else="">
+                            <table class="table table-sm" style="margin-top: 10px;">
+                                <thead>
+                                    <tr>
+                                        <th>Referencia</th>
+                                        <th>Paciente</th>
+                                        <th>Servicio</th>
+                                        <th class="text-right">Cantidad</th>
+                                        <th class="text-right">% Cobertura</th>
+                                        <th class="text-right">Monto Cubierto</th>
+                                        <th class="text-right">Importe Total</th>
+                                        <th>Estado</th>
+                                        <th>Fecha Emisión</th>
+                                        <th>Factura</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="notas" t-as="nota">
+                                        <tr>
+                                            <td><span t-field="nota.name"/></td>
+                                            <td><span t-field="nota.partner_id.name"/></td>
+                                            <td><span t-field="nota.servicio_nombre"/></td>
+                                            <td class="text-right"><span t-field="nota.cantidad"/></td>
+                                            <td class="text-right"><span t-field="nota.porcentaje_cobertura"/></td>
+                                            <td class="text-right"><span t-field="nota.monto_cubierto"/></td>
+                                            <td class="text-right"><span t-field="nota.importe_total"/></td>
+                                            <td><span t-field="nota.estado"/></td>
+                                            <td><span t-field="nota.fecha_emision"/></td>
+                                            <td><t t-esc="nota.factura_id.name or '—'"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+
+                            <table class="table table-sm" style="margin-top: 10px;">
+                                <tr>
+                                    <td><strong>Total Notas de Conformidad listadas:</strong></td>
+                                    <td class="text-right"><t t-esc="len(notas)"/></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Suma Importe Total:</strong></td>
+                                    <td class="text-right"><t t-esc="'%.2f' % sum(notas.mapped('importe_total'))"/></td>
+                                </tr>
+                            </table>
+
+                            <h5 style="margin-top: 20px;">Resumen por Estado</h5>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Estado</th>
+                                        <th class="text-right">Cantidad</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="['pendiente', 'aprobada', 'rechazada', 'facturada', 'pagada', 'regularizada']" t-as="est_key">
+                                        <tr>
+                                            <td><span t-esc="estados_labels.get(est_key)"/></td>
+                                            <td class="text-right"><span t-esc="len(notas.filtered(lambda n: n.estado == est_key))"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- NOTA: a propósito SIN binding_model_id/binding_type="report" — si los
+         tuviera, el botón "Print" aparecería en TODOS los Sales Orders/
+         Quotations normales de Odoo, no solo en los Pedidos de Venta Marco.
+         Se invoca solo desde el botón del <header> de
+         view_order_tree_rehalife_seguros (impresión múltiple por selección) —
+         ver rehalife_seguros_sale_order_views.xml. -->
+    <record id="action_report_pedido_venta_marco" model="ir.actions.report">
+        <field name="name">Pedido de Venta Marco</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">rehalife_seguros.report_pedido_venta_marco_document</field>
+        <field name="report_file">rehalife_seguros.report_pedido_venta_marco_document</field>
+        <field name="print_report_name">'Pedido de Venta Marco - %s' % (object.name)</field>
+    </record>
+
+    <template id="report_pedido_venta_marco_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2 class="text-center">PEDIDO DE VENTA MARCO</h2>
+                        <h4 class="text-center">
+                            <span t-field="doc.name"/>
+                        </h4>
+
+                        <table class="table table-sm" style="margin-top: 20px;">
+                            <tr>
+                                <td><strong>Aseguradora:</strong> <span t-field="doc.partner_id.name"/></td>
+                                <td><strong>Período:</strong> <span t-field="doc.nombre_periodo"/></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Estado:</strong> <span t-field="doc.state"/></td>
+                                <td><strong>Fecha:</strong> <span t-field="doc.date_order"/></td>
+                            </tr>
+                        </table>
+
+                        <!-- Mismo aviso que en el form (HU-12/2026-09-12): el
+                             price_unit de la línea es % de cobertura, no Bs. -->
+                        <div class="alert alert-info" role="alert" style="margin-top: 20px;">
+                            <strong>Nota:</strong> el "% Cobertura" de cada línea es el porcentaje
+                            que la aseguradora cubre de ese servicio (0 a 100) — NO es un monto en Bs.
+                        </div>
+
+                        <table class="table table-sm" style="margin-top: 10px;">
+                            <thead>
+                                <tr>
+                                    <th>Servicio</th>
+                                    <th class="text-right">% Cobertura</th>
+                                    <th class="text-right">Cant. en Notas de Conformidad</th>
+                                    <th class="text-right">Cant. Confirmada</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="doc.order_line.filtered(lambda l: not l.display_type)" t-as="line">
+                                    <tr>
+                                        <td><span t-field="line.product_id.display_name"/></td>
+                                        <td class="text-right"><span t-field="line.price_unit"/></td>
+                                        <td class="text-right"><span t-field="line.qty_conformidad"/></td>
+                                        <td class="text-right"><span t-field="line.qty_confirmada"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <p style="margin-top: 20px;">
+                            <strong>Total Notas de Conformidad asociadas:</strong>
+                            <span t-field="doc.nota_conformidad_count"/>
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

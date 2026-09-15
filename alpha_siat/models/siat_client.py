@@ -50,7 +50,7 @@ class SiatClient(models.AbstractModel):
                 msgs.append(desc.strip())
         return " | ".join(msgs) if msgs else None
 
-    def call_cuis(self, company, config, timeout=30):
+    def call_cuis(self, company, config, sucursal, timeout=30):
         if not config:
             return {"error": True, "mensajes": "No SIAT configuration provided", "raw": ""}
         url = (config.wsdl_codigos or '').strip()
@@ -65,9 +65,9 @@ class SiatClient(models.AbstractModel):
       <SolicitudCuis>
         <codigoAmbiente>{config.codigo_ambiente}</codigoAmbiente>
         <codigoModalidad>{config.modalidad}</codigoModalidad>
-        <codigoPuntoVenta>{company.siat_codigo_punto_venta}</codigoPuntoVenta>
+        <codigoPuntoVenta>{sucursal.codigo_punto_venta}</codigoPuntoVenta>
         <codigoSistema>{config.codigo_sistema or ''}</codigoSistema>
-        <codigoSucursal>{company.siat_codigo_sucursal}</codigoSucursal>
+        <codigoSucursal>{sucursal.codigo_sucursal}</codigoSucursal>
         <nit>{(company.vat or '').strip()}</nit>
       </SolicitudCuis>
     </siat:cuis>
@@ -137,13 +137,14 @@ class SiatClient(models.AbstractModel):
         return {"error": False, "codigo": codigo, "vigencia": parsed_fecha, "mensajes": mensajes_text or '',
                 "raw": r.text}
 
-    def call_cufd(self, company, config, cuis, timeout=30):
+    def call_cufd(self, company, config, cuis, sucursal, timeout=30):
         """
         Call SIAT CUFD web service
 
         :param company: res.company record
         :param config: alpha.siat.config record
         :param cuis: CUIS code string
+        :param sucursal: alpha.siat.sucursal record
         :param timeout: request timeout in seconds
         :return: dict with error status, codigo, vigencia, mensajes, raw response
         """
@@ -166,9 +167,9 @@ class SiatClient(models.AbstractModel):
       <SolicitudCufd>
         <codigoAmbiente>{config.codigo_ambiente}</codigoAmbiente>
         <codigoModalidad>{config.modalidad}</codigoModalidad>
-        <codigoPuntoVenta>{company.siat_codigo_punto_venta}</codigoPuntoVenta>
+        <codigoPuntoVenta>{sucursal.codigo_punto_venta}</codigoPuntoVenta>
         <codigoSistema>{config.codigo_sistema or ''}</codigoSistema>
-        <codigoSucursal>{company.siat_codigo_sucursal}</codigoSucursal>
+        <codigoSucursal>{sucursal.codigo_sucursal}</codigoSucursal>
         <cuis>{cuis}</cuis>
         <nit>{(company.vat or '').strip()}</nit>
       </SolicitudCufd>
@@ -2344,7 +2345,7 @@ class SiatClient(models.AbstractModel):
             _logger.error(f"Error calculando hash: {str(e)}", exc_info=True)
             raise
 
-    def enviar_factura_siat(self, company, config, cuis, cufd, xml_string):
+    def enviar_factura_siat(self, company, config, cuis, cufd, xml_string, sucursal):
         """
         Envía la factura al servicio SIAT de recepción
 
@@ -2353,6 +2354,7 @@ class SiatClient(models.AbstractModel):
         :param cuis: Código CUIS válido
         :param cufd: Código CUFD válido
         :param xml_string: XML de la factura
+        :param sucursal: alpha.siat.sucursal record (sucursal/PDV emisor)
         :return: dict con resultado del envío
         """
         _logger.info("=" * 100)
@@ -2456,9 +2458,9 @@ class SiatClient(models.AbstractModel):
             <codigoDocumentoSector>1</codigoDocumentoSector>
             <codigoEmision>1</codigoEmision>
             <codigoModalidad>{config.modalidad}</codigoModalidad>
-            <codigoPuntoVenta>{company.siat_codigo_punto_venta or 0}</codigoPuntoVenta>
+            <codigoPuntoVenta>{sucursal.codigo_punto_venta or 0}</codigoPuntoVenta>
             <codigoSistema>{config.codigo_sistema or ''}</codigoSistema>
-            <codigoSucursal>{company.siat_codigo_sucursal or 0}</codigoSucursal>
+            <codigoSucursal>{sucursal.codigo_sucursal or 0}</codigoSucursal>
             <cufd>{cufd}</cufd>
             <cuis>{cuis}</cuis>
             <nit>{nit}</nit>
@@ -2485,8 +2487,8 @@ class SiatClient(models.AbstractModel):
             _logger.info(f"  Codigo Ambiente: {config.codigo_ambiente}")
             _logger.info(f"  Codigo Modalidad: {config.modalidad}")
             _logger.info(f"  Codigo Sistema: {config.codigo_sistema or 'N/A'}")
-            _logger.info(f"  Codigo Sucursal: {company.siat_codigo_sucursal or 0}")
-            _logger.info(f"  Codigo Punto Venta: {company.siat_codigo_punto_venta or 0}")
+            _logger.info(f"  Codigo Sucursal: {sucursal.codigo_sucursal or 0}")
+            _logger.info(f"  Codigo Punto Venta: {sucursal.codigo_punto_venta or 0}")
             _logger.info(f"  Hash Archivo: {hash_archivo}")
             _logger.info(f"  Fecha Envio: {fecha_envio}")
             _logger.info(f"  Tamaño Archivo Base64: {len(archivo_base64)} caracteres")

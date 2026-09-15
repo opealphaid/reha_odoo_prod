@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rehalife_reservation_form_seguros" model="ir.ui.view">
+        <field name="name">rehalife.reservation.form.seguros</field>
+        <field name="model">rehalife.reservation</field>
+        <field name="inherit_id" ref="rehalife_o18.view_rehalife_reservation_form"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//field[@name='notes']/.." position="before">
+                <group string="Seguro">
+                    <group>
+                        <field name="modalidad"/>
+                    </group>
+                    <group invisible="modalidad != 'seguro'">
+                        <field name="aseguradora_id" required="modalidad == 'seguro'"/>
+                        <field name="pedido_marco_id" required="modalidad == 'seguro'"/>
+                        <field name="monto_cobertura_seguro" readonly="1"/>
+                        <field name="monto_a_pagar_paciente" readonly="1"/>
+                    </group>
+                </group>
+                <group string="Notas de Conformidad" invisible="not nota_conformidad_ids">
+                    <field name="nota_conformidad_ids" nolabel="1" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="estado" widget="badge"
+                                   decoration-info="estado == 'pendiente'"
+                                   decoration-success="estado in ('aprobada', 'facturada')"
+                                   decoration-danger="estado == 'rechazada'"/>
+                            <field name="importe_total"/>
+                        </list>
+                    </field>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="view_rehalife_reservation_list_seguros" model="ir.ui.view">
+        <field name="name">rehalife.reservation.list.seguros</field>
+        <field name="model">rehalife.reservation</field>
+        <field name="inherit_id" ref="rehalife_o18.view_rehalife_reservation_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='status']" position="after">
+                <field name="modalidad" optional="show"/>
+                <field name="monto_a_pagar_paciente" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,7 +1,21 @@
 import logging
-from odoo import models
+from odoo import fields, models
 
 _logger = logging.getLogger(__name__)
+
+
+class PosOrderLine(models.Model):
+    _inherit = 'pos.order.line'
+
+    rehalife_reservation_id = fields.Many2one(
+        'rehalife.reservation',
+        string='Reserva Rehalife',
+        copy=False,
+    )
+
+    def _load_pos_data_fields(self, config_id):
+        fields_list = super()._load_pos_data_fields(config_id)
+        return fields_list + ['rehalife_reservation_id']
 
 
 class PosOrder(models.Model):
@@ -45,39 +59,50 @@ class PosOrder(models.Model):
         if not order.partner_id:
             return
 
-        # ── 1. Buscar reserva pendiente del paciente ──────────────────────
-        reservation = self.env['rehalife.reservation'].search([
-            ('partner_id',     '=', order.partner_id.id),
-            ('invoice_status', '=', 'pending'),
-            ('status',         '=', 'COMPLETED'),
-        ], limit=1, order='reservation_date desc')
+        # ── 1. Match exacto: reservas vinculadas directamente a las líneas ──
+        reservations = order.lines.mapped('rehalife_reservation_id')
+        # Salvaguarda: solo reservas del mismo paciente de la orden
+        reservations = reservations.filtered(
+            lambda r: r.partner_id == order.partner_id
+        )
 
-        if not reservation:
+        # ── 2. Fallback: heurística anterior (compatibilidad hacia atrás,
+        #      para órdenes que no pasaron por el diálogo "Reservas" o vienen
+        #      de antes de este fix) ─────────────────────────────────────────
+        if not reservations:
+            reservations = self.env['rehalife.reservation'].search([
+                ('partner_id',     '=', order.partner_id.id),
+                ('invoice_status', '=', 'pending'),
+                ('status',         'in', ['IN_ROOM', 'IN_CONSULTATION', 'COMPLETED']),
+            ], limit=1, order='reservation_date desc')
+
+        if not reservations:
             _logger.info(
                 '[POS] Sin reserva pendiente para: %s',
                 order.partner_id.name,
             )
             return
 
-        # ── 2. Calcular datos del pago ────────────────────────────────────
+        # ── 3. Calcular datos del pago ────────────────────────────────────
         paid_amount = order.amount_total or 0.0
         invoiced    = bool(order.to_invoice)
 
-        # ── 3. Actualizar estado en Odoo ──────────────────────────────────
-        reservation_vals = {
-            'invoice_status': 'paid',
-            'pos_order_id':   order.id,
-        }
-        if order.account_move:
-            reservation_vals['invoice_id'] = order.account_move.id
-        reservation.write(reservation_vals)
+        # ── 4. Actualizar estado en Odoo y notificar al backend Next.js ────
+        # No bloquea el flujo del POS si falla la notificación; el resultado
+        # (y el error, si lo hay) queda registrado en la reserva para
+        # reintentar manualmente.
+        for reservation in reservations:
+            reservation_vals = {
+                'invoice_status': 'paid',
+                'pos_order_id':   order.id,
+            }
+            if order.account_move:
+                reservation_vals['invoice_id'] = order.account_move.id
+            reservation.write(reservation_vals)
 
-        _logger.info(
-            '[POS] Reserva %s → PAGADA | Orden: %s | Monto: %s | Factura: %s',
-            reservation.external_id, order.name, paid_amount, invoiced,
-        )
+            _logger.info(
+                '[POS] Reserva %s → PAGADA | Orden: %s | Monto: %s | Factura: %s',
+                reservation.external_id, order.name, paid_amount, invoiced,
+            )
 
-        # ── 4. Notificar al backend Next.js via rehalife.api ──────────────
-        # No bloquea el flujo del POS si falla; el resultado (y el error, si
-        # lo hay) queda registrado en la reserva para reintentar manualmente.
-        reservation._notify_backend_payment()
+            reservation._notify_backend_payment()

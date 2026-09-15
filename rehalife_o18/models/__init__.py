@@ -2,6 +2,7 @@
 from . import rehalife_api
 from . import rehalife_city
 from . import rehalife_partner
+from . import rehalife_product
 from . import rehalife_config
 from . import rehalife_reservation
 from . import rehalife_pos
