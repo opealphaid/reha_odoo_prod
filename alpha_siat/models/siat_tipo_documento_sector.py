@@ -82,7 +82,7 @@ class SiatTipoDocumentoSector(models.Model):
         created = updated = 0
         sync_time = fields.Datetime.now()
 
-        existing = self.search([('company_id', '=', company.id)])
+        existing = self.with_context(active_test=False).search([('company_id', '=', company.id)])
         existing_map = {rec.codigo_clasificador: rec for rec in existing}
         synced_codes = set()
 
@@ -111,7 +111,8 @@ class SiatTipoDocumentoSector(models.Model):
                 else:
                     rec.write({'ultima_sincronizacion': sync_time})
             else:
-                self.create(vals)
+                rec = self.create(vals)
+                existing_map[codigo] = rec
                 created += 1
 
         # Deactivate removed codes

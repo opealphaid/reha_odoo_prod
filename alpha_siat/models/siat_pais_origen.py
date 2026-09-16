@@ -122,7 +122,7 @@ class SiatPaisOrigen(models.Model):
         sync_time = fields.Datetime.now()
 
         # Get all existing codes for this company
-        existing_records = self.search([('company_id', '=', company.id)])
+        existing_records = self.with_context(active_test=False).search([('company_id', '=', company.id)])
         existing_codes = {rec.codigo_clasificador: rec for rec in existing_records}
         synced_codes = set()
 

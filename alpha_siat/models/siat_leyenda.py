@@ -135,7 +135,7 @@ class SiatLeyenda(models.Model):
         sync_time = fields.Datetime.now()
 
         # Get all existing legends for this company
-        existing_records = self.search([('company_id', '=', company.id)])
+        existing_records = self.with_context(active_test=False).search([('company_id', '=', company.id)])
 
         # Build a map of existing legends by (activity, description)
         # Since there's no unique constraint, we need to match by both fields

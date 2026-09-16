@@ -137,7 +137,7 @@ class SiatProductoServicio(models.Model):
         _logger.info("=== INICIO SINCRONIZACIÓN PRODUCTOS SIAT ===")
         _logger.info(f"Company: {company.name}, Total productos a procesar: {len(productos_list)}")
 
-        existing_records = self.search([('company_id', '=', company.id)])
+        existing_records = self.with_context(active_test=False).search([('company_id', '=', company.id)])
         existing_keys = {
             (rec.codigo_actividad, rec.codigo_producto): rec
             for rec in existing_records
@@ -224,7 +224,7 @@ class SiatProductoServicio(models.Model):
                 elif 'InFailedSqlTransaction' in error_msg or 'aborted' in error_msg:
                     _logger.error(f"Producto {idx}: Transacción SQL fallida detectada. Haciendo rollback...")
                     self.env.cr.rollback()
-                    existing_records = self.search([('company_id', '=', company.id)])
+                    existing_records = self.with_context(active_test=False).search([('company_id', '=', company.id)])
                     existing_keys = {
                         (rec.codigo_actividad, rec.codigo_producto): rec
                         for rec in existing_records

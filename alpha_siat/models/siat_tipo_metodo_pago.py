@@ -76,7 +76,7 @@ class SiatTipoMetodoPago(models.Model):
         updated = 0
         sync_time = fields.Datetime.now()
 
-        existing_records = self.search([('company_id', '=', company.id)])
+        existing_records = self.with_context(active_test=False).search([('company_id', '=', company.id)])
         existing_codes = {rec.codigo_clasificador: rec for rec in existing_records}
         synced_codes = set()
 

@@ -112,7 +112,7 @@ class SiatActividadDocumentoSector(models.Model):
         sync_time = fields.Datetime.now()
 
         # Get all existing records for this company
-        existing_records = self.search([('company_id', '=', company.id)])
+        existing_records = self.with_context(active_test=False).search([('company_id', '=', company.id)])
         existing_keys = {
             (rec.codigo_actividad, rec.codigo_documento_sector): rec
             for rec in existing_records
