@@ -114,10 +114,11 @@
                                 <div class="o_setting_right_pane">
                                     <span class="o_form_label">Servicios</span>
                                     <div class="text-muted">
-                                        Sincroniza los tipos de servicio del backend como productos
+                                        Trae los tipos de servicio del backend como productos, o
+                                        envia al backend los cargados en Odoo
                                     </div>
                                     <div class="mt8">
-                                        <button string="Sincronizar Servicios (Productos)"
+                                        <button string="Sincronizar Servicios"
                                                 name="action_sync_service_types"
                                                 type="object"
                                                 class="btn btn-secondary"/>

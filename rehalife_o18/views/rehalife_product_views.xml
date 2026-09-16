@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── FORM: flag + pestaña con los campos del ServiceType ─── -->
+    <record id="view_product_template_form_rehalife_service" model="ir.ui.view">
+        <field name="name">product.template.form.rehalife.service</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+
+            <!-- El flag va en la pestaña general (no dentro de la pestaña de
+                 servicio): si estuviera ahí no habría forma de marcarlo la
+                 primera vez, porque esa pestaña depende de él. -->
+            <xpath expr="//group[@name='group_general']" position="inside">
+                <field name="reservas_rehalife"/>
+            </xpath>
+
+            <xpath expr="//notebook" position="inside">
+                <page string="Servicio Rehalife"
+                      name="rehalife_service"
+                      invisible="not reservas_rehalife">
+                    <div class="oe_button_box text-end mb-2">
+                        <button string="Enviar al Backend"
+                                name="action_push_service_to_backend"
+                                type="object"
+                                class="btn btn-primary"
+                                invisible="rehalife_external_id != False"
+                                confirm="¿Crear este servicio en el backend Rehalife?"/>
+                        <button string="Actualizar en Backend"
+                                name="action_push_service_to_backend"
+                                type="object"
+                                class="btn btn-secondary"
+                                invisible="not rehalife_external_id"
+                                confirm="¿Sobrescribir este servicio en el backend Rehalife con los datos de Odoo?"/>
+                    </div>
+                    <group>
+                        <group string="Parámetros de Reserva">
+                            <field name="rehalife_requires_evaluation"/>
+                            <field name="rehalife_max_advance_days"/>
+                            <field name="rehalife_open_window_hours"/>
+                            <field name="rehalife_cancel_window_hours"/>
+                            <field name="rehalife_reminder_hours_before"/>
+                        </group>
+                        <group string="Sincronización con Backend">
+                            <field name="rehalife_external_id"/>
+                            <field name="rehalife_sync_state"
+                                   widget="badge"
+                                   decoration-success="rehalife_sync_state == 'synced'"
+                                   decoration-warning="rehalife_sync_state == 'draft'"
+                                   decoration-danger="rehalife_sync_state == 'error'"/>
+                            <field name="rehalife_last_sync"/>
+                            <field name="rehalife_sync_error"
+                                   invisible="not rehalife_sync_error"/>
+                        </group>
+                    </group>
+                    <group string="Descripción del Servicio (Backend)">
+                        <field name="rehalife_service_description"
+                               nolabel="1"
+                               colspan="2"
+                               placeholder="Descripción del Tipo de Servicio en el backend Rehalife."/>
+                    </group>
+                    <div class="alert alert-info" role="alert"
+                         invisible="rehalife_external_id != False">
+                        <strong>ℹ️ Servicio local</strong>
+                        <p>
+                            Este servicio no tiene ID Externo, es decir que no existe
+                            en el backend Rehalife (fue creado a mano o por plantilla
+                            de importación). Mientras siga así no se puede reservar
+                            desde el frontend y el POS no lo va a encontrar al cobrar
+                            una reserva. Usá <b>Enviar al Backend</b> para crearlo allá.
+                        </p>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ─── LISTA dedicada (solo para la acción Servicios) ─── -->
+    <record id="view_product_template_list_rehalife_service" model="ir.ui.view">
+        <field name="name">product.template.list.rehalife.service</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <list string="Servicios Rehalife" multi_edit="1" sample="1">
+                <!-- Solo aparece con registros seleccionados. Va en la lista
+                     dedicada (y no como acción de servidor sobre
+                     product.template) para no ensuciar el ⚙ de la lista
+                     general de Productos de Odoo. -->
+                <header>
+                    <button string="Enviar al Backend"
+                            name="action_push_service_to_backend"
+                            type="object"
+                            confirm="¿Crear/actualizar los servicios seleccionados en el backend Rehalife?"/>
+                </header>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="default_code" string="Referencia"/>
+                <field name="name" string="Servicio"/>
+                <field name="categ_id" string="Categoría" optional="show"/>
+                <field name="list_price" string="Precio"
+                       widget="monetary" options="{'currency_field': 'currency_id'}"
+                       decoration-warning="list_price == 0"/>
+                <field name="rehalife_requires_evaluation" string="Req. Eval." optional="show"/>
+                <field name="rehalife_max_advance_days" string="Días Antic." optional="hide"/>
+                <field name="available_in_pos" string="En POS" optional="show"/>
+                <field name="sale_ok" string="Vendible" optional="hide"/>
+                <field name="siat_homologado" string="SIAT OK" widget="boolean" optional="show"/>
+                <field name="rehalife_external_id" string="ID Externo" optional="hide"/>
+                <field name="rehalife_sync_state" string="Estado Sync"
+                       widget="badge"
+                       decoration-success="rehalife_sync_state == 'synced'"
+                       decoration-warning="rehalife_sync_state == 'draft'"
+                       decoration-danger="rehalife_sync_state == 'error'"
+                       optional="show"/>
+                <field name="rehalife_last_sync" string="Última Sync" optional="hide"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ─── SEARCH dedicada ─── -->
+    <record id="view_product_template_search_rehalife_service" model="ir.ui.view">
+        <field name="name">product.template.search.rehalife.service</field>
+        <field name="model">product.template</field>
+        <field name="arch" type="xml">
+            <search string="Servicios Rehalife">
+                <field name="name" string="Servicio"
+                       filter_domain="['|', ('default_code', 'ilike', self), ('name', 'ilike', self)]"/>
+                <field name="default_code" string="Referencia"/>
+                <field name="categ_id"
+                       filter_domain="[('categ_id', 'child_of', raw_value)]"/>
+                <field name="rehalife_external_id" string="ID Externo"/>
+                <separator/>
+                <filter string="Requieren Evaluación" name="filter_requires_evaluation"
+                        domain="[('rehalife_requires_evaluation', '=', True)]"/>
+                <filter string="Disponibles en POS" name="filter_available_in_pos"
+                        domain="[('available_in_pos', '=', True)]"/>
+                <separator/>
+                <filter string="Pendientes de Homologación SIAT" name="filter_siat_pendiente"
+                        domain="[('siat_homologado', '=', False)]"/>
+                <filter string="Sin Precio" name="filter_sin_precio"
+                        domain="[('list_price', '=', 0)]"/>
+                <separator/>
+                <filter string="Sincronizados" name="filter_synced"
+                        domain="[('rehalife_sync_state', '=', 'synced')]"/>
+                <filter string="No Sincronizados" name="filter_not_synced"
+                        domain="[('rehalife_sync_state', '!=', 'synced')]"/>
+                <filter string="Servicios Locales (sin ID Externo)" name="filter_local"
+                        domain="[('rehalife_external_id', '=', False)]"/>
+                <separator/>
+                <filter string="Archivados" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Agrupar por">
+                    <filter string="Categoría" name="group_categ_id"
+                            context="{'group_by': 'categ_id'}"/>
+                    <filter string="Estado Sync" name="group_sync_state"
+                            context="{'group_by': 'rehalife_sync_state'}"/>
+                    <filter string="Requiere Evaluación" name="group_requires_evaluation"
+                            context="{'group_by': 'rehalife_requires_evaluation'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ─── ACCIÓN ─── -->
+    <record id="action_rehalife_service_products" model="ir.actions.act_window">
+        <field name="name">Servicios</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('reservas_rehalife', '=', True)]</field>
+        <field name="context">{
+            'default_reservas_rehalife': True,
+            'default_type': 'service',
+            'default_purchase_ok': False,
+        }</field>
+        <field name="search_view_id" ref="view_product_template_search_rehalife_service"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Todavía no hay servicios Rehalife
+            </p>
+            <p>
+                Los servicios llegan desde el backend con
+                <b>Rehalife &gt; Configuracion &gt; Sincronizar Servicios</b>,
+                o se cargan con el importador de Odoo (menú <b>⚙ &gt; Importar
+                registros</b>) usando la plantilla de servicios.
+            </p>
+        </field>
+    </record>
+
+    <!-- La lista es la dedicada; el formulario es el nativo de producto, para
+         conservar la pestaña de Homologación SIAT de alpha_siat. -->
+    <record id="action_rehalife_service_products_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="10"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_product_template_list_rehalife_service"/>
+        <field name="act_window_id" ref="action_rehalife_service_products"/>
+    </record>
+
+    <record id="action_rehalife_service_products_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="20"/>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="product.product_template_only_form_view"/>
+        <field name="act_window_id" ref="action_rehalife_service_products"/>
+    </record>
+
+</odoo>

@@ -109,29 +109,13 @@ class RehalifeConfig(models.TransientModel):
         }
 
     def action_sync_service_types(self):
-        """Sincroniza Service Types del backend como productos en Odoo."""
+
         self.action_save()
-        result = self.env['product.template'].sync_service_types_from_backend()
-        pending = result['pending_homologation']
-        message = '%d creados, %d actualizados, %d omitidos.' % (
-            result['created'], result['updated'], result['skipped']
-        )
-        if pending:
-            message += (
-                '\n⚠️ %d servicio(s) requieren homologación SIAT (Código de '
-                'Producto, Actividad Económica y Unidad de Medida) antes de '
-                "poder venderse. Abre cada producto y usa 'Homologar Producto "
-                "SIAT'." % pending
-            )
         return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': 'Servicios sincronizados',
-                'message': message,
-                'type': 'warning' if pending else 'success',
-                'sticky': bool(pending),
-            },
+            'type': 'ir.actions.act_window',
+            'res_model': 'rehalife.services.sync.wizard',
+            'view_mode': 'form',
+            'target': 'new',
         }
 
     def action_import_reservations(self):
