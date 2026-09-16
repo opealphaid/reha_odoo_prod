@@ -20,13 +20,6 @@
               sequence="10"
               action="action_rehalife_contacts_all"/>
 
-    <!-- Servicios (productos de tipo servicio reservable) -->
-    <menuitem id="menu_rehalife_services"
-              name="Servicios"
-              parent="menu_rehalife_root"
-              sequence="15"
-              action="action_rehalife_service_products"/>
-
     <!-- Configuración -->
     <menuitem id="menu_rehalife_settings"
               name="Configuracion"
@@ -53,20 +46,6 @@
               parent="menu_rehalife_sync_root"
               sequence="20"
               action="action_rehalife_sync_wizard"/>
-
-    <!-- Servicios: traer del backend o enviar al backend (un solo asistente) -->
-    <menuitem id="menu_rehalife_services_sync"
-              name="Sincronizar Servicios"
-              parent="menu_rehalife_sync_root"
-              sequence="23"
-              action="action_rehalife_services_sync_wizard"/>
-
-    <!-- Plantilla Excel para cargar servicios (incluye catalogos SIAT) -->
-    <menuitem id="menu_rehalife_services_template"
-              name="Plantilla de Servicios (Excel)"
-              parent="menu_rehalife_sync_root"
-              sequence="26"
-              action="action_rehalife_services_template_wizard"/>
 
     <!-- Importar Reservas Completadas (respaldo) -->
     <menuitem id="menu_rehalife_import_reservations"
