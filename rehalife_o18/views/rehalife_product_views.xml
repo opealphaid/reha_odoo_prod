@@ -53,6 +53,24 @@
                                    invisible="not rehalife_sync_error"/>
                         </group>
                     </group>
+                    <group string="Homologación SIAT por Código">
+                        <div class="text-muted" colspan="2">
+                            Atajo para cargar la homologación escribiendo los códigos SIAT,
+                            que es lo que usa la plantilla de importación. Al guardar se
+                            resuelven y se asignan los campos de la pestaña
+                            <b>Homologación SIAT</b>. Si preferís elegirlos de la lista,
+                            usá esa pestaña directamente — es el mismo dato.
+                        </div>
+                        <group>
+                            <field name="rehalife_siat_actividad_codigo"
+                                   placeholder="ej. 862010"/>
+                            <field name="rehalife_siat_producto_codigo"
+                                   placeholder="ej. 86901"/>
+                            <field name="rehalife_siat_unidad_codigo"
+                                   placeholder="ej. 58"/>
+                        </group>
+                    </group>
+
                     <group string="Descripción del Servicio (Backend)">
                         <field name="rehalife_service_description"
                                nolabel="1"
@@ -79,6 +97,11 @@
     <record id="view_product_template_list_rehalife_service" model="ir.ui.view">
         <field name="name">product.template.list.rehalife.service</field>
         <field name="model">product.template</field>
+        <!-- Prioridad alta a proposito: esta vista se usa SOLO desde la accion
+             de Servicios (via ir.actions.act_window.view). Con la prioridad por
+             defecto competiria con la lista nativa de product.template en
+             cualquier otra accion que no fije view_id. -->
+        <field name="priority" eval="99"/>
         <field name="arch" type="xml">
             <list string="Servicios Rehalife" multi_edit="1" sample="1">
                 <!-- Solo aparece con registros seleccionados. Va en la lista
@@ -120,6 +143,10 @@
     <record id="view_product_template_search_rehalife_service" model="ir.ui.view">
         <field name="name">product.template.search.rehalife.service</field>
         <field name="model">product.template</field>
+        <!-- Igual que la lista: solo la usa la accion de Servicios, que la fija
+             con search_view_id. La nativa de product.template tambien esta en
+             16, asi que sin esto el desempate quedaba librado al orden de ids. -->
+        <field name="priority" eval="99"/>
         <field name="arch" type="xml">
             <search string="Servicios Rehalife">
                 <field name="name" string="Servicio"
