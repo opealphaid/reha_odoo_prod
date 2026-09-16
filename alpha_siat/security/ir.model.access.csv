@@ -37,7 +37,7 @@ access_alpha_siat_tipo_punto_venta,alpha.siat.tipo.punto.venta,model_alpha_siat_
 access_alpha_siat_tipo_punto_venta_user,alpha.siat.tipo.punto.venta.user,model_alpha_siat_tipo_punto_venta,base.group_user,1,0,0,0
 access_alpha_siat_tipos_factura,alpha.siat.tipos.factura,model_alpha_siat_tipos_factura,base.group_system,1,1,1,0
 access_alpha_siat_tipos_factura_user,alpha.siat.tipos.factura.user,model_alpha_siat_tipos_factura,base.group_user,1,0,0,0
-access_alpha_siat_unidad_medida,alpha.siat.unidad.medida,model_alpha_siat_unidad_medida,base.group_system,1,1,1,0
+access_alpha_siat_unidad_medida,alpha.siat.unidad.medida,model_alpha_siat_unidad_medida,base.group_system,1,1,1,1
 access_alpha_siat_unidad_medida_user,alpha.siat.unidad.medida.user,model_alpha_siat_unidad_medida,base.group_user,1,0,0,0
 access_alpha_siat_tipo_documento_sector,alpha.siat.tipo.documento.sector,model_alpha_siat_tipo_documento_sector,base.group_system,1,1,1,0
 access_alpha_siat_tipo_documento_sector_user,alpha.siat.tipo.documento.sector.user,model_alpha_siat_tipo_documento_sector,base.group_user,1,0,0,0

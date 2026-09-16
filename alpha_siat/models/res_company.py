@@ -117,7 +117,8 @@ class ResCompany(models.Model):
             raise UserError("No SIAT configuration found. Create one and assign it to this company.")
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis_code = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis_code = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Error obtaining CUIS: {e}")
         return self.action_open_cuis_history()
@@ -254,7 +255,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -311,7 +313,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -368,7 +371,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -424,7 +428,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -486,7 +491,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -541,7 +547,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -598,7 +605,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -655,7 +663,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -712,7 +721,8 @@ class ResCompany(models.Model):
         # Get CUIS first
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -766,7 +776,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -816,7 +827,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -864,7 +876,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -912,7 +925,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -960,7 +974,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -1009,7 +1024,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -1057,7 +1073,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
@@ -1105,7 +1122,8 @@ class ResCompany(models.Model):
 
         cuis_model = self.env['alpha.siat.cuis']
         try:
-            cuis = cuis_model.get_or_fetch_cuis(self, codigo_modalidad=int(config.modalidad))
+            sucursal = self.env['alpha.siat.sucursal'].get_sucursal_for_sync(self)
+            cuis = cuis_model.get_or_fetch_cuis(self, sucursal=sucursal, codigo_modalidad=int(config.modalidad))
         except Exception as e:
             raise UserError(f"Cannot sync without valid CUIS: {e}")
 
