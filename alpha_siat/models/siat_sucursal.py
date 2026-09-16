@@ -107,6 +107,40 @@ class SiatSucursal(models.Model):
         )
 
     @api.model
+    def get_sucursal_for_sync(self, company):
+        """Resuelve la sucursal a usar para las sincronizaciones de catálogos SIAT
+        a nivel de compañía (Actividades, Unidades de Medida, etc. en res.company).
+
+        Estas sincronizaciones no dependen de un usuario y, además, el XML que se
+        envía a SIAT para ellas ya usa directamente company.siat_codigo_sucursal /
+        company.siat_codigo_punto_venta (ver siat_client.py), no el registro de
+        Sucursal SIAT. Por eso, cuando hay más de una Sucursal SIAT activa, se usa
+        esos mismos códigos de la compañía para desambiguar y así pedir el CUIS
+        con la sucursal/PDV que realmente se va a usar en la sincronización.
+        """
+        sucursales = self.search([('company_id', '=', company.id), ('active', '=', True)])
+        if len(sucursales) <= 1:
+            return self.get_default_sucursal(company)
+
+        match = sucursales.filtered(
+            lambda s: s.codigo_sucursal == company.siat_codigo_sucursal
+            and s.codigo_punto_venta == company.siat_codigo_punto_venta
+        )
+        if len(match) == 1:
+            return match
+
+        raise UserError(
+            "La compañía '%s' tiene %d Sucursales SIAT registradas y ninguna coincide "
+            "con los códigos configurados en la compañía (Sucursal %s / Punto de Venta %s).\n\n"
+            "Corrija 'SIAT - Código Sucursal' / 'SIAT - Código Punto de Venta' en la compañía "
+            "para que coincidan con la Sucursal SIAT desde la que quiere sincronizar, o cree "
+            "una Sucursal SIAT con esos códigos." % (
+                company.name, len(sucursales), company.siat_codigo_sucursal,
+                company.siat_codigo_punto_venta
+            )
+        )
+
+    @api.model
     def get_sucursal_for_user(self, company, user=None):
         """Resuelve la sucursal SIAT desde la cual debe facturar `user`.
 
