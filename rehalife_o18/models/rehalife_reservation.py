@@ -66,6 +66,10 @@ class RehalifeReservation(models.Model):
         store=False,
     )
 
+    nc_error = fields.Char(
+        string='Error al Generar Nota de Conformidad', readonly=True, copy=False,
+    )
+
     # ── Sincronización del pago con el backend Next.js ───────────────────────
     backend_sync_state = fields.Selection([
         ('draft',  'Pendiente'),
