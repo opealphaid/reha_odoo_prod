@@ -18,6 +18,14 @@
                         <field name="monto_cobertura_seguro" readonly="1"/>
                         <field name="monto_a_pagar_paciente" readonly="1"/>
                     </group>
+                    <div class="alert alert-danger" role="alert"
+                         invisible="modalidad != 'seguro' or not nc_error">
+                        <strong>No se pudo generar la Nota de Conformidad:</strong>
+                        <field name="nc_error" nolabel="1" readonly="1"/>
+                        <br/>
+                        <button name="action_reintentar_nota_conformidad" type="object"
+                                string="Reintentar" class="btn-warning mt-2"/>
+                    </div>
                 </group>
                 <group string="Notas de Conformidad" invisible="not nota_conformidad_ids">
                     <field name="nota_conformidad_ids" nolabel="1" readonly="1">
@@ -36,6 +44,25 @@
         </field>
     </record>
 
+    <!-- Filtro para encontrar reservas de seguro con la NC atascada, sin
+         tener que abrir cada una o mirar el log del servidor (incidente
+         real de producción, 2026-09-16 — ver nc_error en
+         rehalife_seguros_reservation.py). Mismo patrón que el filtro
+         nativo "Error de Sync. Backend" (backend_sync_state) que ya existe
+         en rehalife_o18.view_rehalife_reservation_search. -->
+    <record id="view_rehalife_reservation_search_seguros" model="ir.ui.view">
+        <field name="name">rehalife.reservation.search.seguros</field>
+        <field name="model">rehalife.reservation</field>
+        <field name="inherit_id" ref="rehalife_o18.view_rehalife_reservation_search"/>
+        <field name="arch" type="xml">
+            <filter name="backend_sync_error" position="after">
+                <filter name="nc_error"
+                        string="Nota de Conformidad sin Generar"
+                        domain="[('nc_error', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
     <record id="view_rehalife_reservation_list_seguros" model="ir.ui.view">
         <field name="name">rehalife.reservation.list.seguros</field>
         <field name="model">rehalife.reservation</field>
@@ -44,6 +71,9 @@
             <xpath expr="//field[@name='status']" position="after">
                 <field name="modalidad" optional="show"/>
                 <field name="monto_a_pagar_paciente" optional="hide"/>
+                <field name="nc_error" optional="show"
+                       decoration-danger="nc_error"
+                       invisible="modalidad != 'seguro' or not nc_error"/>
             </xpath>
         </field>
     </record>
