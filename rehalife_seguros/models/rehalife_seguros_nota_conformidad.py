@@ -170,20 +170,45 @@ class RehalifeNotaConformidad(models.Model):
 
     def _resolve_pedido_marco_line(self, reservation):
         """Busca en el pedido marco la línea correspondiente al servicio de la
-        reserva. Si el pedido marco tiene una sola línea, se asume esa. Si hay
-        varias, intenta calzar por nombre de producto vs. service_type_name.
+        reserva. Si el pedido marco tiene una sola línea, se asume esa.
+
+        BUG real de producción (2026-09-16): con varias líneas, antes se
+        calzaba por SUBSTRING del nombre (`service_name in product.name`) —
+        con productos como "FISIOTERAPIA" y "Fisioterapia . 10 sesiones
+        CDLA", el segundo nombre CONTIENE al primero como texto, así que
+        ambos "matcheaban" → quedaba ambiguo (`len(match) != 1`) → se
+        lanzaba UserError, atrapado en silencio por
+        `_asegurar_pedido_marco_y_nota_conformidad` — la reserva se quedaba
+        con `pedido_marco_id` puesto pero SIN Nota de Conformidad, sin
+        ningún aviso visible para el usuario.
+
+        Fix: primero intenta un match EXACTO por producto — el mismo que ya
+        usa `reservation._resolve_product_servicio()` (match único por
+        `rehalife_external_id`, sin ambigüedad posible, ya usado del lado
+        del split paciente/aseguradora). Si esa reserva no tiene un
+        `service_type_external_id` resoluble (o el pedido marco no incluye
+        ese producto exacto), cae a un match por nombre — pero EXACTO, no
+        substring, para no repetir el mismo bug con otro par de productos.
         """
         order = reservation.pedido_marco_id
-        lines = order.order_line
+        lines = order.order_line.filtered(lambda l: not l.display_type)
         if len(lines) == 1:
             return lines
+
+        product = reservation._resolve_product_servicio()
+        if product:
+            match = lines.filtered(lambda l: l.product_id == product)
+            if len(match) == 1:
+                return match
+
         service_name = (reservation.service_type_name or '').strip().lower()
         if service_name:
             match = lines.filtered(
-                lambda l: l.product_id and service_name in (l.product_id.name or '').lower()
+                lambda l: l.product_id and (l.product_id.name or '').strip().lower() == service_name
             )
             if len(match) == 1:
                 return match
+
         raise UserError(
             'No se pudo determinar automáticamente la línea del Pedido de Venta '
             'Marco "%s" para el servicio "%s" de la reserva %s. '

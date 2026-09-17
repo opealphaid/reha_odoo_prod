@@ -44,6 +44,19 @@ class RehalifeReservation(models.Model):
         'rehalife.nota.conformidad', 'reservation_id', string='Notas de Conformidad',
     )
 
+    # Incidente real de producción (2026-09-16): la generación automática de
+    # NC puede fallar por varios motivos (Pedido de Venta Marco sin Periodo,
+    # sin confirmar, inexistente, o — el bug real que se dio — ambigüedad al
+    # calzar el producto cuando hay varias líneas) y hasta ahora esa falla
+    # quedaba SOLO en el log del servidor: nadie se enteraba hasta que
+    # alguien preguntaba por qué faltaba la NC. Este campo hace la falla
+    # visible en la propia reserva — se limpia solo la próxima vez que el
+    # proceso corre y sí funciona (no queda "pegado" mostrando un error
+    # viejo ya resuelto).
+    nc_error = fields.Char(
+        string='Error al Generar Nota de Conformidad', readonly=True, copy=False,
+    )
+
     # ── Split paciente/aseguradora (HU-12, 2026-09-11 — corregido el mismo
     # día: se descartó un modelo aparte de "Cobertura"; y el 2026-09-12: el
     # "precio" de la línea del Pedido Marco pasó a ser un % de cobertura,
@@ -190,20 +203,61 @@ class RehalifeReservation(models.Model):
                 if not reservation.pedido_marco_id:
                     pedido = reservation._find_pedido_marco_vigente()
                     if not pedido:
-                        _logger.warning(
-                            '[Seguros] Reserva %s: sin Pedido de Venta Marco vigente '
-                            'para "%s" / periodo %s — créalo desde Seguros > Pedidos '
-                            'de Venta Marco.', reservation.external_id,
-                            reservation.aseguradora_id.name,
-                            reservation.reservation_date,
+                        mensaje = (
+                            'Sin Pedido de Venta Marco vigente para "%s" / periodo '
+                            '%s — créalo (confirmado, con Periodo) desde Seguros > '
+                            'Pedidos de Venta Marco.' % (
+                                reservation.aseguradora_id.name,
+                                reservation.reservation_date,
+                            )
                         )
+                        _logger.warning(
+                            '[Seguros] Reserva %s: %s', reservation.external_id, mensaje,
+                        )
+                        reservation.nc_error = mensaje
                         continue
                     reservation.pedido_marco_id = pedido.id
 
                 if not reservation.nota_conformidad_ids:
                     self.env['rehalife.nota.conformidad']._generar_desde_reservation(reservation)
-            except Exception:
+
+                # Si llegamos hasta acá sin excepción (NC generada ahora, o ya
+                # existía de antes), cualquier error previo queda superado.
+                reservation.nc_error = False
+            except Exception as e:
                 _logger.exception(
                     '[Seguros] No se pudo generar la Nota de Conformidad para la '
                     'reserva %s.', reservation.external_id,
                 )
+                reservation.nc_error = str(e)
+
+    def action_reintentar_nota_conformidad(self):
+        """Botón manual en la reserva (visible cuando hay `nc_error`, o
+        modalidad='seguro' en general) — corre exactamente el mismo proceso
+        que el sync automático, para cuando la falla ya se corrigió (ej. se
+        confirmó/completó el Pedido de Venta Marco) y no va a llegar un
+        nuevo cambio de estado desde el frontend que dispare el reintento
+        solo (la reserva ya está en un estado terminal). Sin esto, la única
+        forma de recuperar una reserva atascada era por consola de Odoo."""
+        self._asegurar_pedido_marco_y_nota_conformidad()
+        con_error = self.filtered('nc_error')
+        if con_error:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Nota de Conformidad',
+                    'message': 'Sigue sin poderse generar: %s' % con_error[0].nc_error,
+                    'type': 'warning',
+                    'sticky': True,
+                },
+            }
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Nota de Conformidad',
+                'message': 'Generada correctamente.',
+                'type': 'success',
+            },
+        }

@@ -24,7 +24,7 @@
 
             <xpath expr="//group[@name='order_details']" position="inside">
                 <field name="es_pedido_marco"/>
-                <field name="periodo" invisible="not es_pedido_marco"/>
+                <field name="periodo" invisible="not es_pedido_marco" required="es_pedido_marco"/>
                 <field name="nombre_periodo" invisible="not es_pedido_marco" readonly="1"/>
             </xpath>
 
