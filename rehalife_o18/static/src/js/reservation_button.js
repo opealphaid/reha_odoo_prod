@@ -149,6 +149,7 @@ patch(ProductScreen.prototype, {
         super.setup();
         this._dialog = useService("dialog");
         this._orm    = useService("orm");
+        this._notification = useService("notification");
         this._pos    = usePos();
     },
 
@@ -181,18 +182,31 @@ patch(ProductScreen.prototype, {
                     let partner = pos.models["res.partner"]?.getBy("id", partnerId);
 
                     if (!partner) {
-                        const loaded = await pos.data.load("res.partner", [partnerId]);
-                        partner = loaded?.[0];
+                        // pos.data.load(...) no existe en esta versión de
+                        // point_of_sale (el servicio `data`/PosData no expone
+                        // `load`) — se reemplaza por `orm.read` (mismo
+                        // servicio ya usado más abajo para product.product)
+                        // y se registra el resultado en el store reactivo del
+                        // POS con `.create()`, igual patrón que
+                        // pos.models["pos.order.line"].create(...) más abajo.
+                        const [partnerData] = await this._orm.read("res.partner", [partnerId], []);
+                        if (partnerData) {
+                            partner = pos.models["res.partner"].create(partnerData);
+                        }
                     }
 
                     if (partner) {
                         order.set_partner(partner);   // ✅ nombre correcto Odoo 18
                         console.log("[Reservas] ✅ Partner asignado:", partner.name);
                     } else {
-                        console.warn("[Reservas] Partner no encontrado:", partnerId);
+                        const msg = `No se encontró el paciente (partner ${partnerId}) para asignarlo a la orden. Verifique manualmente el cliente antes de cobrar.`;
+                        console.warn("[Reservas]", msg);
+                        this._notification.add(msg, { type: "danger", sticky: true });
                     }
                 } catch (e) {
+                    const msg = `No se pudo asignar el paciente a la orden (${e?.message || e}). Verifique manualmente el cliente antes de cobrar.`;
                     console.warn("[Reservas] Error cargando partner:", e);
+                    this._notification.add(msg, { type: "danger", sticky: true });
                 }
 
                 // ── 2. Agregar línea con el producto del servicio real ────
