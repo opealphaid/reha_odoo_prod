@@ -222,18 +222,3 @@ class RehalifeAPI(models.AbstractModel):
             if page >= total_pages or not content:
                 break
         return all_items
-
-    def get_service_type(self, service_type_id):
-
-        result = self._request('GET', '/service-types/%s' % service_type_id)
-        return result.get('data', {})
-
-    def create_service_type(self, vals):
-
-        result = self._request('POST', '/service-types', data=vals)
-        return result.get('data', {})
-
-    def update_service_type(self, service_type_id, vals):
-
-        result = self._request('PUT', '/service-types/%s' % service_type_id, data=vals)
-        return result.get('data', {})
