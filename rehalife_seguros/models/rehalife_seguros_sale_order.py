@@ -69,6 +69,29 @@ class SaleOrder(models.Model):
         for order in self:
             order.nota_conformidad_count = len(order.nota_conformidad_ids)
 
+    # Bug real de producción (2026-09-17): un Pedido de Venta Marco se
+    # guardó con `periodo` = 17/09/2026 (el día en que se lo creó) en vez
+    # del día 1 del mes — el "Nombre del Periodo" calculado ("...-Septiembre26")
+    # se veía perfecto porque solo usa mes/año, así que nadie notó nada raro
+    # a simple vista. Pero `_find_pedido_marco_vigente()` busca por
+    # `periodo` EXACTO (= reservation_date con day=1), así que ese pedido
+    # nunca calzó con ninguna reserva de esa aseguradora en ese mes — la
+    # Nota de Conformidad se quedó sin generar, otra vez en silencio (ver
+    # nc_error). En vez de depender de que quien lo carga escriba el día 1
+    # a mano, se normaliza acá: cualquier día que se guarde en `periodo` se
+    # fuerza al día 1 de ese mes, sin excepción.
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('periodo'):
+                vals['periodo'] = fields.Date.to_date(vals['periodo']).replace(day=1)
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if vals.get('periodo'):
+            vals['periodo'] = fields.Date.to_date(vals['periodo']).replace(day=1)
+        return super().write(vals)
+
     @api.constrains('es_pedido_marco', 'partner_id')
     def _check_pedido_marco_aseguradora(self):
         for order in self:

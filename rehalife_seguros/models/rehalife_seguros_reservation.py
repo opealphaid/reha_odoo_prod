@@ -6,19 +6,22 @@ _logger = logging.getLogger(__name__)
 
 # Estados de la reserva a partir de los cuales ya se puede documentar la
 # atención con una Nota de Conformidad. Decisión confirmada con el usuario
-# (2026-09-12): SOLO al finalizar la atención ("Finalizar Consulta" en el
-# frontend → status='COMPLETED'), no al marcar la llegada (IN_ROOM) ni
-# durante la consulta (IN_CONSULTATION) — antes incluía esos dos también.
+# (2026-09-17, reemplaza la del 2026-09-12): ya NO se espera a que termine
+# la atención — se genera desde que el paciente LLEGA al consultorio
+# (status='IN_ROOM'). Se incluyen también 'IN_CONSULTATION' y 'COMPLETED'
+# por si una reserva puntual salta directo a alguno de esos estados sin
+# pasar antes por un sync en 'IN_ROOM' (ej. reservas importadas/backfill) —
+# no genera duplicados: _asegurar_pedido_marco_y_nota_conformidad() ya
+# revisa `if not reservation.nota_conformidad_ids` antes de crear.
 #
-# OJO: esto es un criterio DISTINTO (y a propósito ya no compartido) del que
-# usa el diálogo "Reservas" del POS para decidir cuándo una reserva ya se
-# puede COBRAR (rehalife_o18/static/src/js/reservation_button.js y
-# rehalife_o18/models/rehalife_pos.py siguen usando su propia lista
-# ['IN_ROOM', 'IN_CONSULTATION', 'COMPLETED'], sin cambios — ahí sí se puede
-# cobrar la parte del paciente antes de que termine la atención). No hay
-# import compartido entre ambos: son listas literales independientes: si se
-# vuelve a alinear este criterio, hay que tocar los dos lados a mano.
-ESTADOS_FACTURABLES = ('COMPLETED',)
+# Con esto, este criterio vuelve a coincidir con el que ya usa el diálogo
+# "Reservas" del POS para decidir cuándo se puede COBRAR la parte del
+# paciente (rehalife_o18/static/src/js/reservation_button.js y
+# rehalife_o18/models/rehalife_pos.py, lista ['IN_ROOM', 'IN_CONSULTATION',
+# 'COMPLETED']) — pero siguen siendo dos listas literales independientes,
+# sin import compartido: si se vuelve a desalinear este criterio, hay que
+# tocar los dos lados a mano.
+ESTADOS_FACTURABLES = ('IN_ROOM', 'IN_CONSULTATION', 'COMPLETED')
 
 
 class RehalifeReservation(models.Model):
@@ -208,7 +211,7 @@ class RehalifeReservation(models.Model):
                             '%s — créalo (confirmado, con Periodo) desde Seguros > '
                             'Pedidos de Venta Marco.' % (
                                 reservation.aseguradora_id.name,
-                                reservation.reservation_date,
+                                reservation.reservation_date.replace(day=1),
                             )
                         )
                         _logger.warning(
