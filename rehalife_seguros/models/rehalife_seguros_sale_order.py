@@ -85,6 +85,30 @@ class SaleOrder(models.Model):
                     '"%s" primero.' % order.partner_id.name
                 )
 
+    # Bug real de producción (2026-09-16): un Pedido de Venta Marco se
+    # guardó sin `periodo` (el campo no era obligatorio a nivel de modelo,
+    # solo tenía el placeholder de ayuda en la vista). Sin `periodo`,
+    # `rehalife.reservation._find_pedido_marco_vigente()` nunca lo
+    # encuentra (busca por aseguradora + período EXACTO) — la reserva se
+    # queda sin `pedido_marco_id`, y como ese campo es requisito para
+    # `_generar_desde_reservation()`, la Nota de Conformidad tampoco se
+    # genera. Todo eso queda solo en el log
+    # (`_asegurar_pedido_marco_y_nota_conformidad` traga la excepción a
+    # propósito para no romper el sync de la reserva) — nadie lo nota hasta
+    # que alguien pregunta por qué falta la NC. Este constraint cierra el
+    # hueco de raíz: ya no se puede guardar un Pedido de Venta Marco sin
+    # Periodo.
+    @api.constrains('es_pedido_marco', 'periodo')
+    def _check_pedido_marco_periodo_requerido(self):
+        for order in self:
+            if order.es_pedido_marco and not order.periodo:
+                raise ValidationError(
+                    'Un Pedido de Venta Marco requiere un Periodo (el día 1 '
+                    'del mes que cubre) — sin esto, las reservas de esa '
+                    'aseguradora nunca lo van a encontrar y se quedan sin su '
+                    'Nota de Conformidad.'
+                )
+
     # No duplicar Pedido de Venta Marco por aseguradora+período (pedido
     # explícito del usuario, 2026-09-10). Un pedido Cancelado no cuenta —
     # si se cancela uno, debe poder crearse otro para el mismo
