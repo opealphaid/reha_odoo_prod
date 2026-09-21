@@ -16,9 +16,12 @@
         'views/res_config_settings_views.xml',
         'views/rehalife_city_views.xml',
         'views/rehalife_partner_views.xml',
+        'views/rehalife_product_views.xml',
         'views/rehalife_reservation_views.xml',
         'wizards/rehalife_sync_wizard_view.xml',
         'wizards/rehalife_import_reservations_wizard_view.xml',
+        'wizards/rehalife_services_sync_wizard_view.xml',
+        'wizards/rehalife_services_template_wizard_view.xml',
         'views/menu_views.xml',
     ],
     'assets': {

@@ -109,28 +109,45 @@ class RehalifeConfig(models.TransientModel):
         }
 
     def action_sync_service_types(self):
-        """Sincroniza Service Types del backend como productos en Odoo."""
+        """Trae los Service Types del backend y los crea/actualiza como productos.
+
+        Atajo de un click, en una sola direccion (backend -> Odoo), igual que
+        los botones vecinos de Ciudades y Pacientes. El sentido inverso y las
+        opciones de alcance/tandas viven en el asistente de
+        Sincronizacion > Sincronizar Servicios (Traer / Enviar).
+        """
         self.action_save()
         result = self.env['product.template'].sync_service_types_from_backend()
         pending = result['pending_homologation']
-        message = '%d creados, %d actualizados, %d omitidos.' % (
-            result['created'], result['updated'], result['skipped']
+        errors = result.get('errors') or []
+        message = '%d creados, %d actualizados, %d omitidos, %d con error.' % (
+            result['created'], result['updated'], result['skipped'], len(errors)
         )
+        if errors:
+            # El sync es best-effort: los que fallan no frenan al resto, pero
+            # tienen que verse. Se listan los primeros; el detalle completo
+            # queda en el campo Error de Sync de cada producto y en el log.
+            message += '\n\n❌ No se pudieron sincronizar:\n%s' % '\n'.join(
+                '• %s' % error for error in errors[:5]
+            )
+            if len(errors) > 5:
+                message += '\n• (y %d mas — ver el filtro "No Sincronizados" ' \
+                           'del menu Servicios)' % (len(errors) - 5)
         if pending:
             message += (
-                '\n⚠️ %d servicio(s) requieren homologación SIAT (Código de '
-                'Producto, Actividad Económica y Unidad de Medida) antes de '
-                "poder venderse. Abre cada producto y usa 'Homologar Producto "
-                "SIAT'." % pending
+                    '\n⚠️ %d servicio(s) requieren homologación SIAT (Código de '
+                    'Producto, Actividad Económica y Unidad de Medida) antes de '
+                    "poder venderse. Abre cada producto y usa 'Homologar Producto "
+                    "SIAT'." % pending
             )
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': 'Servicios sincronizados',
+                'title': 'Servicios traidos del backend',
                 'message': message,
-                'type': 'warning' if pending else 'success',
-                'sticky': bool(pending),
+                'type': 'danger' if errors else ('warning' if pending else 'success'),
+                'sticky': bool(pending or errors),
             },
         }
 

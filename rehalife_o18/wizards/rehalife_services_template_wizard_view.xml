@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rehalife_services_template_wizard_form" model="ir.ui.view">
+        <field name="name">rehalife.services.template.wizard.form</field>
+        <field name="model">rehalife.services.template.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Plantilla de Servicios">
+
+                <div invisible="state == 'done'">
+                    <div class="alert alert-info" role="alert">
+                        <strong> Plantilla de carga masiva de servicios</strong>
+                        <p>
+                            Genera un archivo Excel con la hoja <b>Servicios</b> lista para
+                            llenar, más los catálogos SIAT de esta compañía como hojas de
+                            referencia: <b>Actividades SIAT</b>, <b>Productos SIAT</b> y
+                            <b>Unidades SIAT</b>.
+                        </p>
+                        <p>
+                            En las columnas de homologación escribís el <b>código</b> SIAT
+                            (lo copiás de esas hojas) y Odoo resuelve el registro al
+                            importar. Si un código no existe, la fila falla con un error
+                            claro en vez de entrar a medio homologar.
+                        </p>
+                    </div>
+                </div>
+
+                <div invisible="state != 'done'">
+                    <div class="alert alert-success" role="alert">
+                        <strong>✓ Plantilla generada</strong>
+                        <p>
+                            Descargala con el enlace de abajo. Para cargarla:
+                            <b>Rehalife &gt; Servicios</b> → engranaje ⚙ →
+                            <b>Importar registros</b> → elegí la hoja <b>Servicios</b> →
+                            <b>Probar</b> antes de importar.
+                        </p>
+                    </div>
+                    <group>
+                        <field name="file_data" filename="file_name" readonly="1"
+                               nolabel="1" colspan="2"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                </div>
+
+                <footer>
+                    <button name="action_generate"
+                            string="Generar Plantilla"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'done'"/>
+                    <button name="action_generate"
+                            string="Volver a Generar"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'done'"/>
+                    <button string="Cerrar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+                <field name="state" invisible="1"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rehalife_services_template_wizard" model="ir.actions.act_window">
+        <field name="name">Plantilla de Servicios (Excel)</field>
+        <field name="res_model">rehalife.services.template.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
