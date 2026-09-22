@@ -284,6 +284,15 @@ patch(ProductScreen.prototype, {
                             }
                         }
 
+                        // NOTA: pos.models["pos.order.line"].create() es un create()
+                        // de bajo nivel que NO pasa por order.add_product() (el flujo
+                        // nativo de Odoo que calcula los impuestos del producto), así
+                        // que la línea nace sin tax_ids. Intentar fijar tax_ids acá a
+                        // mano rompía el render del POS (el modelo reactivo espera un
+                        // formato interno específico para los many2many). Se resuelve
+                        // en el servidor en su lugar — ver pos.order.line.create()
+                        // en rehalife_o18/models/rehalife_pos.py, que completa
+                        // tax_ids con los impuestos del producto si llega vacío.
                         pos.models["pos.order.line"].create({
                             order_id:   order,
                             product_id: product,

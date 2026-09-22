@@ -1,5 +1,5 @@
 import logging
-from odoo import fields, models
+from odoo import api, fields, models
 
 _logger = logging.getLogger(__name__)
 
@@ -16,6 +16,25 @@ class PosOrderLine(models.Model):
     def _load_pos_data_fields(self, config_id):
         fields_list = super()._load_pos_data_fields(config_id)
         return fields_list + ['rehalife_reservation_id']
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+
+        # Red de seguridad: el diálogo "Reservas" (reservation_button.js)
+        # agrega la línea con pos.models["pos.order.line"].create() del lado
+        # del cliente, un create() de bajo nivel que no pasa por
+        # order.add_product() (el flujo nativo de Odoo que calcula
+        # tax_ids a partir del producto). Eso dejaba la línea sin
+        # impuestos y, por lo tanto, la factura generada por el POS
+        # tampoco los tenía. Se corrige acá, en el servidor, para no
+        # depender del formato interno (frágil) del modelo reactivo del
+        # POS en el frontend.
+        for line in lines:
+            if not line.tax_ids and line.product_id.taxes_id:
+                line.tax_ids = [(6, 0, line.product_id.taxes_id.ids)]
+
+        return lines
 
 
 class PosOrder(models.Model):
