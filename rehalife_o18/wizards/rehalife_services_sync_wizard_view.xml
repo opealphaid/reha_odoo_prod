@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_rehalife_services_sync_wizard_form" model="ir.ui.view">
+        <field name="name">rehalife.services.sync.wizard.form</field>
+        <field name="model">rehalife.services.sync.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Sincronizar Servicios">
+                <div invisible="state == 'done'">
+                    <group>
+                        <field name="direccion" widget="radio" nolabel="1" colspan="2"/>
+                    </group>
+
+                    <group string="Situación Actual en Odoo">
+                        <field name="total_count" readonly="1"/>
+                        <field name="pendientes_count" readonly="1"/>
+                        <field name="sincronizados_count" readonly="1"/>
+                    </group>
+
+                    <div class="alert alert-info" role="alert"
+                         invisible="direccion != 'jalar'">
+                        <strong>ℹ️ Traer del backend</strong>
+                        <p>
+                            Importa todos los tipos de servicio activos del backend y los
+                            crea o actualiza como productos en Odoo (nombre, referencia,
+                            precio, descripción y parámetros de reserva). Los productos
+                            nuevos nacen como no vendibles hasta que se los homologue en
+                            SIAT. No se pisa lo que contabilidad haya activado a mano.
+                        </p>
+                    </div>
+
+                    <group string="Opciones del Envío" invisible="direccion != 'enviar'">
+                        <field name="scope" required="direccion == 'enviar'"/>
+                        <field name="batch_size"/>
+                    </group>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="direccion != 'enviar' or scope != 'todos'">
+                        <strong>⚠️ Sobrescribe el backend</strong>
+                        <p>
+                            Los servicios que ya tienen ID Externo se van a actualizar
+                            en el backend con lo que hoy tiene Odoo (nombre, referencia,
+                            precio, descripción y parámetros de reserva). Las sucursales
+                            asignadas allá se conservan.
+                        </p>
+                    </div>
+                </div>
+
+                <group invisible="state != 'done'" string="Resultado">
+                    <field name="result_message" readonly="1" nolabel="1"/>
+                </group>
+
+                <footer>
+                    <button name="action_run"
+                            string="Sincronizar"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state == 'done'"/>
+                    <button name="action_run"
+                            string="Continuar con la Siguiente Tanda"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'done' or restantes_count == 0"/>
+                    <button name="action_reset"
+                            string="Nueva Sincronización"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state != 'done'"/>
+                    <button string="Cerrar"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+                <field name="state" invisible="1"/>
+                <field name="last_id" invisible="1"/>
+                <field name="restantes_count" invisible="1"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rehalife_services_sync_wizard" model="ir.actions.act_window">
+        <field name="name">Sincronizar Servicios (Traer / Enviar)</field>
+        <field name="res_model">rehalife.services.sync.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
