@@ -6,6 +6,10 @@
         <field name="model">rehalife.nota.conformidad</field>
         <field name="arch" type="xml">
             <list string="Notas de Conformidad" decoration-muted="estado == 'regularizada'">
+                <header>
+                    <button name="action_exportar_excel" string="Exportar Excel"
+                            type="object" class="btn-secondary"/>
+                </header>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="aseguradora_id"/>

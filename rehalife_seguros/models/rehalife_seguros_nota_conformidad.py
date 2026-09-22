@@ -1,9 +1,22 @@
 # -*- coding: utf-8 -*-
+import io
 import logging
+from datetime import date
+
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
+
+# estado -> columna "APROBACIÓN" del Excel exportado (action_exportar_excel).
+APROBACION_LABELS_EXCEL = {
+    'pendiente': 'Pendiente',
+    'aprobada': 'Aprobado',
+    'facturada': 'Aprobado',
+    'pagada': 'Aprobado',
+    'rechazada': 'Rechazado',
+    'regularizada': 'Anulado',
+}
 
 
 class RehalifeNotaConformidad(models.Model):
@@ -398,6 +411,106 @@ class RehalifeNotaConformidad(models.Model):
                 'use la acción "Regularizar" para anularla.'
             )
         return super().write(vals)
+
+    def action_exportar_excel(self):
+        """Botón "Exportar Excel" de la lista (selección múltiple, igual que
+        el flujo de "Imprimir" ya existente). Redirige a un controller que
+        arma el .xlsx EN MEMORIA (xlsxwriter, sin dependencias externas) y lo
+        transmite directo — a propósito no se usa un ir.attachment temporal,
+        para no dejar adjuntos huérfanos."""
+        if not self:
+            raise UserError(
+                'Selecciona al menos una Nota de Conformidad para exportar.'
+            )
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/rehalife_seguros/nota_conformidad/export_excel?ids=%s'
+                   % ','.join(str(i) for i in self.ids),
+            'target': 'self',
+        }
+
+    def _nombre_archivo_excel(self):
+        """"Notas_Conformidad_<periodo>.xlsx" si todas las NC son del mismo
+        Pedido de Venta Marco; si no, "Notas_Conformidad_<fecha>.xlsx"."""
+        pedidos = self.mapped('pedido_marco_id')
+        if len(pedidos) == 1 and pedidos.nombre_periodo:
+            return 'Notas_Conformidad_%s.xlsx' % pedidos.nombre_periodo
+        return 'Notas_Conformidad_%s.xlsx' % fields.Date.context_today(self).isoformat()
+
+    def _generar_excel(self):
+        """Arma el .xlsx de las NC en `self` y devuelve los bytes — llamado
+        por el controller de exportación (rehalife_seguros/controllers/), que
+        es quien responde el archivo al navegador."""
+        import xlsxwriter
+
+        output = io.BytesIO()
+        workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+        sheet = workbook.add_worksheet('Notas de Conformidad')
+
+        header_format = workbook.add_format({
+            'bold': True, 'bg_color': '#4F81BD', 'font_color': 'white',
+            'border': 1, 'align': 'center', 'valign': 'vcenter',
+        })
+        date_format = workbook.add_format({'num_format': 'dd/mm/yyyy', 'border': 1})
+        money_format = workbook.add_format({'num_format': '#,##0.00', 'border': 1})
+        number_format = workbook.add_format({'num_format': '0.##', 'border': 1})
+        text_format = workbook.add_format({'border': 1})
+        bold_format = workbook.add_format({'bold': True, 'border': 1})
+        bold_money_format = workbook.add_format({
+            'bold': True, 'num_format': '#,##0.00', 'border': 1,
+        })
+
+        headers = [
+            'NÚMERO NOTA', 'FECHA_EMISIÓN', 'CLIENTE_ASEGURADORA', 'IMP.TOTAL',
+            'FACTURADO', 'ESTADO', 'APROBACIÓN', 'NOMBRE PRODUCTO',
+            'UND. MEDIDA', 'CANTIDAD SESIONES', 'IMP. TOTAL',
+            'NOMBRE PACIENTE ASEGURADO',
+        ]
+        for col, title in enumerate(headers):
+            sheet.write(0, col, title, header_format)
+        sheet.freeze_panes(1, 0)
+        sheet.autofilter(0, 0, 0, len(headers) - 1)
+
+        notas = self.sorted(key=lambda n: (n.fecha_emision or date.min, n.name), reverse=True)
+
+        row = 1
+        total_importe = 0.0
+        total_cantidad = 0.0
+        for nc in notas:
+            facturado = 1 if (nc.factura_id or nc.estado in ('facturada', 'pagada')) else 0
+            estado_col = 'Anulado' if nc.estado == 'regularizada' else 'Activo'
+            aprobacion = APROBACION_LABELS_EXCEL.get(nc.estado, '')
+
+            sheet.write(row, 0, nc.name, text_format)
+            if nc.fecha_emision:
+                sheet.write_datetime(row, 1, nc.fecha_emision, date_format)
+            else:
+                sheet.write_blank(row, 1, None, date_format)
+            sheet.write(row, 2, nc.aseguradora_id.name or '', text_format)
+            sheet.write_number(row, 3, nc.importe_total or 0.0, money_format)
+            sheet.write_number(row, 4, facturado, text_format)
+            sheet.write(row, 5, estado_col, text_format)
+            sheet.write(row, 6, aprobacion, text_format)
+            sheet.write(row, 7, nc.product_id.display_name or '', text_format)
+            sheet.write(row, 8, nc.product_id.uom_id.name or '', text_format)
+            sheet.write_number(row, 9, nc.cantidad or 0.0, number_format)
+            sheet.write_number(row, 10, nc.importe_total or 0.0, money_format)
+            sheet.write(row, 11, 'PACIENTE: %s' % (nc.partner_id.name or ''), text_format)
+
+            total_importe += nc.importe_total or 0.0
+            total_cantidad += nc.cantidad or 0.0
+            row += 1
+
+        sheet.write(row, 2, 'TOTALES', bold_format)
+        sheet.write_number(row, 3, total_importe, bold_money_format)
+        sheet.write_number(row, 9, total_cantidad, bold_format)
+        sheet.write_number(row, 10, total_importe, bold_money_format)
+
+        for col, width in enumerate([14, 14, 28, 12, 11, 10, 12, 40, 14, 16, 12, 32]):
+            sheet.set_column(col, col, width)
+
+        workbook.close()
+        return output.getvalue()
 
     def unlink(self):
         for rec in self:
