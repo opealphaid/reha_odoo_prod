@@ -10,6 +10,12 @@ class RehalifeApiSeguros(models.AbstractModel):
         result = self._request('GET', '/insurance-providers')
         return result.get('data', [])
 
+    def create_insurance_provider(self, name):
+        """POST /insurance-providers — Crea una aseguradora solo con el nombre
+        (único campo obligatorio según CREAR.bru; el backend responde 400 si
+        ya existe una activa con ese nombre)."""
+        return self._request('POST', '/insurance-providers', data={'name': name})
+
     def get_patient_insurances_by_provider(self, provider_id):
         """GET /patient-insurances/insurance-provider/:id — Pacientes
         afiliados a una aseguradora. No existe un endpoint que liste TODAS

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -41,6 +41,55 @@ class ResPartner(models.Model):
     # inventa una segunda convención. Hay que corregirlo a mano antes de
     # facturarle de verdad a esa aseguradora.
     _NIT_PLACEHOLDER = '0000000'
+
+    def action_enviar_aseguradora_rehalife(self):
+        """Botón: crea la aseguradora en el backend Rehalife (solo el nombre).
+        No se llama desde create()/write() a propósito, para no entrar en
+        bucle con las escrituras que hace Next.js. Mismo manejo de estado que
+        rehalife_o18 ResPartner._sync_create()."""
+        self.ensure_one()
+        if not self.is_aseguradora:
+            raise UserError('Este contacto no es una aseguradora.')
+        if self.rehalife_external_id:
+            raise UserError('Esta aseguradora ya está en el backend Rehalife.')
+
+        try:
+            result = self.env['rehalife.api'].create_insurance_provider(self.name)
+            data = result.get('data', {})
+            ext_id = data.get('id') if isinstance(data, dict) else None
+            if not ext_id:
+                raise UserError('El backend no devolvió el id de la aseguradora.')
+            self.env.cr.execute(
+                """UPDATE res_partner SET
+                    rehalife_external_id = %s,
+                    rehalife_sync_state = 'synced',
+                    rehalife_sync_error = NULL,
+                    rehalife_last_sync = NOW()
+                WHERE id = %s""",
+                (ext_id, self.id)
+            )
+            self.invalidate_recordset()
+        except UserError as e:
+            self.env.cr.execute(
+                """UPDATE res_partner SET
+                    rehalife_sync_state = 'error',
+                    rehalife_sync_error = %s
+                WHERE id = %s""",
+                (str(e), self.id)
+            )
+            self.invalidate_recordset()
+            raise
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Aseguradora enviada',
+                'message': 'La aseguradora fue creada en el backend Rehalife.',
+                'type': 'success',
+                'sticky': False,
+            },
+        }
 
     @api.model
     def sync_insurance_providers_from_backend(self):

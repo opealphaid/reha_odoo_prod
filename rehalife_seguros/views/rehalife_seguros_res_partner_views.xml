@@ -7,6 +7,17 @@
         <field name="inherit_id" ref="base.view_partner_form"/>
         <field name="arch" type="xml">
 
+            <!-- base.view_partner_form no trae <header> propio en Odoo 18 -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button string="Enviar a Rehalife"
+                            name="action_enviar_aseguradora_rehalife"
+                            type="object"
+                            class="btn-primary"
+                            invisible="not is_aseguradora or rehalife_external_id"/>
+                </header>
+            </xpath>
+
             <xpath expr="//field[@name='category_id']" position="after">
                 <field name="is_aseguradora" widget="boolean_toggle"/>
             </xpath>
