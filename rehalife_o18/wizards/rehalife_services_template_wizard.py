@@ -30,6 +30,14 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
         ('list_price', 'Precio de venta. Punto decimal, sin simbolo de moneda.'),
         ('sale_ok', '1 = vendible.'),
         ('available_in_pos', '1 = cobrable desde el POS.'),
+        ('pos_categ_ids', 'Categoria(s) del Punto de Venta: es la agrupacion con '
+                          'la que el cajero encuentra el servicio en la pantalla '
+                          'del POS. Por nombre exacto y la categoria debe existir '
+                          'en Odoo (el importador no la crea). Admite varias '
+                          'separadas por coma. Opcional: sin categoria el '
+                          'servicio igual se cobra, pero solo aparece buscandolo '
+                          'por nombre. Distinta de categ_id, que es la categoria '
+                          'contable/de inventario del producto.'),
         ('taxes_id', 'Impuestos de venta, por nombre exacto. Varios separados por coma.'),
         ('rehalife_service_description', 'Descripcion del servicio en el backend.'),
         ('rehalife_requires_evaluation', '1 / 0. Requiere evaluacion previa.'),
@@ -45,7 +53,7 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
     _EJEMPLOS = [
         [
             'servicio-dereserva', 'RESR_V01', 1, 'service', '[CATEGORIA]',
-            'Unidades', 1000, 1, 1, '[NOMBRE DEL IMPUESTO]',
+            'Unidades', 1000, 1, 1, '[CATEGORIA POS]', '[NOMBRE DEL IMPUESTO]',
             'Descripcion del servicio tal como se ve en el backend', 1,
             10, 4, 1, 20,
             '[LLENAR EN BASE A ACTIVIDADES]',
@@ -54,7 +62,7 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
         ],
         [
             'consulta-evaluacion', 'EVAL_V01', 1, 'service', '[CATEGORIA]',
-            'Unidades', 250, 1, 1, '[NOMBRE DEL IMPUESTO]',
+            'Unidades', 250, 1, 1, '[CATEGORIA POS]', '[NOMBRE DEL IMPUESTO]',
             'Primera evaluacion del paciente, con informe', 0,
             24, 2, 2, 30,
             '[LLENAR EN BASE A ACTIVIDADES]',
@@ -160,6 +168,21 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
             'Probá siempre con 3 o 4 filas antes de cargar el catalogo completo.',
             'No hacen falta columnas para la unidad de compra, la compra, el '
             'estado activo ni el ID externo: Odoo los resuelve solo.',
+            'CUIDADO: hay DOS columnas de categoria y no son lo mismo. '
+            '"categ_id" es la categoria de producto de Odoo, la que usan '
+            'contabilidad e inventario. "pos_categ_ids" es la categoria del '
+            'Punto de Venta, la que agrupa los botones en la pantalla del '
+            'cajero. Podes llenar una, la otra o las dos.',
+            'Para que un servicio se pueda cobrar en el POS lo que hace falta es '
+            '"available_in_pos" = 1. La categoria POS no habilita nada: solo lo '
+            'agrupa en pantalla. Sin ella el servicio se cobra igual, pero el '
+            'cajero tiene que buscarlo por nombre en vez de encontrarlo en su '
+            'grupo.',
+            '"pos_categ_ids" admite varias categorias en la misma celda, '
+            'separadas por coma. Ejemplo: Consultas, Evaluaciones',
+            'Tanto las categorias (las dos) como los impuestos se resuelven por '
+            'nombre EXACTO y tienen que existir ya en Odoo: el importador no los '
+            'crea. Si el nombre no coincide, esa fila falla y te lo dice.',
             'Los encabezados son nombres tecnicos de campos: no los cambies ni '
             'los traduzcas, o Odoo no los va a reconocer.',
             'Los codigos SIAT de las otras hojas salen de esta misma base de '
