@@ -49,23 +49,12 @@
                                    invisible="not rehalife_sync_error"/>
                         </group>
                     </group>
-                    <group string="Homologación SIAT por Código">
-                        <div class="text-muted" colspan="2">
-                            Atajo para cargar la homologación escribiendo los códigos SIAT,
-                            que es lo que usa la plantilla de importación. Al guardar se
-                            resuelven y se asignan los campos de la pestaña
-                            <b>Homologación SIAT</b>. Si preferís elegirlos de la lista,
-                            usá esa pestaña directamente — es el mismo dato.
-                        </div>
-                        <group>
-                            <field name="rehalife_siat_actividad_codigo"
-                                   placeholder="ej. 862010"/>
-                            <field name="rehalife_siat_producto_codigo"
-                                   placeholder="ej. 86901"/>
-                            <field name="rehalife_siat_unidad_codigo"
-                                   placeholder="ej. 58"/>
-                        </group>
-                    </group>
+                    <!-- Los campos rehalife_siat_*_codigo NO se muestran acá a
+                         proposito: la pestaña "Homologación SIAT" de alpha_siat
+                         ya expone ese mismo dato con sus selectores, y repetirlo
+                         confunde. Siguen existiendo en el modelo porque son los
+                         que usa la plantilla de importacion (y la exportacion)
+                         para resolver el catalogo SIAT por codigo. -->
 
                     <group string="Descripción del Servicio (Backend)">
                         <field name="rehalife_service_description"
