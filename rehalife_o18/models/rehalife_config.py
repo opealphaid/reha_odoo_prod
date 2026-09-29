@@ -100,8 +100,10 @@ class RehalifeConfig(models.TransientModel):
             'tag': 'display_notification',
             'params': {
                 'title': 'Pacientes sincronizados',
-                'message': '%d creados, %d actualizados, %d omitidos.' % (
-                    result['created'], result['updated'], result['skipped']
+                'message': '%d creados, %d actualizados, %d omitidos, '
+                           '%d con datos incompletos.' % (
+                    result['created'], result['updated'], result['skipped'],
+                    result.get('incomplete', 0),
                 ),
                 'type': 'success',
                 'sticky': False,

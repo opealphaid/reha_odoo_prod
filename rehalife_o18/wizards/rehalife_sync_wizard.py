@@ -24,10 +24,12 @@ class RehalifeSyncWizard(models.TransientModel):
                 'Ciudades: %d creadas, %d actualizadas.' % (result['created'], result['updated'])
             )
         if self.sync_patients:
-            result = self.env['rehalife.patient'].sync_from_backend()
+            result = self.env['res.partner'].sync_patients_from_backend()
             messages.append(
-                'Pacientes: %d creados, %d actualizados, %d omitidos.' % (
-                    result['created'], result['updated'], result['skipped']
+                'Pacientes: %d creados, %d actualizados, %d omitidos, '
+                '%d con datos incompletos.' % (
+                    result['created'], result['updated'], result['skipped'],
+                    result.get('incomplete', 0),
                 )
             )
 
