@@ -144,6 +144,12 @@ class RehalifeAPI(models.AbstractModel):
     def create_patient(self, vals):
         return self._request('POST', '/users', data=vals)
 
+    def get_patient(self, user_id):
+        """GET /users/{id} — Retorna el dict del paciente (vacio si no viene data)."""
+        result = self._request('GET', '/users/%s' % user_id)
+        data = result.get('data')
+        return data if isinstance(data, dict) else {}
+
     def update_patient(self, user_id, vals):
         return self._request('PUT', '/users/%s' % user_id, data=vals)
 
