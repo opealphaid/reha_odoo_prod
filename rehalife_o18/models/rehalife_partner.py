@@ -1,9 +1,23 @@
 # -*- coding: utf-8 -*-
 import logging
+from datetime import date
 from odoo import models, fields, api
 from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
+
+
+def _parse_backend_date(value):
+    """Convierte la fecha del backend a date. Acepta 'YYYY-MM-DD' y datetime ISO
+    ('...T00:00:00', con milisegundos, 'Z' u offset). Devuelve False si no hay
+    valor o no se puede parsear (nunca lanza excepcion)."""
+    if not value:
+        return False
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except (ValueError, TypeError):
+        _logger.warning('Rehalife: fecha invalida recibida del backend: %r', value)
+        return False
 
 
 class ResPartner(models.Model):
@@ -44,30 +58,40 @@ class ResPartner(models.Model):
         if not self.es_paciente:
             self.rehalife_sync_state = 'draft'
 
-    @api.constrains('es_paciente', 'email', 'birth_date', 'vat',
+    def _get_paciente_missing_fields(self):
+        """Etiquetas de los campos obligatorios de paciente que estan vacios.
+        Usado por la constraint y por la importacion desde el backend."""
+        self.ensure_one()
+        missing = []
+        if not self.rehalife_first_name:
+            missing.append('Nombre')
+        if not self.rehalife_last_name:
+            missing.append('Apellido Paterno')
+        if not self.email:
+            missing.append('Email')
+        if not self.vat:
+            missing.append('NIT/CI')
+        if not self.siat_tipo_documento_identidad_id:
+            missing.append('Tipo de Documento')
+        if not self.rehalife_city_id:
+            missing.append('Ciudad')
+        return missing
+
+    @api.constrains('es_paciente', 'email', 'vat',
                     'siat_tipo_documento_identidad_id',
                     'rehalife_first_name', 'rehalife_last_name', 'rehalife_city_id')
     def _check_paciente_required_fields(self):
+        # La importacion desde el backend (fuente de verdad) no se bloquea;
+        # los faltantes se registran en rehalife_sync_error.
+        if self.env.context.get('skip_rehalife_sync'):
+            return
         for rec in self:
             if rec.es_paciente:
-                errors = []
-                if not rec.rehalife_first_name:
-                    errors.append('- Nombre')
-                if not rec.rehalife_last_name:
-                    errors.append('- Apellido Paterno')
-                if not rec.email:
-                    errors.append('- Email')
-                if not rec.birth_date:
-                    errors.append('- Fecha de Nacimiento')
-                if not rec.vat:
-                    errors.append('- NIT/CI')
-                if not rec.siat_tipo_documento_identidad_id:
-                    errors.append('- Tipo de Documento')
-                if not rec.rehalife_city_id:
-                    errors.append('- Ciudad')
+                errors = rec._get_paciente_missing_fields()
                 if errors:
                     raise ValidationError(
-                        'Campos obligatorios para pacientes Rehalife:\n%s' % '\n'.join(errors)
+                        'Campos obligatorios para pacientes Rehalife:\n%s'
+                        % '\n'.join('- %s' % e for e in errors)
                     )
 
     def _build_rehalife_payload(self, is_create=False):
@@ -81,12 +105,15 @@ class ResPartner(models.Model):
             'motherLastName': self.mother_last_name or '',
             'email': self.email or '',
             'phone': self.phone or '',
-            'birthDate': self.birth_date.isoformat() if self.birth_date else '',
             'documentNumber': self.vat or '',
             'complemento': self.siat_complemento or '',
             'cityId': self.rehalife_city_id.external_id if self.rehalife_city_id else '',
             'userId': admin_user_id,
         }
+        # Sin fecha se omite la clave. Ojo: en PUT el backend la borra igual
+        # (omitida, "" o null); _sync_update protege ese caso.
+        if self.birth_date:
+            payload['birthDate'] = self.birth_date.isoformat()
         if is_create:
             payload['password'] = 'Alpha123!'
             payload['role'] = 'PATIENT'
@@ -144,6 +171,24 @@ class ResPartner(models.Model):
         api_service = self.env['rehalife.api']
         try:
             payload = self._build_rehalife_payload(is_create=False)
+            if not self.birth_date:
+                # El PUT del backend reemplaza el registro completo: sin
+                # birthDate borraria la fecha que tenga alla. Se consulta antes
+                # y, si falla la consulta, NO se hace el PUT.
+                try:
+                    backend_data = api_service.get_patient(self.rehalife_external_id)
+                except UserError as e:
+                    raise UserError(
+                        'No se actualizo el paciente en el backend: no se pudo '
+                        'consultar su fecha de nacimiento actual (se evita '
+                        'borrarla).\n%s' % e
+                    )
+                backend_birth = _parse_backend_date(backend_data.get('birthDate'))
+                if backend_birth:
+                    payload['birthDate'] = backend_birth.isoformat()
+                    self.with_context(skip_rehalife_sync=True).write(
+                        {'birth_date': backend_birth}
+                    )
             _logger.info('Rehalife: Actualizando paciente %s payload: %s',
                          self.rehalife_external_id, payload)
             api_service.update_patient(self.rehalife_external_id, payload)
@@ -207,7 +252,7 @@ class ResPartner(models.Model):
         )
         tipos_dict = {t.codigo_clasificador: t.id for t in tipos_doc}
 
-        created = updated = skipped = 0
+        created = updated = skipped = incomplete = 0
 
         for p in patients_data:
             ext_id = p.get('id')
@@ -223,15 +268,8 @@ class ResPartner(models.Model):
                     [('external_id', '=', city_data['id'])], limit=1
                 )
 
-            # Fecha de nacimiento
-            birth_date = False
-            birth_date_str = p.get('birthDate')
-            if birth_date_str:
-                try:
-                    from datetime import date
-                    birth_date = date.fromisoformat(birth_date_str)
-                except (ValueError, TypeError):
-                    pass
+            # Fecha de nacimiento (opcional en el backend)
+            birth_date = _parse_backend_date(p.get('birthDate'))
 
             first_name = p.get('firstName', '')
             last_name = p.get('lastName', '')
@@ -270,13 +308,33 @@ class ResPartner(models.Model):
             # dispare la sincronizacion de vuelta al backend
             ctx = {'skip_rehalife_sync': True}
 
+            # Savepoint por paciente: un error no aborta todo el lote
+            try:
+                with self.env.cr.savepoint():
+                    if existing:
+                        partner = existing.with_context(**ctx)
+                        partner.write(vals)
+                    else:
+                        partner = self.with_context(**ctx).create(vals)
+                    missing = partner._get_paciente_missing_fields()
+                    partner.write({
+                        'rehalife_sync_error': (
+                            'Datos incompletos en backend: %s' % ', '.join(missing)
+                        ) if missing else False,
+                    })
+            except Exception as e:
+                _logger.error('Rehalife sync: error importando paciente %s: %s', ext_id, e)
+                skipped += 1
+                continue
+
             if existing:
-                existing.with_context(**ctx).write(vals)
                 updated += 1
             else:
-                self.with_context(**ctx).create(vals)
                 created += 1
+            if missing:
+                incomplete += 1
 
-        _logger.info('Rehalife sync: %d creados, %d actualizados, %d omitidos.',
-                     created, updated, skipped)
-        return {'created': created, 'updated': updated, 'skipped': skipped}
+        _logger.info('Rehalife sync: %d creados, %d actualizados, %d omitidos, '
+                     '%d incompletos.', created, updated, skipped, incomplete)
+        return {'created': created, 'updated': updated, 'skipped': skipped,
+                'incomplete': incomplete}
