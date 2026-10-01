@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Rehalife Seguros',
-    'version': '18.0.1.0.0',
+    'version': '19.0.1.0.0',
     'summary': 'Gestion de atenciones cubiertas por aseguradoras (Notas de Conformidad, Pedidos de Venta Marco)',
     'description': """
         Modulo de gestion de aseguradoras para Rehalife:
