@@ -4,6 +4,9 @@ from odoo.exceptions import UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
+# Estados de los que una reserva ya no sale: sync_from_nextjs no los pisa.
+TERMINAL_STATUSES = ('CANCELLED', 'NO_SHOW', 'COMPLETED')
+
 
 class RehalifeReservation(models.Model):
     _name = 'rehalife.reservation'
@@ -336,6 +339,36 @@ class RehalifeReservation(models.Model):
         existing = self.search([('external_id', '=', external_id)], limit=1)
 
         if existing:
+            new_status = write_vals['status']
+
+            # Un estado final no se pisa: si llega otro estado (p. ej. un
+            # IN_ROOM atrasado sobre una reserva ya cancelada), se ignora. Se
+            # devuelve 'id' igual porque el override de rehalife_seguros lo usa.
+            if existing.status in TERMINAL_STATUSES and new_status != existing.status:
+                _logger.warning(
+                    '[Webhook] Reserva %s ya está en %s: se ignora el cambio a %s.',
+                    external_id, existing.status, new_status,
+                )
+                return {
+                    'success': True,
+                    'id': existing.id,
+                    'action': 'ignored_terminal',
+                    'external_id': external_id,
+                }
+
+            # Al cancelarse o marcarse "No asistió" deja de ser cobrable en el
+            # POS. Lo ya cobrado o facturado no se toca: el pago no se devuelve.
+            if (new_status in ('CANCELLED', 'NO_SHOW')
+                    and existing.status not in ('CANCELLED', 'NO_SHOW')):
+                if existing.invoice_status in ('paid', 'invoiced'):
+                    _logger.warning(
+                        '[Webhook] Reserva pagada recibida como cancelada: %s '
+                        '(invoice_status=%s, status=%s). No se cambia el cobro.',
+                        external_id, existing.invoice_status, new_status,
+                    )
+                elif existing.invoice_status == 'pending' and not existing.pos_order_id:
+                    write_vals['invoice_status'] = 'cancelled'
+
             existing.write(write_vals)
             _logger.info('[Webhook] Reserva actualizada: %s', external_id)
             return {
