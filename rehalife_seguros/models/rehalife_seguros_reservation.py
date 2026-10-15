@@ -23,6 +23,11 @@ _logger = logging.getLogger(__name__)
 # tocar los dos lados a mano.
 ESTADOS_FACTURABLES = ('IN_ROOM', 'IN_CONSULTATION', 'COMPLETED')
 
+# Estados en los que la atención ya no va a ocurrir: si la reserva de seguro
+# llega acá con una NC viva, esa NC se regulariza (o se alerta si ya está
+# facturada) — ver nota_conformidad._regularizar_por_cancelacion_reserva().
+ESTADOS_CANCELADOS = ('CANCELLED', 'NO_SHOW')
+
 
 class RehalifeReservation(models.Model):
     _inherit = 'rehalife.reservation'
@@ -151,8 +156,31 @@ class RehalifeReservation(models.Model):
         - modality_type: 'PARTICULAR' | 'SEGURO'
         - insurance_provider_external_id: id de la aseguradora en el backend
           Rehalife (solo cuando modality_type es 'SEGURO')
-        No se toca rehalife_o18/models/rehalife_reservation.py."""
+        No se toca rehalife_o18/models/rehalife_reservation.py.
+
+        Además, si una reserva de seguro pasa a CANCELLED/NO_SHOW, regulariza
+        sus Notas de Conformidad todavía no facturadas (la atención no
+        ocurrió, no se le puede cobrar a la aseguradora)."""
+        # Estado ANTES del sync: un CANCELLED repetido sobre una reserva ya
+        # cancelada no llega como 'ignored_terminal' desde rehalife_o18 (mismo
+        # estado → 'updated'), así que sin esto se volvería a procesar.
+        previo = self.search([('external_id', '=', vals.get('external_id'))], limit=1)
+        status_previo = previo.status if previo else False
+
         result = super().sync_from_nextjs(vals)
+
+        if result.get('action') != 'ignored_terminal':
+            record = self.browse(result.get('id'))
+            if (record and record.modalidad == 'seguro'
+                    and record.status in ESTADOS_CANCELADOS
+                    and status_previo not in ESTADOS_CANCELADOS):
+                try:
+                    record.nota_conformidad_ids._regularizar_por_cancelacion_reserva()
+                except Exception:
+                    _logger.exception(
+                        '[Seguros] Reserva %s: error al regularizar sus Notas de '
+                        'Conformidad tras pasar a %s.', record.external_id, record.status,
+                    )
 
         modality_type = vals.get('modality_type')
         if not modality_type:
