@@ -404,6 +404,59 @@ class RehalifeNotaConformidad(models.Model):
                 'estado': 'regularizada',
             })
 
+    def _regularizar_por_cancelacion_reserva(self):
+        """Llamado desde rehalife.reservation.sync_from_nextjs cuando una
+        reserva de seguro pasa a CANCELLED/NO_SHOW: la atención no ocurrió,
+        así que sus NC no pueden facturarse a la aseguradora.
+        - pendiente/aprobada sin factura → action_regularizar() (con sudo,
+          sin saltarse sus validaciones), cada una en su propio savepoint.
+        - facturada/pagada o con factura → no se toca, solo se alerta.
+        - rechazada/regularizada → nada.
+        Nunca lanza: un error en una NC no debe hacer fallar el sync."""
+        for nc in self.sudo():
+            reserva = nc.reservation_id.external_id
+            if nc.estado in ('facturada', 'pagada') or nc.factura_id:
+                _logger.warning(
+                    '[Seguros] Reserva %s cancelada con la Nota de Conformidad %s '
+                    'ya facturada (estado=%s, factura=%s) — no se regulariza, '
+                    'revisar con contabilidad.',
+                    reserva, nc.name, nc.estado, nc.factura_id.name or '-',
+                )
+                nc.message_post(body=(
+                    'Atención: la reserva fue cancelada después de facturarse '
+                    'esta Nota de Conformidad. Revisar con contabilidad.'
+                ))
+                continue
+            if nc.estado not in ('pendiente', 'aprobada'):
+                continue
+
+            try:
+                with self.env.cr.savepoint():
+                    nc.action_regularizar()
+                    nc.message_post(body=(
+                        'Regularizada automáticamente: la reserva fue cancelada '
+                        '(o marcada como no asistió) en el sistema de reservas.'
+                    ))
+                _logger.info(
+                    '[Seguros] Reserva %s cancelada: Nota de Conformidad %s '
+                    'regularizada automáticamente.', reserva, nc.name,
+                )
+            except Exception as e:
+                _logger.exception(
+                    '[Seguros] Reserva %s cancelada: no se pudo regularizar la '
+                    'Nota de Conformidad %s.', reserva, nc.name,
+                )
+                try:
+                    nc.message_post(body=(
+                        'No se pudo regularizar automáticamente tras la '
+                        'cancelación de la reserva: %s. Regularizar a mano.' % e
+                    ))
+                except Exception:
+                    _logger.exception(
+                        '[Seguros] No se pudo publicar el aviso en la Nota de '
+                        'Conformidad %s.', nc.name,
+                    )
+
     def write(self, vals):
         if 'cantidad' in vals and not self.env.context.get('rehalife_seguros_allow_cantidad_write'):
             raise UserError(
