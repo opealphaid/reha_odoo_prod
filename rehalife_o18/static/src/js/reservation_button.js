@@ -28,6 +28,9 @@ export class ReservationDialog extends Component {
             loadingFacturas: true,
             searchName:   '',
             searchBranch: '',
+            // Precio de lista del servicio por service_type_external_id, solo
+            // para mostrar en la tabla (ver _loadServicePrices).
+            priceByService: {},
         });
         onMounted(() => {
             this._load();
@@ -91,16 +94,62 @@ export class ReservationDialog extends Component {
                 ],
                 [
                     "id", "partner_id", "reservation_date",
-                    "reservation_time", "sub_specialty",
-                    "doctor_name", "branch_name",
+                    "reservation_time", "end_time", "sub_specialty",
+                    "doctor_name", "branch_name", "environment_name",
                     "service_type_external_id", "service_type_name",
                     "modalidad", "monto_a_pagar_paciente", "monto_cobertura_seguro",
                 ],
                 { limit: 50, order: "reservation_date desc" }
             );
+            await this._loadServicePrices();
         } finally {
             this.state.loading = false;
         }
+    }
+
+    /**
+     * Precio de lista de cada servicio de las reservas listadas, en UNA sola
+     * consulta. Mismo criterio con el que el cobro resuelve el producto
+     * (product por rehalife_external_id = service_type_external_id, disponible
+     * en POS y activo). Es solo visual: el precio que se cobra lo sigue
+     * calculando `onSelect` como siempre. Si falla, la tabla muestra "—".
+     */
+    async _loadServicePrices() {
+        const ids = [...new Set(
+            this.state.reservations
+                .map(res => res.service_type_external_id)
+                .filter(Boolean)
+        )];
+        if (!ids.length) {
+            return;
+        }
+        try {
+            const products = await this.orm.searchRead(
+                "product.product",
+                [
+                    ["product_tmpl_id.rehalife_external_id", "in", ids],
+                    ["product_tmpl_id.available_in_pos", "=", true],
+                    ["active", "=", true],
+                ],
+                ["list_price", "rehalife_external_id"],
+            );
+            const prices = {};
+            for (const product of products) {
+                // El cobro usa el primero que devuelve la búsqueda (limit 1).
+                if (!(product.rehalife_external_id in prices)) {
+                    prices[product.rehalife_external_id] = product.list_price || 0;
+                }
+            }
+            this.state.priceByService = prices;
+        } catch (e) {
+            console.warn("[Reservas] No se pudieron cargar los precios de los servicios:", e);
+        }
+    }
+
+    /** Precio de lista del servicio de la reserva, o null si no hay producto. */
+    servicePrice(res) {
+        const price = this.state.priceByService[res.service_type_external_id];
+        return price === undefined ? null : price;
     }
 
     // Solo consulta y enlace al backend — la facturación se dispara al

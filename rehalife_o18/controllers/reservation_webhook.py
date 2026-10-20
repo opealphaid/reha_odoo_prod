@@ -178,7 +178,23 @@ class RehalifeReservationController(http.Controller):
                     ('invoice_id', '!=', False),
                     ('invoice_status', 'not in', ['paid', 'cancelled']),
                 ])
-            reservations._sync_invoice_payment_state()
+            # Antes llamaba a `_sync_invoice_payment_state()`, que no existe en
+            # ningun modulo: el endpoint respondia siempre 500 (AttributeError)
+            # y nunca actualizaba nada. Ahora reutiliza lo que ya existe, sin
+            # tocar el resto del flujo de cobro:
+            #  - reserva cobrada en el POS -> `_sync_pos_payment_state()` (el
+            #    mismo metodo de siempre: orden pagada -> 'paid');
+            #  - reserva con factura clasica -> 'paid' cuando la factura ya
+            #    esta pagada (`payment_state == 'paid'`, mismo criterio que
+            #    usa rehalife_seguros para las facturas de aseguradoras).
+            # Nunca baja un estado ni toca reservas canceladas.
+            for reservation in reservations:
+                if reservation.pos_order_id:
+                    reservation._sync_pos_payment_state()
+                elif (reservation.invoice_id
+                        and reservation.invoice_status not in ('paid', 'cancelled')
+                        and reservation.invoice_id.payment_state == 'paid'):
+                    reservation.invoice_status = 'paid'
             return request.make_json_response({'success': True, 'updated': len(reservations)})
         except Exception as e:
             _logger.error('[Webhook] Error sync payment: %s', str(e))

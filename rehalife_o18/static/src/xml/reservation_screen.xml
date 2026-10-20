@@ -67,9 +67,10 @@
                 <th>Paciente</th>
                 <th>Fecha</th>
                 <th>Hora</th>
-                <th>Especialidad</th>
-                <th>Doctor</th>
+                <th>Servicio</th>
+                <th>Precio</th>
                 <th>Sucursal</th>
+                <th>Consultorio</th>
                 <th>Paciente Paga</th>
                 <th></th>
               </tr>
@@ -79,10 +80,17 @@
                 <tr t-att-class="isAdded(res) ? 'table-warning' : ''">
                   <td><strong><t t-esc="res.partner_id[1]"/></strong></td>
                   <td><t t-esc="res.reservation_date"/></td>
-                  <td><t t-esc="res.reservation_time || '—'"/></td>
-                  <td><t t-esc="res.sub_specialty || '—'"/></td>
-                  <td><t t-esc="res.doctor_name || '—'"/></td>
+                  <td>
+                    <t t-esc="res.reservation_time || '—'"/>
+                    <t t-if="res.end_time"> – <t t-esc="res.end_time"/></t>
+                  </td>
+                  <td><t t-esc="res.service_type_name || '—'"/></td>
+                  <td>
+                    <t t-if="servicePrice(res) !== null"><t t-esc="servicePrice(res).toFixed(2)"/> Bs.</t>
+                    <t t-else="">—</t>
+                  </td>
                   <td><t t-esc="res.branch_name || '—'"/></td>
+                  <td><t t-esc="res.environment_name || '—'"/></td>
                   <td>
                     <t t-if="res.modalidad === 'seguro'">
                       <t t-esc="res.monto_a_pagar_paciente.toFixed(2)"/> Bs.
@@ -91,6 +99,7 @@
                         ⚠️ sin cobertura
                       </span>
                     </t>
+                    <t t-elif="servicePrice(res) !== null"><t t-esc="servicePrice(res).toFixed(2)"/> Bs.</t>
                     <t t-else="">—</t>
                   </td>
                   <td>

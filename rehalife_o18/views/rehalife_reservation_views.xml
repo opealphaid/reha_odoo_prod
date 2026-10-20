@@ -17,9 +17,12 @@
 
                 <field name="reservation_date"/>
                 <field name="reservation_time"/>
+                <field name="end_time" optional="show"/>
                 <field name="partner_id"/>
                 <field name="sub_specialty"/>
+                <field name="service_type_name" string="Servicio" optional="show"/>
                 <field name="branch_name"/>
+                <field name="environment_name" optional="show"/>
                 <field name="attention_type"/>
                 <field name="status"/>
                 <field name="invoice_status"/>
@@ -144,6 +147,8 @@
                         <group string="Datos de la Cita">
                             <field name="reservation_date" readonly="1"/>
                             <field name="reservation_time" readonly="1"/>
+                            <field name="end_time" readonly="1" invisible="not end_time"/>
+                            <field name="duration_minutes" readonly="1" invisible="not duration_minutes"/>
                             <field name="status" readonly="1"/>
                             <field name="attention_type" readonly="1"/>
                         </group>
@@ -153,6 +158,7 @@
                         <group string="Servicio">
                             <field name="sub_specialty" readonly="1"/>
                             <field name="branch_name" readonly="1"/>
+                            <field name="environment_name" readonly="1"/>
                             <field name="doctor_name" readonly="1"/>
                         </group>
                         <group string="Facturación">
@@ -184,6 +190,7 @@
                 <field name="external_id"/>
                 <field name="sub_specialty"/>
                 <field name="branch_name"/>
+                <field name="environment_name"/>
 
                 <!-- Filtros rápidos -->
                 <filter name="pending_payment"
@@ -221,6 +228,9 @@
                     <filter name="group_branch"
                             string="Sucursal"
                             context="{'group_by': 'branch_name'}"/>
+                    <filter name="group_environment"
+                            string="Consultorio"
+                            context="{'group_by': 'environment_name'}"/>
                 </group>
             </search>
         </field>

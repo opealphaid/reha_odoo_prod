@@ -31,6 +31,7 @@
                     </div>
                     <group>
                         <group string="Parámetros de Reserva">
+                            <field name="rehalife_duration_minutes"/>
                             <field name="rehalife_requires_evaluation"/>
                             <field name="rehalife_max_advance_days"/>
                             <field name="rehalife_open_window_hours"/>
@@ -98,6 +99,8 @@
                 <field name="list_price" string="Precio"
                        widget="monetary" options="{'currency_field': 'currency_id'}"
                        decoration-warning="list_price == 0"/>
+                <field name="rehalife_duration_minutes" string="Duración (min)" optional="show"
+                       decoration-danger="rehalife_duration_minutes == 0"/>
                 <field name="rehalife_requires_evaluation" string="Req. Eval." optional="show"/>
                 <field name="rehalife_max_advance_days" string="Días Antic." optional="hide"/>
                 <field name="available_in_pos" string="En POS" optional="show"/>
