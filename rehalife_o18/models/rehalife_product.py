@@ -63,6 +63,18 @@ class ProductTemplate(models.Model):
         string='Dias Max. de Anticipacion',
         help='Dias maximos con los que se puede reservar el servicio por adelantado.',
     )
+    # Reestructuracion CORE oct-2026: la duracion es del tipo de servicio y es
+    # la base del calculo de horarios libres en el backend. NO es required ni
+    # tiene constraint a proposito: los productos existentes no la tienen y
+    # cualquier write sobre ellos (homologacion SIAT incluida) fallaria. Se
+    # valida (5..720) solo al enviarla al backend, en
+    # _prepare_rehalife_service_payload.
+    rehalife_duration_minutes = fields.Integer(
+        string='Duracion (minutos)',
+        help='Cuanto ocupa el consultorio cada cita de este servicio (5 a 720 '
+             'minutos). Obligatoria para enviar el servicio al backend. '
+             'Cambiarla no afecta a las citas ya creadas.',
+    )
 
     rehalife_siat_actividad_codigo = fields.Char(
         string='Cod. Actividad SIAT',
@@ -273,6 +285,11 @@ class ProductTemplate(models.Model):
                     service_type.get('maxAdvanceDays')),
                 'rehalife_last_sync': fields.Datetime.now(),
             }
+            # Solo si el backend la manda: un servicio viejo sin duracion no
+            # debe pisar con 0 la que ya se cargo a mano en Odoo.
+            duration = service_type.get('durationMinutes')
+            if duration is not None:
+                vals['rehalife_duration_minutes'] = self._rehalife_as_int(duration)
             if has_price:
                 vals['rehalife_sync_state'] = 'synced'
                 vals['rehalife_sync_error'] = False
@@ -379,6 +396,20 @@ class ProductTemplate(models.Model):
                 'del backend Rehalife). Actual: %d.' % len(reference)
             )
 
+        # El backend la exige (5..720) desde la reestructuracion CORE oct-2026:
+        # sin ella el POST/PUT respondia 400 con un mensaje generico.
+        duration = self.rehalife_duration_minutes
+        if not duration:
+            raise UserError(
+                'Falta la Duración (minutos) del servicio "%s". Cárgala en la '
+                'pestaña Servicio Rehalife del producto (entre 5 y 720).' % name
+            )
+        if duration < 5 or duration > 720:
+            raise UserError(
+                'La Duración (minutos) del servicio "%s" debe estar entre 5 y '
+                '720. Actual: %d.' % (name, duration)
+            )
+
         def _positivo_o_nulo(valor):
             return valor if valor and valor > 0 else None
 
@@ -404,6 +435,7 @@ class ProductTemplate(models.Model):
                 self.rehalife_reminder_hours_before),
             'maxAdvanceDays': max_advance,
             'price': round(self.list_price or 0.0, 2),
+            'durationMinutes': duration,
         }
 
     def _push_services_to_backend(self, commit_every=0):

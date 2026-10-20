@@ -35,6 +35,16 @@ class RehalifeReservation(models.Model):
     notes           = fields.Text(string='Notas')
     diagnosis       = fields.Text(string='Diagnóstico')
 
+    # ── Reestructuración CORE oct-2026 (solo informativos, todos opcionales) ──
+    # La reserva dura lo que dura su tipo de servicio y ocupa un consultorio.
+    # El consultorio va como Char (id + nombre del backend): en Odoo no hay
+    # modelo de consultorio y no hace falta para facturar ni cobrar. Las
+    # reservas anteriores a la reestructuración quedan en blanco.
+    end_time                = fields.Char(string='Hora Fin')
+    duration_minutes        = fields.Integer(string='Duración (min)')
+    environment_external_id = fields.Char(string='ID Externo Consultorio')
+    environment_name        = fields.Char(string='Consultorio')
+
     # ── Campos de facturación (invoice clásico — se mantiene por compatibilidad)
     invoice_id      = fields.Many2one('account.move', string='Factura', readonly=True)
     invoice_status  = fields.Selection([
@@ -299,6 +309,30 @@ class RehalifeReservation(models.Model):
             'target': 'current',
         }
 
+    @staticmethod
+    def _core_oct2026_vals(source, keys):
+        """Campos de la reestructuración CORE oct-2026, tolerando null.
+
+        `keys` = (end_time, duration_minutes, environment_id, environment_name)
+        tal como se llaman en `source`. Solo se devuelven las claves que vienen
+        en el payload: un cliente que todavía no las manda no borra lo que ya
+        estaba guardado.
+        """
+        end_key, duration_key, env_id_key, env_name_key = keys
+        out = {}
+        if end_key in source:
+            out['end_time'] = source.get(end_key) or False
+        if duration_key in source:
+            try:
+                out['duration_minutes'] = int(source.get(duration_key) or 0)
+            except (TypeError, ValueError):
+                out['duration_minutes'] = 0
+        if env_id_key in source:
+            out['environment_external_id'] = source.get(env_id_key) or False
+        if env_name_key in source:
+            out['environment_name'] = source.get(env_name_key) or False
+        return out
+
     @api.model
     def sync_from_nextjs(self, vals: dict):
         """
@@ -334,6 +368,10 @@ class RehalifeReservation(models.Model):
             'notes': vals.get('notes'),
             'diagnosis': vals.get('diagnosis'),
         }
+        write_vals.update(self._core_oct2026_vals(
+            vals,
+            ('end_time', 'duration_minutes', 'environment_external_id', 'environment_name'),
+        ))
 
         # Buscar si ya existe
         existing = self.search([('external_id', '=', external_id)], limit=1)
@@ -430,6 +468,10 @@ class RehalifeReservation(models.Model):
             'notes': raw.get('notes'),
             'diagnosis': raw.get('diagnosis'),
         }
+        write_vals.update(self._core_oct2026_vals(
+            raw,
+            ('endTime', 'durationMinutes', 'environmentId', 'environmentName'),
+        ))
 
         paid = raw.get('paid')
         try:

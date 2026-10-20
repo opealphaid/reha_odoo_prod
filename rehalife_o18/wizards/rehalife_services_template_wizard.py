@@ -45,6 +45,9 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
         ('rehalife_open_window_hours', 'Horas de apertura de agenda. Debe ser > 0 o vacio.'),
         ('rehalife_reminder_hours_before', 'Horas de recordatorio. Debe ser > 0 o vacio.'),
         ('rehalife_max_advance_days', 'Dias max. de anticipacion. Debe ser > 0 o vacio.'),
+        ('rehalife_duration_minutes', 'Duracion de cada cita en minutos (entero de 5 a '
+                                      '720). Obligatoria para enviar el servicio al '
+                                      'backend: define cuanto ocupa el consultorio.'),
         ('rehalife_siat_actividad_codigo', 'Codigo CAEB. Ver hoja "Actividades SIAT".'),
         ('rehalife_siat_producto_codigo', 'Codigo de producto SIAT. Ver hoja "Productos SIAT".'),
         ('rehalife_siat_unidad_codigo', 'Codigo clasificador. Ver hoja "Unidades SIAT".'),
@@ -55,7 +58,7 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
             'servicio-dereserva', 'RESR_V01', 1, 'service', '[CATEGORIA]',
             'Unidades', 1000, 1, 1, '[CATEGORIA POS]', '[NOMBRE DEL IMPUESTO]',
             'Descripcion del servicio tal como se ve en el backend', 1,
-            10, 4, 1, 20,
+            10, 4, 1, 20, 60,
             '[LLENAR EN BASE A ACTIVIDADES]',
             '[LLENAR EN BASE A PRODUCTOS SIAT]',
             '[LLENAR EN BASE A UNIDADES SIAT]',
@@ -64,7 +67,7 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
             'consulta-evaluacion', 'EVAL_V01', 1, 'service', '[CATEGORIA]',
             'Unidades', 250, 1, 1, '[CATEGORIA POS]', '[NOMBRE DEL IMPUESTO]',
             'Primera evaluacion del paciente, con informe', 0,
-            24, 2, 2, 30,
+            24, 2, 2, 30, 30,
             '[LLENAR EN BASE A ACTIVIDADES]',
             '[LLENAR EN BASE A PRODUCTOS SIAT]',
             '[LLENAR EN BASE A UNIDADES SIAT]',
@@ -187,6 +190,9 @@ class RehalifeServicesTemplateWizard(models.TransientModel):
             'los traduzcas, o Odoo no los va a reconocer.',
             'Los codigos SIAT de las otras hojas salen de esta misma base de '
             'datos, asi que son los validos para esta compania.',
+            '"rehalife_duration_minutes" (duracion en minutos, de 5 a 720) es '
+            'obligatoria para enviar el servicio al backend: sin ella el envio '
+            'falla con "Falta la Duracion (minutos) del servicio".',
             'Un servicio importado existe SOLO en Odoo. Para crearlo tambien en '
             'el backend: Rehalife > Sincronizacion > Sincronizar Servicios > '
             'Enviar al backend.',
