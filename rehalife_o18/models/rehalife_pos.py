@@ -56,12 +56,63 @@ class PosOrderLine(models.Model):
                 )
             )
 
+    @api.model
+    def _check_rehalife_reservation_product(self, items):
+        """Una reserva solo se cobra con su servicio listo (para TODOS los usuarios).
+
+        `items` = [(reservation_id, product_id, es_devolucion)]. El producto de
+        la línea debe ser el product_id 'ready' que devuelve
+        rehalife.reservation.get_pos_service_status (misma lógica que el
+        diálogo; ya no existe el respaldo "Consulta").
+        Las devoluciones no se validan: reintegran lo que ya se cobró, y no
+        deben quedar bloqueadas si el producto dejó de estar listo después.
+        sudo() solo para calcular el estado: el control de sucursal ya se hizo.
+        """
+        items = [(rid, pid) for rid, pid, refund in items if rid and not refund]
+        if not items:
+            return
+        Reservation = self.env['rehalife.reservation'].sudo()
+        statuses = Reservation.get_pos_service_status(list({rid for rid, _pid in items}))
+        for reservation_id, product_id in items:
+            info = statuses.get(reservation_id)
+            if info and info['status'] == 'ready' and info['product_id'] == product_id:
+                continue
+            reservation = Reservation.browse(reservation_id)
+            if not info:
+                motivo = 'la reserva no existe.'
+            elif info['status'] != 'ready':
+                motivo = info['message']
+            else:
+                motivo = 'la línea no usa el producto del servicio (%s).' % info['product_name']
+            _logger.warning(
+                '[POS] Cobro rechazado: reserva %s con producto %s (%s).',
+                reservation.external_id, product_id, motivo,
+            )
+            raise UserError(
+                'La reserva %s no se puede cobrar: %s' % (
+                    '%s (%s %s)' % (
+                        reservation.partner_id.name or reservation.external_id or reservation_id,
+                        reservation.reservation_date or '',
+                        reservation.reservation_time or '',
+                    ),
+                    motivo,
+                )
+            )
+
     @api.model_create_multi
     def create(self, vals_list):
         # Antes de crear: si falla, no se guarda nada de la orden.
         self._check_rehalife_reservation_branch(
             [vals.get('rehalife_reservation_id') for vals in vals_list]
         )
+        self._check_rehalife_reservation_product([
+            (
+                vals.get('rehalife_reservation_id'),
+                vals.get('product_id'),
+                bool(vals.get('refunded_orderline_id')) or (vals.get('qty') or 0) < 0,
+            )
+            for vals in vals_list
+        ])
         lines = super().create(vals_list)
 
         # Red de seguridad: el diálogo "Reservas" (reservation_button.js)
@@ -83,6 +134,16 @@ class PosOrderLine(models.Model):
         # Un re-sync de la orden puede actualizar una línea existente.
         if vals.get('rehalife_reservation_id'):
             self._check_rehalife_reservation_branch([vals['rehalife_reservation_id']])
+        if 'rehalife_reservation_id' in vals or 'product_id' in vals:
+            self._check_rehalife_reservation_product([
+                (
+                    vals.get('rehalife_reservation_id', line.rehalife_reservation_id.id),
+                    vals.get('product_id', line.product_id.id),
+                    bool(vals.get('refunded_orderline_id', line.refunded_orderline_id))
+                    or vals.get('qty', line.qty) < 0,
+                )
+                for line in self
+            ])
         return super().write(vals)
 
 

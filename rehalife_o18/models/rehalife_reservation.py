@@ -609,3 +609,74 @@ class RehalifeReservation(models.Model):
             'branch_id': branch.id or False,
             'branch_name': branch.sudo().name or '',
         }
+
+    # ─── POS: estado del servicio de la reserva ──────────────────────────────
+    # Orden de "cercanía" a estar listo: si un servicio tiene varias variantes
+    # se informa la mejor. Por producto, las fallas se priorizan
+    # not_found > not_in_pos > not_homologated (ver _pos_product_status).
+    _POS_SERVICE_STATUS_RANK = {'ready': 0, 'not_homologated': 1, 'not_in_pos': 2}
+
+    @staticmethod
+    def _pos_product_status(product):
+        if not product:
+            return 'not_found'
+        if not product.available_in_pos:
+            return 'not_in_pos'
+        # siat_homologado: campo calculado de alpha_siat (product.template).
+        if not product.siat_homologado:
+            return 'not_homologated'
+        return 'ready'
+
+    @api.model
+    def get_pos_service_status(self, reservation_ids):
+        """Estado del servicio de cada reserva para cobrarla en el POS.
+
+        Devuelve {reservation_id: {status, product_id, product_name, list_price,
+        message}} en una sola llamada (un solo search de productos para todas).
+        Sin sudo(): solo se aceptan reservas que el usuario ya puede ver.
+        Se busca el producto con el mismo criterio de siempre
+        (product_tmpl_id.rehalife_external_id = service_type_external_id,
+        producto activo).
+        """
+        reservations = self.browse(reservation_ids or []).exists()
+        ext_ids = list({
+            r.service_type_external_id for r in reservations if r.service_type_external_id
+        })
+
+        best_by_ext = {}
+        if ext_ids:
+            products = self.env['product.product'].search(
+                [('product_tmpl_id.rehalife_external_id', 'in', ext_ids)], order='id',
+            )
+            for product in products:
+                ext_id = product.product_tmpl_id.rehalife_external_id
+                current = best_by_ext.get(ext_id)
+                rank = self._POS_SERVICE_STATUS_RANK[self._pos_product_status(product)]
+                if not current or rank < self._POS_SERVICE_STATUS_RANK[self._pos_product_status(current)]:
+                    best_by_ext[ext_id] = product
+
+        messages = {
+            'not_found': 'No existe un producto en Odoo para el servicio %s.',
+            'not_in_pos': 'El servicio %s no está disponible en el Punto de Venta.',
+            'not_homologated': 'El servicio %s no está homologado para SIAT.',
+        }
+        result = {}
+        for reservation in reservations:
+            product = best_by_ext.get(reservation.service_type_external_id) \
+                or self.env['product.product']
+            status = self._pos_product_status(product)
+            service_name = (
+                reservation.service_type_name
+                or reservation.service_type_external_id
+                or '(sin servicio)'
+            )
+            ready = status == 'ready'
+            result[reservation.id] = {
+                'status': status,
+                'product_id': product.id if ready else False,
+                'product_name': product.name or '',
+                # Mismo precio de lista que usaba el cobro (sin cambios en montos).
+                'list_price': product.list_price if ready else 0.0,
+                'message': messages[status] % service_name if not ready else '',
+            }
+        return result
