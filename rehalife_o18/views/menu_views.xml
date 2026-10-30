@@ -25,7 +25,8 @@
               name="Configuracion"
               parent="menu_rehalife_root"
               sequence="30"
-              action="action_rehalife_config"/>
+              action="action_rehalife_config"
+              groups="group_rehalife_admin,base.group_system"/>
 
     <menuitem id="menu_rehalife_services"
               name="Servicios"
@@ -37,7 +38,8 @@
     <menuitem id="menu_rehalife_sync_root"
               name="Sincronizacion"
               parent="menu_rehalife_root"
-              sequence="40"/>
+              sequence="40"
+              groups="group_rehalife_admin,base.group_system"/>
 
     <!-- Ciudades -->
     <menuitem id="menu_rehalife_cities"
@@ -45,6 +47,14 @@
               parent="menu_rehalife_sync_root"
               sequence="10"
               action="action_rehalife_city"/>
+
+    <!-- Sucursales (espejo del backend; solo administradores) -->
+    <menuitem id="menu_rehalife_branches"
+              name="Sucursales"
+              parent="menu_rehalife_sync_root"
+              sequence="15"
+              action="action_rehalife_branch"
+              groups="group_rehalife_admin,base.group_system"/>
 
     <!-- Sincronización Masiva -->
     <menuitem id="menu_rehalife_sync_wizard"

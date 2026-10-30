@@ -190,6 +190,11 @@ class RehalifeAPI(models.AbstractModel):
         """DELETE /cities/:id — Elimina una ciudad del backend."""
         return self._request('DELETE', '/cities/%s' % city_id)
 
+    def get_branches(self):
+        """GET /branches — Retorna lista de sucursales activas (sin paginar)."""
+        result = self._request('GET', '/branches')
+        return result.get('data', [])
+
     """Registro del pago de na reserva"""
 
     def register_payment(self, reservation_id, paid_amount, invoiced):

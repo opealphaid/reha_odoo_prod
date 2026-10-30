@@ -5,6 +5,13 @@
     <Dialog title="'Reservas Pendientes de Cobro'" size="'xl'">
 
       <div>
+        <!-- ── Sucursal del recepcionista (solo usuarios restringidos) ── -->
+        <div t-if="state.branchInfo.restricted and state.branchInfo.branch_name"
+             class="mb-2 fw-bold">
+          <i class="fa fa-building me-1"/>
+          Sucursal: <t t-esc="state.branchInfo.branch_name"/>
+        </div>
+
         <!-- ── Tabs ── -->
         <div class="d-flex gap-2 mb-2">
           <button t-att-class="state.tab === 'reservas' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'"
@@ -50,6 +57,12 @@
           <div t-if="state.loading" class="text-center p-5">
             <div class="spinner-border text-primary" role="status"/>
             <p class="mt-2">Cargando reservas...</p>
+          </div>
+
+          <div t-elif="noBranchAssigned" class="alert alert-warning m-3" role="alert">
+            <i class="fa fa-exclamation-triangle me-1"/>
+            Tu usuario no tiene una sucursal asignada. Pide al administrador que
+            configure tu Sucursal SIAT y su Sucursal Rehalife.
           </div>
 
           <div t-elif="filteredReservations.length === 0"

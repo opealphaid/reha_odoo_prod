@@ -1,5 +1,6 @@
 import logging
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
@@ -17,8 +18,50 @@ class PosOrderLine(models.Model):
         fields_list = super()._load_pos_data_fields(config_id)
         return fields_list + ['rehalife_reservation_id']
 
+    @api.model
+    def _check_rehalife_reservation_branch(self, reservation_ids):
+        """Fase 3: un recepcionista solo puede cobrar reservas de su sucursal.
+
+        Se valida comparando la sucursal (no con check_access): da un mensaje
+        claro con las dos sucursales, no depende de la caché de ir.rule y
+        aplica exactamente el mismo criterio que la regla de la Fase 2
+        (branch_id en la sucursal del usuario; sin sucursal → rechazada).
+        Para los usuarios no restringidos no hace nada.
+        """
+        Reservation = self.env['rehalife.reservation']
+        reservation_ids = [rid for rid in set(reservation_ids or []) if rid]
+        if not reservation_ids or not Reservation._is_pos_branch_restricted():
+            return
+
+        user_branch = self.env.user.rehalife_branch_id
+        # sudo() solo para leer la reserva ajena y armar el mensaje.
+        for reservation in Reservation.sudo().browse(reservation_ids).exists():
+            if reservation.branch_id and reservation.branch_id in user_branch:
+                continue
+            _logger.warning(
+                '[POS] Cobro rechazado: reserva %s (sucursal %s) por el usuario %s (sucursal %s).',
+                reservation.external_id, reservation.branch_id.name or '-',
+                self.env.user.login, user_branch.sudo().name or '-',
+            )
+            raise UserError(
+                'La reserva %s pertenece a la sucursal %s. '
+                'Tu usuario solo puede cobrar reservas de %s.' % (
+                    '%s (%s %s)' % (
+                        reservation.partner_id.name or reservation.external_id,
+                        reservation.reservation_date or '',
+                        reservation.reservation_time or '',
+                    ),
+                    reservation.branch_id.name or reservation.branch_name or 'sin sucursal asignada',
+                    user_branch.sudo().name or 'ninguna sucursal (no tienes Sucursal SIAT/Rehalife asignada)',
+                )
+            )
+
     @api.model_create_multi
     def create(self, vals_list):
+        # Antes de crear: si falla, no se guarda nada de la orden.
+        self._check_rehalife_reservation_branch(
+            [vals.get('rehalife_reservation_id') for vals in vals_list]
+        )
         lines = super().create(vals_list)
 
         # Red de seguridad: el diálogo "Reservas" (reservation_button.js)
@@ -35,6 +78,12 @@ class PosOrderLine(models.Model):
                 line.tax_ids = [(6, 0, line.product_id.taxes_id.ids)]
 
         return lines
+
+    def write(self, vals):
+        # Un re-sync de la orden puede actualizar una línea existente.
+        if vals.get('rehalife_reservation_id'):
+            self._check_rehalife_reservation_branch([vals['rehalife_reservation_id']])
+        return super().write(vals)
 
 
 class PosOrder(models.Model):

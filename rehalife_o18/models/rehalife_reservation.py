@@ -31,6 +31,12 @@ class RehalifeReservation(models.Model):
     service_type_external_id = fields.Char(string='ID Externo Tipo de Servicio')
     service_type_name        = fields.Char(string='Tipo de Servicio')
     branch_name     = fields.Char(string='Sucursal')
+    # Sucursal como registro real (FASE 1). branch_name se conserva: lo usan el
+    # POS (reservation_button.js) y las vistas.
+    branch_id       = fields.Many2one(
+        'rehalife.branch', string='Sucursal (ref.)',
+        index=True, ondelete='restrict',
+    )
     doctor_name     = fields.Char(string='Doctor')
     notes           = fields.Text(string='Notas')
     diagnosis       = fields.Text(string='Diagnóstico')
@@ -373,6 +379,14 @@ class RehalifeReservation(models.Model):
             ('end_time', 'duration_minutes', 'environment_external_id', 'environment_name'),
         ))
 
+        # Sucursal: solo se escribe si se pudo resolver. Si el payload no trae
+        # datos de sucursal, no se toca el branch_id que ya tuviera la reserva.
+        branch = self.env['rehalife.branch'].sudo()._get_or_create_from_external(
+            vals.get('branch_external_id'), vals.get('branch_name'),
+        )
+        if branch:
+            write_vals['branch_id'] = branch.id
+
         # Buscar si ya existe
         existing = self.search([('external_id', '=', external_id)], limit=1)
 
@@ -473,6 +487,12 @@ class RehalifeReservation(models.Model):
             ('endTime', 'durationMinutes', 'environmentId', 'environmentName'),
         ))
 
+        branch_raw = raw.get('branch') or {}
+        branch = self.env['rehalife.branch'].sudo()._get_or_create_from_external(
+            raw.get('branchId') or branch_raw.get('id'),
+            raw.get('branchName') or branch_raw.get('name'),
+        )
+
         paid = raw.get('paid')
         try:
             paid_amount_val = float(raw.get('paidAmount') or 0)
@@ -484,6 +504,12 @@ class RehalifeReservation(models.Model):
         existing = self.search([('external_id', '=', external_id)], limit=1)
 
         if existing:
+            # Completar la sucursal si faltaba. No altera el resultado ('action')
+            # que se devuelve abajo: el wizard cuenta por esos valores.
+            if branch and not existing.branch_id:
+                existing.write({'branch_id': branch.id})
+                _logger.info('[ImportReservations] Sucursal asignada a %s: %s', external_id, branch.name)
+
             # Nunca pisar si Odoo ya generó una factura o avanzó a invoiced
             if existing.invoice_id or existing.invoice_status == 'invoiced':
                 _logger.info('[ImportReservations] Omitida %s (ya facturada en Odoo)', external_id)
@@ -511,7 +537,75 @@ class RehalifeReservation(models.Model):
         write_vals['invoice_status'] = target_status
         if paid_amount_val > 0:
             write_vals['paid_amount'] = paid_amount_val
+        if branch:
+            write_vals['branch_id'] = branch.id
 
         new_rec = self.create(write_vals)
         _logger.info('[ImportReservations] Creada: %s (invoice_status=%s)', external_id, target_status)
         return {'action': 'created', 'external_id': external_id, 'id': new_rec.id}
+
+    @api.model
+    def _backfill_branch_id(self):
+        """Asigna branch_id a reservas antiguas a partir de branch_name.
+
+        Búsqueda EXACTA por nombre en rehalife.branch (no crea sucursales). Un
+        write por grupo de nombre, no uno por registro. Los nombres sin
+        coincidencia (o con más de una sucursal con ese nombre) se devuelven
+        para que el admin cree/corrija la sucursal y vuelva a ejecutarlo.
+        """
+        Branch = self.env['rehalife.branch'].with_context(active_test=False)
+        base_domain = [('branch_id', '=', False), ('branch_name', '!=', False)]
+        groups = self._read_group(base_domain, ['branch_name'], ['__count'])
+
+        actualizadas = sin_match = 0
+        nombres_sin_match = []
+        for branch_name, count in groups:
+            branches = Branch.search([('name', '=', branch_name)], limit=2)
+            if len(branches) != 1:
+                sin_match += count
+                nombres_sin_match.append(branch_name)
+                continue
+            reservations = self.search(base_domain + [('branch_name', '=', branch_name)])
+            reservations.write({'branch_id': branches.id})
+            actualizadas += len(reservations)
+
+        _logger.info(
+            '[Backfill] Sucursales asignadas: %d reservas actualizadas, %d sin match (%s).',
+            actualizadas, sin_match, ', '.join(nombres_sin_match) or '-',
+        )
+        return {
+            'actualizadas': actualizadas,
+            'sin_match': sin_match,
+            'nombres_sin_match': nombres_sin_match,
+        }
+
+    # ─── POS: restricción por sucursal (Fase 3) ──────────────────────────────
+    @api.model
+    def _is_pos_branch_restricted(self):
+        """True si el usuario actual es recepcionista restringido por sucursal.
+
+        Mismo criterio que las reglas de la Fase 2: las reglas de grupo se
+        combinan con OR, así que un administrador (Rehalife o Ajustes) que
+        además sea recepcionista NO queda restringido.
+        """
+        user = self.env.user
+        return (
+            user.has_group('rehalife_o18.group_rehalife_receptionist')
+            and not user.has_group('rehalife_o18.group_rehalife_admin')
+            and not user.has_group('base.group_system')
+        )
+
+    @api.model
+    def get_pos_branch_info(self):
+        """Sucursal del usuario para el diálogo "Reservas" del POS.
+
+        Se consulta con orm.call al abrir el diálogo (no se carga
+        rehalife.branch como modelo del POS). Solo informativo: el filtro real
+        de las reservas lo hace la regla de registro.
+        """
+        branch = self.env.user.rehalife_branch_id
+        return {
+            'restricted': self._is_pos_branch_restricted(),
+            'branch_id': branch.id or False,
+            'branch_name': branch.sudo().name or '',
+        }

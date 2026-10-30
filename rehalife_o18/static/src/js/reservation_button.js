@@ -31,6 +31,9 @@ export class ReservationDialog extends Component {
             // Precio de lista del servicio por service_type_external_id, solo
             // para mostrar en la tabla (ver _loadServicePrices).
             priceByService: {},
+            // Sucursal del usuario (get_pos_branch_info). Solo informativo:
+            // el filtro real de las reservas lo hace la regla de registro.
+            branchInfo: { restricted: false, branch_id: false, branch_name: '' },
         });
         onMounted(() => {
             this._load();
@@ -84,8 +87,29 @@ export class ReservationDialog extends Component {
         return labels[value] || value || '—';
     }
 
+    /** Recepcionista restringido sin sucursal: no se listan reservas. */
+    get noBranchAssigned() {
+        return this.state.branchInfo.restricted && !this.state.branchInfo.branch_id;
+    }
+
+    async _loadBranchInfo() {
+        try {
+            this.state.branchInfo = await this.orm.call(
+                "rehalife.reservation", "get_pos_branch_info", []
+            );
+        } catch (e) {
+            // Sin esta info el diálogo se comporta como antes; la regla de
+            // registro sigue filtrando las reservas en el servidor.
+            console.warn("[Reservas] No se pudo obtener la sucursal del usuario:", e);
+        }
+    }
+
     async _load() {
         try {
+            await this._loadBranchInfo();
+            if (this.noBranchAssigned) {
+                return;
+            }
             this.state.reservations = await this.orm.searchRead(
                 "rehalife.reservation",
                 [

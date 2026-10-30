@@ -91,6 +91,31 @@ class RehalifeConfig(models.TransientModel):
             },
         }
 
+    def action_sync_branches(self):
+        """Sincroniza sucursales desde el backend."""
+        self.action_save()
+        result = self.env['rehalife.branch'].sync_from_backend()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Sucursales sincronizadas',
+                'message': '%d creadas, %d actualizadas.' % (result['created'], result['updated']),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
+
+    def action_backfill_reservation_branches(self):
+        """Asigna la sucursal (branch_id) a reservas antiguas que solo tienen el nombre."""
+        Branch = self.env['rehalife.branch']
+        result = Branch.backfill_reservations()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': Branch._backfill_notification_params(result),
+        }
+
     def action_sync_patients(self):
         """Importa pacientes desde el backend."""
         self.action_save()
