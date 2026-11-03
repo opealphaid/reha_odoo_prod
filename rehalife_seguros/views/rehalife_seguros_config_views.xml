@@ -58,6 +58,9 @@
     </record>
 
     <record id="action_rehalife_seguros_sync_wizard" model="ir.actions.act_window">
+        <field name="groups_id" eval="[(4, ref('rehalife_seguros.group_rehalife_seguros_approver')),
+                                       (4, ref('rehalife_o18.group_rehalife_admin')),
+                                       (4, ref('base.group_system'))]"/>
         <field name="name">Configuración Seguros</field>
         <field name="res_model">rehalife.seguros.sync.wizard</field>
         <field name="view_mode">form</field>
