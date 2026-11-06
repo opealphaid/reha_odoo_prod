@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Recepcionista: solo las reservas de SU sucursal.
+         La sucursal sale de la Sucursal SIAT del usuario (alpha_siat), la misma
+         desde la que factura. Se usa 'in' con .ids (no '=' con .id): sin
+         Sucursal SIAT vinculada la lista queda vacía y no ve ninguna reserva
+         (con '=' False veria las reservas SIN sucursal de todas las sedes). -->
+    <record id="rule_reservation_receptionist_branch" model="ir.rule">
+        <field name="name">Reservas: recepcionista solo su sucursal</field>
+        <field name="model_id" ref="model_rehalife_reservation"/>
+        <field name="groups" eval="[(4, ref('group_rehalife_receptionist'))]"/>
+        <field name="domain_force">[('branch_id', 'in', user.siat_sucursal_id.rehalife_branch_id.ids)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+    <!-- Administradores: todas las reservas. Las reglas de grupo se combinan
+         con OR, asi que un admin que ademas sea recepcionista ve todo. -->
+    <record id="rule_reservation_admin_all" model="ir.rule">
+        <field name="name">Reservas: administradores ven todo</field>
+        <field name="model_id" ref="model_rehalife_reservation"/>
+        <field name="groups" eval="[(4, ref('group_rehalife_admin')), (4, ref('base.group_system'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+
+</odoo>

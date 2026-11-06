@@ -37,11 +37,12 @@
                             </tr>
                         </table>
 
-                        <!-- Mismo aviso que en el form (HU-12/2026-09-12): el
-                             price_unit de la línea es % de cobertura, no Bs. -->
+                        <!-- Fase 6 (2026-11-06): el % vive en porcentaje_cobertura;
+                             price_unit es el monto que cubre la aseguradora por sesión. -->
                         <div class="alert alert-info" role="alert" style="margin-top: 20px;">
-                            <strong>Nota:</strong> el "% Cobertura" de cada línea es el porcentaje
-                            que la aseguradora cubre de ese servicio (0 a 100) — NO es un monto en Bs.
+                            <strong>Nota:</strong> "Monto Aseguradora" = Precio servicio × % Cobertura / 100,
+                            por sesión. El Total es lo estimado a facturar a la aseguradora con la
+                            cantidad estimada.
                         </div>
 
                         <table class="table table-sm" style="margin-top: 10px;">
@@ -49,21 +50,32 @@
                                 <tr>
                                     <th>Servicio</th>
                                     <th class="text-right">% Cobertura</th>
+                                    <th class="text-right">Precio servicio</th>
+                                    <th class="text-right">Monto Aseguradora</th>
+                                    <th class="text-right">Cant. estimada</th>
                                     <th class="text-right">Cant. en Notas de Conformidad</th>
                                     <th class="text-right">Cant. Confirmada</th>
+                                    <th class="text-right">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <t t-foreach="doc.order_line.filtered(lambda l: not l.display_type)" t-as="line">
                                     <tr>
                                         <td><span t-field="line.product_id.display_name"/></td>
+                                        <td class="text-right"><span t-esc="'%.2f %%' % line.porcentaje_cobertura"/></td>
+                                        <td class="text-right"><span t-field="line.precio_servicio_pvm"/></td>
                                         <td class="text-right"><span t-field="line.price_unit"/></td>
+                                        <td class="text-right"><span t-field="line.product_uom_qty"/></td>
                                         <td class="text-right"><span t-field="line.qty_conformidad"/></td>
                                         <td class="text-right"><span t-field="line.qty_confirmada"/></td>
+                                        <td class="text-right"><span t-field="line.price_subtotal"/></td>
                                     </tr>
                                 </t>
                             </tbody>
                         </table>
+                        <p class="text-right">
+                            <strong>Total estimado:</strong> <span t-field="doc.amount_total"/>
+                        </p>
 
                         <p style="margin-top: 20px;">
                             <strong>Total Notas de Conformidad asociadas:</strong>

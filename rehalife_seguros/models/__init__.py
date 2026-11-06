@@ -6,4 +6,5 @@ from . import rehalife_seguros_sale_order_line
 from . import rehalife_seguros_nota_conformidad
 from . import rehalife_seguros_account_move
 from . import rehalife_seguros_reservation
+from . import rehalife_seguros_pos_order
 from . import rehalife_seguros_config

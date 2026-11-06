@@ -1,190 +1,205 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
+  <!-- Pagos anticipados, Fase 3: diálogo centrado en el paciente. -->
   <t t-name="rehalife_o18.ReservationDialog">
-    <Dialog title="'Reservas Pendientes de Cobro'" size="'xl'">
+    <Dialog title="'Cobrar Reservas'" size="'xl'">
 
       <div>
-        <!-- ── Tabs ── -->
-        <div class="d-flex gap-2 mb-2">
-          <button t-att-class="state.tab === 'reservas' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'"
-                  t-on-click="() => state.tab = 'reservas'">
-            Reservas
-          </button>
-          <button t-att-class="state.tab === 'facturas' ? 'btn btn-primary btn-sm' : 'btn btn-outline-secondary btn-sm'"
-                  t-on-click="() => state.tab = 'facturas'">
-            Facturas para Aseguradoras
-          </button>
+        <!-- ── Sucursal del recepcionista (solo usuarios restringidos) ── -->
+        <div t-if="state.branchInfo.restricted and state.branchInfo.branch_name"
+             class="mb-2 fw-bold">
+          <i class="fa fa-building me-1"/>
+          Sucursal: <t t-esc="state.branchInfo.branch_name"/>
+          <span class="text-muted fw-normal small ms-2">(solo se muestran las reservas de tu sucursal)</span>
         </div>
 
-        <!-- ── Barra de búsqueda ── -->
-        <div class="d-flex gap-2 mb-3 p-2 bg-light rounded">
-          <div class="input-group">
-            <span class="input-group-text">
-              <i class="fa fa-user"/>
-            </span>
-            <input type="text"
-                   class="form-control"
-                   t-att-placeholder="state.tab === 'reservas' ? 'Buscar por paciente...' : 'Buscar por aseguradora...'"
-                   t-model="state.searchName"/>
-          </div>
-          <div class="input-group" t-if="state.tab === 'reservas'">
-            <span class="input-group-text">
-              <i class="fa fa-building"/>
-            </span>
-            <input type="text"
-                   class="form-control"
-                   placeholder="Buscar por sucursal..."
-                   t-model="state.searchBranch"/>
-          </div>
-          <button class="btn btn-outline-secondary"
-                  t-on-click="() => { state.searchName = ''; state.searchBranch = ''; }"
-                  title="Limpiar filtros">
-            <i class="fa fa-times"/>
-          </button>
+        <div t-if="noBranchAssigned" class="alert alert-warning m-3" role="alert">
+          <i class="fa fa-exclamation-triangle me-1"/>
+          Tu usuario no tiene una sucursal asignada. Pide al administrador que
+          configure tu Sucursal SIAT y su Sucursal Rehalife.
         </div>
 
-        <!-- ── Contenido: Reservas ── -->
-        <div style="max-height:460px; overflow-y:auto;" t-if="state.tab === 'reservas'">
-
-          <div t-if="state.loading" class="text-center p-5">
+        <!-- ── Sin paciente: buscador ── -->
+        <t t-elif="!state.partner">
+          <p class="mb-2">Busca al paciente cuyas reservas quieres cobrar:</p>
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="fa fa-user"/></span>
+            <input type="text" class="form-control"
+                   placeholder="Nombre o CI/NIT del paciente (mínimo 2 letras) y Enter"
+                   t-model="state.searchQuery"
+                   t-on-keydown="onSearchKeydown"/>
+            <button class="btn btn-primary" t-on-click="searchPatients"
+                    t-att-disabled="state.searching">
+              <i class="fa fa-search"/> Buscar
+            </button>
+          </div>
+          <div t-if="state.searching" class="text-center p-3">
             <div class="spinner-border text-primary" role="status"/>
-            <p class="mt-2">Cargando reservas...</p>
+          </div>
+          <div t-elif="state.searchResults.length" class="list-group" style="max-height:380px; overflow-y:auto;">
+            <t t-foreach="state.searchResults" t-as="p" t-key="p.id">
+              <button class="list-group-item list-group-item-action d-flex justify-content-between"
+                      t-on-click="() => this.choosePatient(p)">
+                <strong t-esc="p.name"/>
+                <span class="text-muted" t-esc="p.vat || ''"/>
+              </button>
+            </t>
+          </div>
+        </t>
+
+        <!-- ── Con paciente: reservas agrupadas por servicio ── -->
+        <t t-else="">
+          <div class="d-flex align-items-center gap-2 mb-3 p-2 bg-light rounded">
+            <i class="fa fa-user"/>
+            <strong t-esc="state.partner.name"/>
+            <button t-if="!props.partnerLocked" class="btn btn-sm btn-outline-secondary ms-auto"
+                    t-on-click="changePatient">
+              Cambiar paciente
+            </button>
+            <span t-else="" class="text-muted small ms-auto">
+              La venta ya tiene reservas de este paciente.
+            </span>
           </div>
 
-          <div t-elif="filteredReservations.length === 0"
-               class="text-center p-5 text-muted">
-            <i class="fa fa-search fa-3x mb-3"/>
-            <p t-if="state.searchName or state.searchBranch">
-              No se encontraron reservas con ese filtro.
-            </p>
-            <p t-else="">No hay reservas pendientes de cobro.</p>
+          <!-- Fase 6: por defecto solo las cobrables; las pagadas COMPLETED nunca. -->
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" id="rehalife_show_paid"
+                   t-att-checked="state.includePaid"
+                   t-att-disabled="state.loading"
+                   t-on-change="toggleIncludePaid"/>
+            <label class="form-check-label" for="rehalife_show_paid">
+              Mostrar pagadas <span class="text-muted small">(las no completadas)</span>
+            </label>
           </div>
 
-          <table t-else="" class="table table-hover table-sm mb-0">
-            <thead class="table-light sticky-top">
-              <tr>
-                <th>Paciente</th>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Servicio</th>
-                <th>Precio</th>
-                <th>Sucursal</th>
-                <th>Consultorio</th>
-                <th>Paciente Paga</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <t t-foreach="filteredReservations" t-as="res" t-key="res.id">
-                <tr t-att-class="isAdded(res) ? 'table-warning' : ''">
-                  <td><strong><t t-esc="res.partner_id[1]"/></strong></td>
-                  <td><t t-esc="res.reservation_date"/></td>
-                  <td>
-                    <t t-esc="res.reservation_time || '—'"/>
-                    <t t-if="res.end_time"> – <t t-esc="res.end_time"/></t>
-                  </td>
-                  <td><t t-esc="res.service_type_name || '—'"/></td>
-                  <td>
-                    <t t-if="servicePrice(res) !== null"><t t-esc="servicePrice(res).toFixed(2)"/> Bs.</t>
-                    <t t-else="">—</t>
-                  </td>
-                  <td><t t-esc="res.branch_name || '—'"/></td>
-                  <td><t t-esc="res.environment_name || '—'"/></td>
-                  <td>
-                    <t t-if="res.modalidad === 'seguro'">
-                      <t t-esc="res.monto_a_pagar_paciente.toFixed(2)"/> Bs.
-                      <span t-if="!res.monto_cobertura_seguro" class="badge bg-warning text-dark ms-1"
-                            title="Sin Cobertura configurada para esta aseguradora/servicio">
-                        ⚠️ sin cobertura
-                      </span>
-                    </t>
-                    <t t-elif="servicePrice(res) !== null"><t t-esc="servicePrice(res).toFixed(2)"/> Bs.</t>
-                    <t t-else="">—</t>
-                  </td>
-                  <td>
-                    <span t-if="isAdded(res)" class="badge bg-success me-1">
-                      ✓ Ya agregada
+          <div t-if="state.chargeError" class="alert alert-warning py-1 small" role="alert">
+            No se pudieron consultar los datos de cobro de algunas reservas: se muestran
+            sin poder seleccionarlas. Cierra y vuelve a abrir el diálogo.
+          </div>
+
+          <div style="max-height:460px; overflow-y:auto;">
+            <div t-if="state.loading" class="text-center p-5">
+              <div class="spinner-border text-primary" role="status"/>
+              <p class="mt-2">Cargando reservas...</p>
+            </div>
+
+            <div t-elif="state.error and !state.groups.length" class="alert alert-danger" role="alert" t-esc="state.error"/>
+
+            <div t-elif="state.groups.length === 0" class="text-center p-5 text-muted">
+              <i class="fa fa-calendar-o fa-3x mb-3"/>
+              <p t-if="state.includePaid">El paciente no tiene reservas pendientes de pago ni pagadas sin completar.</p>
+              <p t-else="">El paciente no tiene reservas pendientes de pago.</p>
+            </div>
+
+            <t t-else="">
+              <div t-if="state.error" class="alert alert-danger py-1 small" role="alert" t-esc="state.error"/>
+              <t t-foreach="groups" t-as="group" t-key="group.key">
+                <div class="card mb-3">
+                  <div class="card-header d-flex flex-wrap align-items-center gap-3">
+                    <strong t-esc="group.name"/>
+                    <span class="small">
+                      Total: <t t-esc="group.total"/> ·
+                      Pagadas: <t t-esc="group.paid"/> ·
+                      Pendientes de pago: <t t-esc="group.pending"/>
                     </span>
-                    <button t-att-class="isAdded(res) ? 'btn btn-outline-secondary btn-sm' : 'btn btn-primary btn-sm'"
-                            t-on-click="() => this.selectReservation(res)">
-                      Cobrar
+                    <div t-if="group.pending" class="input-group input-group-sm ms-auto" style="width:auto;">
+                      <span class="input-group-text">Pagar</span>
+                      <input type="number" min="0" t-att-max="group.pending"
+                             class="form-control" style="width:70px;"
+                             t-model="state.payN[group.key]"/>
+                      <button class="btn btn-outline-primary"
+                              t-att-disabled="isLoadingMore(group)"
+                              t-on-click="() => this.selectFirstN(group)">
+                        Seleccionar
+                      </button>
+                    </div>
+                    <span t-if="state.payNWarning[group.key]" class="small text-danger w-100 text-end"
+                          t-esc="state.payNWarning[group.key]"/>
+                  </div>
+                  <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th style="width:32px;"></th>
+                        <th>Fecha</th>
+                        <th>Hora</th>
+                        <th>Estado</th>
+                        <th>Sucursal / Consultorio</th>
+                        <th class="text-end">A cobrar</th>
+                        <th>Pago</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <t t-foreach="group.reservations" t-as="res" t-key="res.id">
+                        <t t-set="row" t-value="rowState(res)"/>
+                        <t t-set="info" t-value="chargeInfo(res)"/>
+                        <tr t-att-class="isSelected(res) ? 'table-primary' : (row.selectable ? '' : 'text-muted')"
+                            t-att-style="row.selectable ? 'cursor:pointer;' : ''"
+                            t-on-click="() => this.toggle(res)">
+                          <td>
+                            <input type="checkbox" class="form-check-input"
+                                   t-att-checked="isSelected(res)"
+                                   t-att-disabled="!row.selectable"/>
+                          </td>
+                          <td t-esc="formatDate(res.reservation_date)"/>
+                          <td>
+                            <t t-esc="res.reservation_time || '—'"/>
+                            <t t-if="res.end_time"> – <t t-esc="res.end_time"/></t>
+                          </td>
+                          <td t-esc="statusLabel(res)"/>
+                          <td>
+                            <t t-esc="res.branch_name || '—'"/>
+                            <t t-if="res.environment_name"> / <t t-esc="res.environment_name"/></t>
+                          </td>
+                          <td class="text-end">
+                            <t t-if="row.selectable and info">
+                              <t t-esc="money(info.price_unit)"/> Bs.
+                              <div t-if="info.modalidad === 'seguro'" class="small text-muted">
+                                Copago<t t-if="info.line_note"> · <t t-esc="info.line_note"/></t>
+                              </div>
+                            </t>
+                            <t t-else="">—</t>
+                          </td>
+                          <td>
+                            <span t-att-class="row.cls" t-esc="row.label"/>
+                            <div t-if="row.detail" class="small" t-esc="row.detail"/>
+                          </td>
+                        </tr>
+                      </t>
+                    </tbody>
+                  </table>
+                  <div class="card-footer d-flex align-items-center gap-2 py-1 small text-muted">
+                    Mostrando <t t-esc="group.reservations.length"/> de <t t-esc="group.visible"/>
+                    <button t-if="group.has_more" class="btn btn-sm btn-outline-secondary ms-auto"
+                            t-att-disabled="isLoadingMore(group)"
+                            t-on-click="() => this.loadMore(group)">
+                      <t t-if="isLoadingMore(group)">Cargando...</t>
+                      <t t-else="">Ver más</t>
                     </button>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               </t>
-            </tbody>
-          </table>
-
-        </div>
-
-        <!-- ── Contenido: Facturas para Aseguradoras (solo consulta) ── -->
-        <div style="max-height:460px; overflow-y:auto;" t-if="state.tab === 'facturas'">
-
-          <div t-if="state.loadingFacturas" class="text-center p-5">
-            <div class="spinner-border text-primary" role="status"/>
-            <p class="mt-2">Cargando facturas...</p>
+            </t>
           </div>
-
-          <div t-elif="filteredFacturasAseguradoras.length === 0"
-               class="text-center p-5 text-muted">
-            <i class="fa fa-search fa-3x mb-3"/>
-            <p t-if="state.searchName">
-              No se encontraron facturas con ese filtro.
-            </p>
-            <p t-else="">No hay facturas de aseguradoras pendientes de pago.</p>
-          </div>
-
-          <table t-else="" class="table table-hover table-sm mb-0">
-            <thead class="table-light sticky-top">
-              <tr>
-                <th>Aseguradora</th>
-                <th>Referencia</th>
-                <th>Importe</th>
-                <th>Estado</th>
-                <th>Pago</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              <t t-foreach="filteredFacturasAseguradoras" t-as="factura" t-key="factura.id">
-                <tr>
-                  <td><strong><t t-esc="factura.partner_id[1]"/></strong></td>
-                  <td><t t-esc="factura.invoice_origin || factura.name || '—'"/></td>
-                  <td><t t-esc="factura.amount_total"/></td>
-                  <td><t t-esc="moveStateLabel(factura.state)"/></td>
-                  <td><t t-esc="paymentStateLabel(factura.payment_state)"/></td>
-                  <td>
-                    <button class="btn btn-outline-primary btn-sm"
-                            t-on-click="() => this.openFactura(factura)">
-                      Ver Factura
-                    </button>
-                  </td>
-                </tr>
-              </t>
-            </tbody>
-          </table>
-
-          <p class="text-muted small px-2 pt-2">
-            Cada factura corresponde a una Nota de Conformidad aprobada — se
-            genera y se cobra desde Seguros (Notas de Conformidad /
-            Contabilidad), no desde este POS.
-          </p>
-
-        </div>
-
-        <!-- ── Contador ── -->
-        <div class="text-muted text-end small pt-2 pe-1"
-             t-if="state.tab === 'reservas' and !state.loading">
-          <t t-esc="filteredReservations.length"/> de
-          <t t-esc="state.reservations.length"/> reservas
-        </div>
-        <div class="text-muted text-end small pt-2 pe-1"
-             t-if="state.tab === 'facturas' and !state.loadingFacturas">
-          <t t-esc="filteredFacturasAseguradoras.length"/> de
-          <t t-esc="state.facturasAseguradoras.length"/> facturas
-        </div>
+        </t>
       </div>
+
+      <t t-set-slot="footer">
+        <div class="d-flex w-100 align-items-center gap-2">
+          <span t-if="state.partner and selectedReservations.length" class="fw-bold">
+            <t t-esc="selectedReservations.length"/> reserva(s) ·
+            Total <t t-esc="money(selectedTotal)"/> Bs.
+          </span>
+          <button class="btn btn-secondary ms-auto" t-on-click="() => this.props.close()">
+            Cerrar
+          </button>
+          <button class="btn btn-primary"
+                  t-att-disabled="!selectedReservations.length or state.adding"
+                  t-on-click="confirm">
+            Agregar a la venta
+          </button>
+        </div>
+      </t>
 
     </Dialog>
   </t>

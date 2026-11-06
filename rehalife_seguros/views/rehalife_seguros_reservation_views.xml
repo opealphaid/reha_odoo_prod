@@ -14,7 +14,11 @@
                     </group>
                     <group invisible="modalidad != 'seguro'">
                         <field name="aseguradora_id" required="modalidad == 'seguro'"/>
-                        <field name="pedido_marco_id" required="modalidad == 'seguro'"/>
+                        <!-- Enlace al Pedido Marco: oculto a la recepcionista (Fase 4).
+                             Modalidad, aseguradora y montos siguen visibles: los
+                             necesita para cobrar el copago. -->
+                        <field name="pedido_marco_id" required="modalidad == 'seguro'"
+                               groups="rehalife_seguros.group_rehalife_seguros_approver,rehalife_o18.group_rehalife_admin,base.group_system"/>
                         <field name="monto_cobertura_seguro" readonly="1"/>
                         <field name="monto_a_pagar_paciente" readonly="1"/>
                     </group>
@@ -24,10 +28,25 @@
                         <field name="nc_error" nolabel="1" readonly="1"/>
                         <br/>
                         <button name="action_reintentar_nota_conformidad" type="object"
-                                string="Reintentar" class="btn-warning mt-2"/>
+                                string="Reintentar" class="btn-warning mt-2"
+                                groups="rehalife_seguros.group_rehalife_seguros_approver,rehalife_o18.group_rehalife_admin,base.group_system"/>
                     </div>
                 </group>
-                <group string="Notas de Conformidad" invisible="not nota_conformidad_ids">
+                <!-- Pagos anticipados, Fase 4: lo que se congeló al pagar en el POS. -->
+                <group string="Pago anticipado / Congelado"
+                       invisible="modalidad != 'seguro' or not fecha_congelamiento">
+                    <group>
+                        <field name="precio_servicio_congelado"/>
+                        <field name="porcentaje_cobertura_congelado"/>
+                        <field name="fecha_congelamiento"/>
+                    </group>
+                    <group>
+                        <field name="monto_paciente_congelado"/>
+                        <field name="monto_aseguradora_congelado"/>
+                    </group>
+                </group>
+                <group string="Notas de Conformidad" invisible="not nota_conformidad_ids"
+                       groups="rehalife_seguros.group_rehalife_seguros_approver,rehalife_o18.group_rehalife_admin,base.group_system">
                     <field name="nota_conformidad_ids" nolabel="1" readonly="1">
                         <list>
                             <field name="name"/>

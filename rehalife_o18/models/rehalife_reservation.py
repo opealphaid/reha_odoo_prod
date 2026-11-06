@@ -31,6 +31,12 @@ class RehalifeReservation(models.Model):
     service_type_external_id = fields.Char(string='ID Externo Tipo de Servicio')
     service_type_name        = fields.Char(string='Tipo de Servicio')
     branch_name     = fields.Char(string='Sucursal')
+    # Sucursal como registro real (FASE 1). branch_name se conserva: lo usan el
+    # POS (reservation_button.js) y las vistas.
+    branch_id       = fields.Many2one(
+        'rehalife.branch', string='Sucursal (ref.)',
+        index=True, ondelete='restrict',
+    )
     doctor_name     = fields.Char(string='Doctor')
     notes           = fields.Text(string='Notas')
     diagnosis       = fields.Text(string='Diagnóstico')
@@ -77,6 +83,25 @@ class RehalifeReservation(models.Model):
         string='Estado Orden POS',
         compute='_compute_pos_order_info',
         store=False,
+    )
+
+    # ── Pagos anticipados (Fase 2) ───────────────────────────────────────────
+    pos_paid_amount = fields.Float(
+        string='Monto Pagado (POS)', readonly=True, digits=(16, 2), copy=False,
+        help='Lo que se cobró por esta reserva en el POS: total de su línea '
+             '(con impuestos) dividido entre las reservas que cubre la línea.',
+    )
+    pos_order_line_ids = fields.Many2many(
+        'pos.order.line',
+        'rehalife_pos_line_reservation_rel',
+        'reservation_id', 'line_id',
+        string='Líneas POS', readonly=True, copy=False,
+    )
+    alerta_pagada_cancelada = fields.Boolean(
+        string='Pagada pero Cancelada/No asistió', readonly=True, copy=False,
+        help='Llegó CANCELLED o NO_SHOW desde Rehalife para una reserva ya '
+             'pagada. El pago no se devuelve: hay que reprogramarla en Rehalife '
+             'y luego marcar la alerta como revisada.',
     )
 
     nc_error = fields.Char(
@@ -182,7 +207,7 @@ class RehalifeReservation(models.Model):
             })
             return False
 
-        paid_amount = self.pos_order_id.amount_total or 0.0
+        paid_amount = self._get_backend_paid_amount()
         invoiced = bool(self.pos_order_id.to_invoice)
 
         try:
@@ -211,6 +236,64 @@ class RehalifeReservation(models.Model):
                 self.external_id, str(e),
             )
             return False
+
+    def _get_backend_paid_amount(self):
+        """Monto de ESTA reserva para register-payment.
+
+        Desde la Fase 2 sale de pos_paid_amount (lo escribe
+        pos.order._sync_rehalife_reservation). Reservas cobradas antes, sin
+        ese dato: total de su línea (Many2one histórico) / qty; si tampoco
+        hay línea, el total de la orden, como antes.
+        """
+        self.ensure_one()
+        # sudo(): solo lectura de las líneas POS (el reintento manual lo puede
+        # pulsar un administrador de Rehalife sin permisos del POS).
+        rec = self.sudo()
+        if rec.pos_paid_amount or rec.pos_order_line_ids:
+            return rec.pos_paid_amount
+        line = rec.pos_order_id.lines.filtered(
+            lambda l: l.rehalife_reservation_id == rec and l.qty > 0
+        )[:1]
+        if line:
+            return line.price_subtotal_incl / line.qty
+        return rec.pos_order_id.amount_total or 0.0
+
+    @api.model
+    def _cron_retry_backend_payment(self, limit=20, max_consecutive_failures=3):
+        """Cron: reintenta register-payment en reservas pagadas en el POS
+        cuya notificación al backend falló.
+
+        Lote chico y corte tras varios fallos seguidos: si el backend está
+        caído, cada llamada espera hasta 15 s y no tiene sentido seguir. Cada
+        intento actualiza write_date, así que la siguiente corrida empieza
+        por las que llevan más tiempo sin reintentarse.
+        """
+        reservations = self.search([
+            ('invoice_status', '=', 'paid'),
+            ('backend_sync_state', '=', 'error'),
+            ('pos_order_id', '!=', False),
+        ], order='write_date asc, id asc', limit=limit)
+        ok = failures = 0
+        for reservation in reservations:
+            if reservation._notify_backend_payment():
+                ok += 1
+                failures = 0
+                continue
+            failures += 1
+            if failures >= max_consecutive_failures:
+                _logger.warning(
+                    '[Cron] Reintento de pagos cortado tras %s fallos seguidos.', failures,
+                )
+                break
+        _logger.info(
+            '[Cron] Reintento de pagos al backend: %s de %s reserva(s) sincronizadas.',
+            ok, len(reservations),
+        )
+
+    def action_marcar_alerta_revisada(self):
+        """Botón: apaga la alerta "pagada pero cancelada" (manual, Fase 2)."""
+        self.write({'alerta_pagada_cancelada': False})
+        return {'type': 'ir.actions.client', 'tag': 'soft_reload'}
 
     def action_retry_backend_sync(self):
         """
@@ -373,6 +456,14 @@ class RehalifeReservation(models.Model):
             ('end_time', 'duration_minutes', 'environment_external_id', 'environment_name'),
         ))
 
+        # Sucursal: solo se escribe si se pudo resolver. Si el payload no trae
+        # datos de sucursal, no se toca el branch_id que ya tuviera la reserva.
+        branch = self.env['rehalife.branch'].sudo()._get_or_create_from_external(
+            vals.get('branch_external_id'), vals.get('branch_name'),
+        )
+        if branch:
+            write_vals['branch_id'] = branch.id
+
         # Buscar si ya existe
         existing = self.search([('external_id', '=', external_id)], limit=1)
 
@@ -399,6 +490,10 @@ class RehalifeReservation(models.Model):
             if (new_status in ('CANCELLED', 'NO_SHOW')
                     and existing.status not in ('CANCELLED', 'NO_SHOW')):
                 if existing.invoice_status in ('paid', 'invoiced'):
+                    # Pagos anticipados, Fase 2: se acepta el estado pero se
+                    # marca la alerta para que un administrador la reprograme.
+                    if existing.invoice_status == 'paid':
+                        write_vals['alerta_pagada_cancelada'] = True
                     _logger.warning(
                         '[Webhook] Reserva pagada recibida como cancelada: %s '
                         '(invoice_status=%s, status=%s). No se cambia el cobro.',
@@ -425,6 +520,50 @@ class RehalifeReservation(models.Model):
                 'action': 'created',
                 'external_id': external_id,
             }
+
+    @api.model
+    def sync_batch_from_nextjs(self, vals_list):
+        """Sincroniza varias reservas en una sola llamada (Pagos anticipados,
+        Fase 1: reservas recurrentes / en lote creadas desde Next.js).
+
+        Llama a self.sync_from_nextjs (no a super) para que cada elemento pase
+        también por el override de rehalife_seguros (modalidad, aseguradora,
+        NC). Cada reserva va en su propio savepoint: si una falla (p. ej. el
+        paciente todavía no está en Odoo), se revierte solo esa y las demás
+        siguen.
+
+        Devuelve una lista, en el mismo orden recibido, de
+        {external_id, ok, action, id, error}.
+        """
+        results = []
+        for vals in vals_list or []:
+            if not isinstance(vals, dict):
+                results.append({
+                    'external_id': None, 'ok': False, 'action': None, 'id': None,
+                    'error': 'Elemento inválido: se esperaba un objeto.',
+                })
+                continue
+            external_id = vals.get('external_id')
+            try:
+                with self.env.cr.savepoint():
+                    result = self.sync_from_nextjs(vals)
+                results.append({
+                    'external_id': external_id,
+                    'ok': True,
+                    'action': result.get('action'),
+                    'id': result.get('id'),
+                    'error': None,
+                })
+            except Exception as e:
+                _logger.warning(
+                    '[Webhook] Lote: no se pudo sincronizar la reserva %s: %s',
+                    external_id, str(e),
+                )
+                results.append({
+                    'external_id': external_id, 'ok': False, 'action': None, 'id': None,
+                    'error': str(e),
+                })
+        return results
 
     @api.model
     def import_from_nextjs(self, raw: dict):
@@ -473,6 +612,12 @@ class RehalifeReservation(models.Model):
             ('endTime', 'durationMinutes', 'environmentId', 'environmentName'),
         ))
 
+        branch_raw = raw.get('branch') or {}
+        branch = self.env['rehalife.branch'].sudo()._get_or_create_from_external(
+            raw.get('branchId') or branch_raw.get('id'),
+            raw.get('branchName') or branch_raw.get('name'),
+        )
+
         paid = raw.get('paid')
         try:
             paid_amount_val = float(raw.get('paidAmount') or 0)
@@ -484,6 +629,12 @@ class RehalifeReservation(models.Model):
         existing = self.search([('external_id', '=', external_id)], limit=1)
 
         if existing:
+            # Completar la sucursal si faltaba. No altera el resultado ('action')
+            # que se devuelve abajo: el wizard cuenta por esos valores.
+            if branch and not existing.branch_id:
+                existing.write({'branch_id': branch.id})
+                _logger.info('[ImportReservations] Sucursal asignada a %s: %s', external_id, branch.name)
+
             # Nunca pisar si Odoo ya generó una factura o avanzó a invoiced
             if existing.invoice_id or existing.invoice_status == 'invoiced':
                 _logger.info('[ImportReservations] Omitida %s (ya facturada en Odoo)', external_id)
@@ -511,7 +662,331 @@ class RehalifeReservation(models.Model):
         write_vals['invoice_status'] = target_status
         if paid_amount_val > 0:
             write_vals['paid_amount'] = paid_amount_val
+        if branch:
+            write_vals['branch_id'] = branch.id
 
         new_rec = self.create(write_vals)
         _logger.info('[ImportReservations] Creada: %s (invoice_status=%s)', external_id, target_status)
         return {'action': 'created', 'external_id': external_id, 'id': new_rec.id}
+
+    @api.model
+    def _backfill_branch_id(self):
+        """Asigna branch_id a reservas antiguas a partir de branch_name.
+
+        Búsqueda EXACTA por nombre en rehalife.branch (no crea sucursales). Un
+        write por grupo de nombre, no uno por registro. Los nombres sin
+        coincidencia (o con más de una sucursal con ese nombre) se devuelven
+        para que el admin cree/corrija la sucursal y vuelva a ejecutarlo.
+        """
+        Branch = self.env['rehalife.branch'].with_context(active_test=False)
+        base_domain = [('branch_id', '=', False), ('branch_name', '!=', False)]
+        groups = self._read_group(base_domain, ['branch_name'], ['__count'])
+
+        actualizadas = sin_match = 0
+        nombres_sin_match = []
+        for branch_name, count in groups:
+            branches = Branch.search([('name', '=', branch_name)], limit=2)
+            if len(branches) != 1:
+                sin_match += count
+                nombres_sin_match.append(branch_name)
+                continue
+            reservations = self.search(base_domain + [('branch_name', '=', branch_name)])
+            reservations.write({'branch_id': branches.id})
+            actualizadas += len(reservations)
+
+        _logger.info(
+            '[Backfill] Sucursales asignadas: %d reservas actualizadas, %d sin match (%s).',
+            actualizadas, sin_match, ', '.join(nombres_sin_match) or '-',
+        )
+        return {
+            'actualizadas': actualizadas,
+            'sin_match': sin_match,
+            'nombres_sin_match': nombres_sin_match,
+        }
+
+    # ─── POS: restricción por sucursal (Fase 3) ──────────────────────────────
+    @api.model
+    def _is_pos_branch_restricted(self):
+        """True si el usuario actual es recepcionista restringido por sucursal.
+
+        Mismo criterio que las reglas de la Fase 2: las reglas de grupo se
+        combinan con OR, así que un administrador (Rehalife o Ajustes) que
+        además sea recepcionista NO queda restringido.
+        """
+        user = self.env.user
+        return (
+            user.has_group('rehalife_o18.group_rehalife_receptionist')
+            and not user.has_group('rehalife_o18.group_rehalife_admin')
+            and not user.has_group('base.group_system')
+        )
+
+    @api.model
+    def get_pos_branch_info(self):
+        """Sucursal del usuario para el diálogo "Reservas" del POS.
+
+        Se consulta con orm.call al abrir el diálogo (no se carga
+        rehalife.branch como modelo del POS). Solo informativo: el filtro real
+        de las reservas lo hace la regla de registro.
+        """
+        branch = self.env.user.rehalife_branch_id
+        return {
+            'restricted': self._is_pos_branch_restricted(),
+            'branch_id': branch.id or False,
+            'branch_name': branch.sudo().name or '',
+        }
+
+    # ─── POS: lista paginada del diálogo "Reservas" (Fase 6, punto 2) ────────
+    _POS_DIALOG_FIELDS = [
+        'id', 'partner_id', 'reservation_date', 'reservation_time', 'end_time',
+        'status', 'sub_specialty', 'doctor_name', 'branch_name', 'environment_name',
+        'service_type_external_id', 'service_type_name',
+        'invoice_status', 'pos_paid_amount', 'paid_amount', 'pos_order_id',
+    ]
+    _POS_DIALOG_ORDER = 'reservation_date asc, reservation_time asc, id asc'
+    _POS_DIALOG_PAGE = 20
+    _POS_DIALOG_MAX_PAGE = 200
+
+    @staticmethod
+    def _pos_group_key(ext_id, name):
+        """Clave del grupo por servicio (mismo criterio que usaba el diálogo:
+        external_id del servicio, o su nombre si no tiene)."""
+        if ext_id:
+            return 'ext:%s' % ext_id
+        if name:
+            return 'name:%s' % name
+        return 'none'
+
+    @staticmethod
+    def _pos_group_domain(key):
+        if key.startswith('ext:'):
+            return [('service_type_external_id', '=', key[4:])]
+        if key.startswith('name:'):
+            return [
+                ('service_type_external_id', '=', False),
+                ('service_type_name', '=', key[5:]),
+            ]
+        return [
+            ('service_type_external_id', '=', False),
+            ('service_type_name', '=', False),
+        ]
+
+    @staticmethod
+    def _pos_visible(invoice_status, status, include_paid):
+        """Reservas que lista el diálogo: las cobrables (pendientes de pago) y,
+        con "Mostrar pagadas", las pagadas que aún no se completaron. Las
+        pagadas y COMPLETED no se muestran nunca."""
+        if invoice_status == 'pending':
+            return True
+        return bool(include_paid) and invoice_status == 'paid' and status != 'COMPLETED'
+
+    @api.model
+    def get_pos_reservations(self, partner_id, include_paid=False, group_key=None,
+                             offset=0, limit=None):
+        """Reservas de un paciente para el diálogo "Reservas" del POS, filtradas
+        y paginadas en el servidor (no se cargan todas en el POS).
+
+        - Base: reservas del paciente sin CANCELLED/NO_SHOW. La regla de registro
+          de sucursal aplica (sin sudo: search y _read_group la respetan).
+        - Visibles: invoice_status='pending'; con include_paid, además las
+          'paid' cuyo status no sea COMPLETED. Orden: fecha y hora ascendente.
+        - Por grupo (servicio): las `limit` (20) más próximas desde `offset`.
+          Con `group_key` solo se devuelve ese grupo ("Ver más").
+        - Contadores (total / pagadas / pendientes) sobre TODAS las reservas
+          activas del paciente en ese servicio, no solo las cargadas.
+        - `charge`: get_pos_charge_info de las pendientes devueltas (None si
+          falló; el diálogo las muestra como "Sin datos de cobro").
+
+        Devuelve {'groups': [{key, name, total, paid, pending, visible,
+        loaded, has_more, reservations}], 'charge': {...} | None}.
+        """
+        try:
+            partner_id = int(partner_id)
+            offset = max(0, int(offset or 0))
+            limit = int(limit or self._POS_DIALOG_PAGE)
+        except (TypeError, ValueError):
+            raise UserError('Parámetros inválidos para listar las reservas.')
+        limit = min(max(limit, 1), self._POS_DIALOG_MAX_PAGE)
+        include_paid = bool(include_paid)
+
+        base = [
+            ('partner_id', '=', partner_id),
+            ('status', 'not in', ['CANCELLED', 'NO_SHOW']),
+        ]
+        if group_key:
+            base = base + self._pos_group_domain(group_key)
+
+        # Contadores de todo el paciente (o del grupo pedido) en una consulta.
+        counts = {}
+        rows = self._read_group(
+            base,
+            groupby=['service_type_external_id', 'service_type_name',
+                     'invoice_status', 'status'],
+            aggregates=['__count'],
+        )
+        for ext_id, name, invoice_status, status, count in rows:
+            key = self._pos_group_key(ext_id, name)
+            if group_key and key != group_key:
+                continue
+            group = counts.setdefault(key, {
+                'key': key, 'name': '', 'total': 0, 'paid': 0, 'pending': 0, 'visible': 0,
+            })
+            if name and not group['name']:
+                group['name'] = name
+            group['total'] += count
+            if invoice_status == 'paid':
+                group['paid'] += count
+            elif invoice_status == 'pending':
+                group['pending'] += count
+            if self._pos_visible(invoice_status, status, include_paid):
+                group['visible'] += count
+
+        if include_paid:
+            visible_domain = [
+                '|', ('invoice_status', '=', 'pending'),
+                '&', ('invoice_status', '=', 'paid'), ('status', '!=', 'COMPLETED'),
+            ]
+        else:
+            visible_domain = [('invoice_status', '=', 'pending')]
+
+        groups = []
+        pending_ids = []
+        for key, group in counts.items():
+            if not group['visible']:
+                continue
+            records = self.search(
+                base + self._pos_group_domain(key) + visible_domain,
+                order=self._POS_DIALOG_ORDER, offset=offset, limit=limit,
+            )
+            reservations = records.read(self._POS_DIALOG_FIELDS)
+            pending_ids += [r['id'] for r in reservations if r['invoice_status'] == 'pending']
+            loaded = offset + len(reservations)
+            groups.append(dict(
+                group,
+                name=group['name'] or '(sin servicio)',
+                loaded=loaded,
+                has_more=loaded < group['visible'],
+                reservations=reservations,
+            ))
+
+        # Grupos ordenados por su reserva más próxima (como antes en el POS).
+        def _first_key(group):
+            first = group['reservations'][0] if group['reservations'] else {}
+            return (
+                str(first.get('reservation_date') or '9999-12-31'),
+                first.get('reservation_time') or '99:99',
+                group['name'],
+            )
+        groups.sort(key=_first_key)
+
+        charge = {}
+        if pending_ids:
+            try:
+                with self.env.cr.savepoint():
+                    charge = self.get_pos_charge_info(pending_ids)
+            except Exception:
+                _logger.exception('[POS Reservas] No se pudieron calcular los datos de cobro')
+                charge = None
+        return {'groups': groups, 'charge': charge}
+
+    # ─── POS: estado del servicio de la reserva ──────────────────────────────
+    # Orden de "cercanía" a estar listo: si un servicio tiene varias variantes
+    # se informa la mejor. Por producto, las fallas se priorizan
+    # not_found > not_in_pos > not_homologated (ver _pos_product_status).
+    _POS_SERVICE_STATUS_RANK = {'ready': 0, 'not_homologated': 1, 'not_in_pos': 2}
+
+    @staticmethod
+    def _pos_product_status(product):
+        if not product:
+            return 'not_found'
+        if not product.available_in_pos:
+            return 'not_in_pos'
+        # siat_homologado: campo calculado de alpha_siat (product.template).
+        if not product.siat_homologado:
+            return 'not_homologated'
+        return 'ready'
+
+    @api.model
+    def get_pos_service_status(self, reservation_ids):
+        """Estado del servicio de cada reserva para cobrarla en el POS.
+
+        Devuelve {reservation_id: {status, product_id, product_name, list_price,
+        message}} en una sola llamada (un solo search de productos para todas).
+        Sin sudo(): solo se aceptan reservas que el usuario ya puede ver.
+        Se busca el producto con el mismo criterio de siempre
+        (product_tmpl_id.rehalife_external_id = service_type_external_id,
+        producto activo).
+        """
+        reservations = self.browse(reservation_ids or []).exists()
+        ext_ids = list({
+            r.service_type_external_id for r in reservations if r.service_type_external_id
+        })
+
+        best_by_ext = {}
+        if ext_ids:
+            products = self.env['product.product'].search(
+                [('product_tmpl_id.rehalife_external_id', 'in', ext_ids)], order='id',
+            )
+            for product in products:
+                ext_id = product.product_tmpl_id.rehalife_external_id
+                current = best_by_ext.get(ext_id)
+                rank = self._POS_SERVICE_STATUS_RANK[self._pos_product_status(product)]
+                if not current or rank < self._POS_SERVICE_STATUS_RANK[self._pos_product_status(current)]:
+                    best_by_ext[ext_id] = product
+
+        messages = {
+            'not_found': 'No existe un producto en Odoo para el servicio %s.',
+            'not_in_pos': 'El servicio %s no está disponible en el Punto de Venta.',
+            'not_homologated': 'El servicio %s no está homologado para SIAT.',
+        }
+        result = {}
+        for reservation in reservations:
+            product = best_by_ext.get(reservation.service_type_external_id) \
+                or self.env['product.product']
+            status = self._pos_product_status(product)
+            service_name = (
+                reservation.service_type_name
+                or reservation.service_type_external_id
+                or '(sin servicio)'
+            )
+            ready = status == 'ready'
+            result[reservation.id] = {
+                'status': status,
+                'product_id': product.id if ready else False,
+                'product_name': product.name or '',
+                # Mismo precio de lista que usaba el cobro (sin cambios en montos).
+                'list_price': product.list_price if ready else 0.0,
+                'message': messages[status] % service_name if not ready else '',
+            }
+        return result
+    # ─── POS: qué y cuánto se cobra por reserva (Pagos anticipados, Fase 3) ──
+    @api.model
+    def get_pos_charge_info(self, reservation_ids):
+        """Datos de cobro de cada reserva para el diálogo "Reservas" del POS y
+        para la validación del servidor (pos.order.line).
+
+        Devuelve {reservation_id: {status, product_id, product_name,
+        list_price, message, price_unit, chargeable, reason, enforce_price,
+        modalidad, insurer_amount, coverage_pct, line_note}}.
+
+        Base (particular): precio = precio de lista del producto del servicio;
+        cobrable solo si el servicio está 'ready'. rehalife_seguros lo extiende
+        para las reservas de seguro (copago del paciente). Con
+        `enforce_price` = True la línea del POS debe tener exactamente
+        `price_unit` (tolerancia 0.01), lo valida el servidor al pagar.
+        """
+        status = self.get_pos_service_status(reservation_ids)
+        result = {}
+        for rid, info in status.items():
+            ready = info['status'] == 'ready'
+            result[rid] = dict(
+                info,
+                price_unit=info['list_price'] if ready else 0.0,
+                chargeable=ready,
+                reason=info['message'],
+                enforce_price=False,
+                modalidad='particular',
+                insurer_amount=0.0,
+                coverage_pct=0.0,
+                line_note='',
+            )
+        return result

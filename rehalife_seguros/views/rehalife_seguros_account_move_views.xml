@@ -10,6 +10,7 @@
                 <button name="action_view_notas_conformidad"
                         type="object"
                         class="oe_stat_button"
+                        groups="rehalife_seguros.group_rehalife_seguros_approver,rehalife_o18.group_rehalife_admin,base.group_system"
                         icon="fa-file-text-o"
                         invisible="nota_conformidad_count == 0">
                     <field name="nota_conformidad_count" widget="statinfo" string="Notas Conformidad"/>

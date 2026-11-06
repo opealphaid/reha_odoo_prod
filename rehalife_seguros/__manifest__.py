@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Rehalife Seguros',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.3',
     'summary': 'Gestion de atenciones cubiertas por aseguradoras (Notas de Conformidad, Pedidos de Venta Marco)',
     'description': """
         Modulo de gestion de aseguradoras para Rehalife:
@@ -16,6 +16,7 @@
         'security/rehalife_seguros_security.xml',
         'security/ir.model.access.csv',
         'data/ir_sequence_data.xml',
+        'data/ir_cron.xml',
         'views/rehalife_seguros_res_partner_views.xml',
         'report/rehalife_seguros_pedido_marco_report.xml',
         'views/rehalife_seguros_sale_order_views.xml',

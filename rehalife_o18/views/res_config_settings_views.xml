@@ -97,6 +97,36 @@
 
                             <div class="col-12 col-lg-4 o_setting_box">
                                 <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Sucursales</span>
+                                    <div class="text-muted">
+                                        Importa las sucursales desde el backend
+                                    </div>
+                                    <div class="mt8">
+                                        <button string="Sincronizar Sucursales"
+                                                name="action_sync_branches"
+                                                type="object"
+                                                class="btn btn-secondary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4 o_setting_box">
+                                <div class="o_setting_right_pane">
+                                    <span class="o_form_label">Sucursal de reservas antiguas</span>
+                                    <div class="text-muted">
+                                        Asigna la sucursal a reservas que solo tienen el nombre en texto
+                                    </div>
+                                    <div class="mt8">
+                                        <button string="Asignar Sucursales"
+                                                name="action_backfill_reservation_branches"
+                                                type="object"
+                                                class="btn btn-secondary"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 col-lg-4 o_setting_box">
+                                <div class="o_setting_right_pane">
                                     <span class="o_form_label">Pacientes</span>
                                     <div class="text-muted">
                                         Importa todos los pacientes desde el backend

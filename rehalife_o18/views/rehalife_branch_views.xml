@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── VISTA LISTA ─── -->
+    <record id="view_rehalife_branch_list" model="ir.ui.view">
+        <field name="name">rehalife.branch.list</field>
+        <field name="model">rehalife.branch</field>
+        <field name="arch" type="xml">
+            <list string="Sucursales">
+                <header>
+                    <button name="action_sync_from_backend"
+                            string="Sincronizar desde backend"
+                            type="object"
+                            class="btn-primary"
+                            display="always"/>
+                    <button name="action_backfill_reservations"
+                            string="Asignar sucursal a reservas antiguas"
+                            type="object"
+                            class="btn-secondary"
+                            display="always"
+                            confirm="¿Asignar la sucursal a las reservas antiguas que solo tienen el nombre de sucursal?"/>
+                </header>
+                <field name="name"/>
+                <field name="external_id" string="ID Externo"/>
+                <field name="reservation_count" string="Reservas"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ─── VISTA FORMULARIO ─── -->
+    <record id="view_rehalife_branch_form" model="ir.ui.view">
+        <field name="name">rehalife.branch.form</field>
+        <field name="model">rehalife.branch</field>
+        <field name="arch" type="xml">
+            <form string="Sucursal">
+                <sheet>
+                    <!-- Stat buttons -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_reservations"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-calendar">
+                            <field name="reservation_count" widget="statinfo"
+                                   string="Reservas"/>
+                        </button>
+                    </div>
+
+                    <widget name="web_ribbon" title="Archivada" bg_color="text-bg-danger"
+                            invisible="active"/>
+
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="Nombre de la sucursal"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="external_id"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+
+                    <!-- PDV SIAT vinculados (se asignan desde la Sucursal SIAT) -->
+                    <group string="Sucursales SIAT (puntos de venta)">
+                        <field name="siat_sucursal_ids" nolabel="1" colspan="2">
+                            <list>
+                                <field name="name"/>
+                                <field name="codigo_sucursal"/>
+                                <field name="codigo_punto_venta"/>
+                                <field name="active"/>
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ─── VISTA BUSQUEDA ─── -->
+    <record id="view_rehalife_branch_search" model="ir.ui.view">
+        <field name="name">rehalife.branch.search</field>
+        <field name="model">rehalife.branch</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Sucursales">
+                <field name="name"/>
+                <field name="external_id"/>
+                <separator/>
+                <filter name="inactive"
+                        string="Archivadas"
+                        domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- ─── ACCION ─── -->
+    <record id="action_rehalife_branch" model="ir.actions.act_window">
+        <field name="name">Sucursales</field>
+        <field name="res_model">rehalife.branch</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_rehalife_branch_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay sucursales registradas aun
+            </p>
+            <p>Usa el boton "Sincronizar desde backend" para traerlas del backend Rehalife.</p>
+        </field>
+    </record>
+
+</odoo>

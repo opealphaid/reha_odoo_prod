@@ -1,27 +1,18 @@
 # -*- coding: utf-8 -*-
 import logging
 from odoo import api, fields, models
+from odoo.exceptions import UserError
 
 _logger = logging.getLogger(__name__)
 
-# Estados de la reserva a partir de los cuales ya se puede documentar la
-# atención con una Nota de Conformidad. Decisión confirmada con el usuario
-# (2026-09-17, reemplaza la del 2026-09-12): ya NO se espera a que termine
-# la atención — se genera desde que el paciente LLEGA al consultorio
-# (status='IN_ROOM'). Se incluyen también 'IN_CONSULTATION' y 'COMPLETED'
-# por si una reserva puntual salta directo a alguno de esos estados sin
-# pasar antes por un sync en 'IN_ROOM' (ej. reservas importadas/backfill) —
-# no genera duplicados: _asegurar_pedido_marco_y_nota_conformidad() ya
-# revisa `if not reservation.nota_conformidad_ids` antes de crear.
-#
-# Con esto, este criterio vuelve a coincidir con el que ya usa el diálogo
-# "Reservas" del POS para decidir cuándo se puede COBRAR la parte del
-# paciente (rehalife_o18/static/src/js/reservation_button.js y
-# rehalife_o18/models/rehalife_pos.py, lista ['IN_ROOM', 'IN_CONSULTATION',
-# 'COMPLETED']) — pero siguen siendo dos listas literales independientes,
-# sin import compartido: si se vuelve a desalinear este criterio, hay que
-# tocar los dos lados a mano.
-ESTADOS_FACTURABLES = ('IN_ROOM', 'IN_CONSULTATION', 'COMPLETED')
+# Estados de la reserva a partir de los cuales se genera la Nota de
+# Conformidad. Pagos anticipados, Fase 4 (decisión confirmada, plan
+# punto 9): la NC nace SOLO al completar la atención. Reemplaza la decisión
+# del 2026-09-17 (('IN_ROOM', 'IN_CONSULTATION', 'COMPLETED')): esa existía
+# porque el copago del POS salía de la NC; desde la Fase 4 el copago sale
+# del Pedido de Venta Marco del mes (_get_cobertura_info), así que la NC ya
+# no hace falta para cobrar.
+ESTADOS_FACTURABLES = ('COMPLETED',)
 
 # Estados en los que la atención ya no va a ocurrir: si la reserva de seguro
 # llega acá con una NC viva, esa NC se regulariza (o se alerta si ya está
@@ -74,16 +65,17 @@ class RehalifeReservation(models.Model):
     # cuando se genera (_generar_desde_reservation), queda vinculada a la
     # línea del Pedido de Venta Marco (`pedido_marco_line_id`), y esa línea
     # trae el % que el administrador acordó con la aseguradora para ese
-    # servicio (`price_unit`, interpretado como % 0-100 — ver
-    # rehalife_seguros_sale_order_line.py). La NC ya calcula el monto real
+    # servicio (`porcentaje_cobertura` desde la Fase 6, 2026-11-06; antes
+    # era `price_unit` — ver rehalife_seguros_sale_order_line.py). La NC ya calcula el monto real
     # en Bs. (`monto_cubierto` = precio del servicio × %/100) — acá solo se
     # reusa ese valor, no se recalcula el % dos veces. "Si se acepta [la
     # NC], ese monto lo paga la aseguradora" — la aprobación confirma el
     # pago, no cambia el monto: el monto ya es conocido desde que existe la
-    # NC. Sin NC todavía (reserva aún no llegó a un estado facturable, o
-    # sin Pedido Marco asignado), no hay monto de cobertura conocido — el
-    # paciente queda cobrando el precio completo por defecto (nunca se
-    # inventa un descuento) hasta que exista la NC.
+    # NC.
+    # ⚠️ Pagos anticipados, Fase 4 (2026-11-09): sin NC, el copago YA NO es
+    # "precio completo": sale de la línea del PVM del MES de la reserva (ver
+    # _get_cobertura_info). Sin PVM aplicable la reserva no es cobrable en el
+    # POS (nunca se cobra precio completo a un paciente de seguro).
     #
     # A PROPÓSITO sin store=True: se calculan al vuelo cada vez que se leen
     # (form, list, o el searchRead del POS) para no depender de un compute
@@ -94,6 +86,27 @@ class RehalifeReservation(models.Model):
     )
     monto_a_pagar_paciente = fields.Float(
         string='Monto a Pagar por el Paciente', compute='_compute_cobertura_seguro',
+    )
+
+    # ── Pagos anticipados, Fase 4: congelamiento al pagar ──────────────────
+    # Se llenan UNA vez, en el servidor, cuando el POS marca la reserva como
+    # pagada (rehalife_seguros_pos_order.py) y nunca se sobrescriben. La NC
+    # usa estos valores (no el % actual del PVM): cambiar el % del PVM solo
+    # afecta reservas no pagadas.
+    precio_servicio_congelado = fields.Float(
+        string='Precio del Servicio (congelado)', readonly=True, copy=False, digits=(16, 2),
+    )
+    porcentaje_cobertura_congelado = fields.Float(
+        string='% Cobertura (congelado)', readonly=True, copy=False, digits=(16, 2),
+    )
+    monto_paciente_congelado = fields.Float(
+        string='Copago Paciente (congelado)', readonly=True, copy=False, digits=(16, 2),
+    )
+    monto_aseguradora_congelado = fields.Float(
+        string='Monto Aseguradora (congelado)', readonly=True, copy=False, digits=(16, 2),
+    )
+    fecha_congelamiento = fields.Datetime(
+        string='Fecha de Congelamiento', readonly=True, copy=False,
     )
 
     def _resolve_product_servicio(self):
@@ -108,35 +121,272 @@ class RehalifeReservation(models.Model):
             ('product_tmpl_id.rehalife_external_id', '=', self.service_type_external_id),
         ], limit=1)
 
-    @api.depends('modalidad', 'service_type_external_id', 'nota_conformidad_ids.monto_cubierto')
+    @api.depends('modalidad', 'aseguradora_id', 'reservation_date', 'service_type_external_id',
+                 'pedido_marco_id', 'fecha_congelamiento', 'nota_conformidad_ids.monto_cubierto')
     def _compute_cobertura_seguro(self):
+        # Sin _logger.warning por reserva (Fase 4): el diálogo del POS lee
+        # muchas reservas a la vez. Sin cobertura conocida, el copago queda
+        # en 0 y la reserva NO es cobrable (ver _get_cobertura_info): nunca
+        # se cobra el precio completo a un paciente de seguro.
         for rec in self:
             if rec.modalidad != 'seguro':
                 rec.monto_cobertura_seguro = 0.0
                 rec.monto_a_pagar_paciente = 0.0
                 continue
+            info = rec._get_cobertura_info()
+            rec.monto_cobertura_seguro = info['monto_aseguradora']
+            rec.monto_a_pagar_paciente = info['monto_paciente']
 
-            nc = rec.nota_conformidad_ids[:1]
+    def _producto_para_cobertura(self):
+        """Producto con el que el POS cobra la reserva (el 'ready' de
+        get_pos_service_status) o, si no está listo, el de siempre."""
+        self.ensure_one()
+        status = self.get_pos_service_status(self.ids).get(self.id) or {}
+        if status.get('product_id'):
+            return self.env['product.product'].browse(status['product_id'])
+        return self._resolve_product_servicio()
 
-            if not nc:
-                product = rec._resolve_product_servicio()
-                precio_real = product.lst_price if product else 0.0
-                _logger.warning(
-                    '[Seguros] Reserva %s: todavía no tiene Nota de '
-                    'Conformidad (falta llegar a un estado facturable, o no '
-                    'tiene Pedido de Venta Marco asignado) — el paciente '
-                    'queda cobrando el precio completo (%.2f) hasta que '
-                    'exista.', rec.external_id, precio_real,
-                )
-                rec.monto_cobertura_seguro = 0.0
-                rec.monto_a_pagar_paciente = precio_real
+    def _get_cobertura_info(self, crear_pvm=False, producto=None):
+        """Cobertura de una reserva de seguro. Devuelve {pvm, linea, precio,
+        porcentaje, monto_aseguradora, monto_paciente, cobrable, motivo,
+        origen, nota}. Prioridad:
+
+        (a) valores congelados (la reserva ya se pagó);
+        (b) Nota de Conformidad existente (no regularizada);
+        (c) línea del PVM del MES de reservation_date para el producto. Si no
+            existe el PVM: con crear_pvm=True se crea (clonando el más
+            reciente, ver sale.order._asegurar_pedido_marco); con False se
+            calcula con la línea del PVM que se clonaría y origen
+            'pvm_a_crear' (solo informativo, para listar sin crear nada);
+        (d) nada aplicable → cobrable=False con el motivo.
+
+        Montos con el mismo redondeo que la NC: aseguradora = round(precio ×
+        %/100), paciente = precio − aseguradora.
+        """
+        self.ensure_one()
+        SaleOrder = self.env['sale.order'].sudo()
+        SaleOrderLine = self.env['sale.order.line'].sudo()
+        info = {
+            'pvm': SaleOrder, 'linea': SaleOrderLine,
+            'precio': 0.0, 'porcentaje': 0.0, 'monto_aseguradora': 0.0,
+            'monto_paciente': 0.0, 'cobrable': False, 'motivo': '', 'origen': '', 'nota': '',
+        }
+        currency = self.env.company.currency_id
+
+        # (a) Congelado
+        if self.fecha_congelamiento:
+            info.update(
+                pvm=self.pedido_marco_id.sudo(), precio=self.precio_servicio_congelado,
+                porcentaje=self.porcentaje_cobertura_congelado,
+                monto_aseguradora=self.monto_aseguradora_congelado,
+                monto_paciente=self.monto_paciente_congelado,
+                cobrable=True, origen='congelado',
+            )
+            return info
+
+        # (b) Nota de Conformidad existente
+        nc = self.nota_conformidad_ids.sudo().filtered(lambda n: n.estado != 'regularizada')[:1]
+        if nc:
+            precio = nc.product_id.lst_price if nc.product_id else 0.0
+            info.update(
+                pvm=nc.pedido_marco_id, linea=nc.pedido_marco_line_id, precio=precio,
+                porcentaje=nc.porcentaje_cobertura, monto_aseguradora=nc.monto_cubierto,
+                monto_paciente=(nc.currency_id or currency).round(precio - nc.monto_cubierto),
+                cobrable=True, origen='nota_conformidad',
+            )
+            return info
+
+        # (c) PVM del mes
+        if not self.aseguradora_id:
+            info['motivo'] = 'La reserva de seguro no tiene aseguradora asignada.'
+            return info
+        if not self.reservation_date:
+            info['motivo'] = 'La reserva de seguro no tiene fecha.'
+            return info
+        producto = producto or self._producto_para_cobertura()
+        if not producto:
+            info['motivo'] = 'No existe un producto en Odoo para el servicio %s.' % (
+                self.service_type_name or self.service_type_external_id or '(sin servicio)')
+            return info
+
+        periodo = self.reservation_date.replace(day=1)
+        pvm = self.pedido_marco_id.sudo()
+        a_crear = False
+        if not (pvm and pvm.state == 'sale' and pvm.periodo == periodo
+                and pvm.partner_id == self.aseguradora_id):
+            res = SaleOrder._asegurar_pedido_marco(self.aseguradora_id, periodo, crear=crear_pvm)
+            pvm = res['pedido']
+            if not pvm:
+                if res['motivo'] or not res['fuente']:
+                    info['motivo'] = res['motivo'] or 'Sin Pedido de Venta Marco aplicable.'
+                    return info
+                # crear_pvm=False y hay de dónde clonar: se calcula con la
+                # fuente; el PVM se crea recién al cobrar.
+                pvm = res['fuente']
+                a_crear = True
+                info['nota'] = 'El Pedido Marco de %s se creará al cobrar copiando %s.' % (
+                    SaleOrder._nombre_mes(periodo), pvm.nombre_periodo or pvm.name)
+
+        try:
+            linea = self.env['rehalife.nota.conformidad'].sudo()._resolve_pedido_marco_line(
+                self, order=pvm, product=producto)
+        except UserError:
+            info['motivo'] = 'El Pedido Marco %s no tiene una línea para el servicio %s.' % (
+                pvm.nombre_periodo or pvm.name, producto.display_name)
+            return info
+
+        cur = pvm.currency_id or currency
+        precio = producto.lst_price
+        porcentaje = linea.porcentaje_cobertura
+        monto_aseguradora = cur.round(precio * (porcentaje or 0.0) / 100.0)
+        info.update(
+            pvm=SaleOrder if a_crear else pvm,
+            linea=SaleOrderLine if a_crear else linea,
+            precio=precio, porcentaje=porcentaje,
+            monto_aseguradora=monto_aseguradora,
+            monto_paciente=cur.round(precio - monto_aseguradora),
+            cobrable=True, origen='pvm_a_crear' if a_crear else 'pvm',
+        )
+        return info
+
+    @api.model
+    def get_cobertura_info(self, reservation_ids):
+        """RPC (POS y Next, solo lectura: NO crea PVM). Por reserva:
+        {modalidad, aseguradora_id, aseguradora_name, cobrable, motivo,
+        origen, nota, precio, porcentaje, monto_aseguradora, monto_paciente,
+        pvm_id, pvm_name, linea_id, congelado, fecha_congelamiento,
+        nota_conformidad}."""
+        result = {}
+        for rec in self.browse(reservation_ids or []).exists():
+            nc = rec.nota_conformidad_ids.sudo()[:1]
+            base = {
+                'modalidad': rec.modalidad or 'particular',
+                'aseguradora_id': rec.aseguradora_id.id or False,
+                'aseguradora_name': rec.aseguradora_id.name or '',
+                'congelado': bool(rec.fecha_congelamiento),
+                'fecha_congelamiento': fields.Datetime.to_string(rec.fecha_congelamiento)
+                if rec.fecha_congelamiento else False,
+                'nota_conformidad': {
+                    'id': nc.id, 'name': nc.name, 'estado': nc.estado,
+                    'estado_label': dict(nc._fields['estado'].selection).get(nc.estado, nc.estado),
+                } if nc else False,
+            }
+            if rec.modalidad != 'seguro':
+                base.update(cobrable=True, motivo='', origen='particular', nota='', precio=0.0,
+                            porcentaje=0.0, monto_aseguradora=0.0, monto_paciente=0.0,
+                            pvm_id=False, pvm_name='', linea_id=False)
+                result[rec.id] = base
                 continue
+            info = rec._get_cobertura_info()
+            base.update(
+                cobrable=info['cobrable'], motivo=info['motivo'], origen=info['origen'],
+                nota=info['nota'], precio=info['precio'], porcentaje=info['porcentaje'],
+                monto_aseguradora=info['monto_aseguradora'], monto_paciente=info['monto_paciente'],
+                pvm_id=info['pvm'].id or False,
+                pvm_name=info['pvm'].nombre_periodo or info['pvm'].name or '',
+                linea_id=info['linea'].id or False,
+            )
+            result[rec.id] = base
+        return result
 
-            # Reusa el monto ya calculado por la propia NC — mismo producto
-            # (pedido_marco_line_id.product_id), no se recalcula aparte.
-            precio_real = nc.product_id.lst_price if nc.product_id else 0.0
-            rec.monto_cobertura_seguro = nc.monto_cubierto
-            rec.monto_a_pagar_paciente = precio_real - nc.monto_cubierto
+    @api.model
+    def _producto_de_servicio(self, service_type_external_id):
+        """Producto de un servicio del backend, con el mismo criterio que
+        get_pos_service_status (el más 'listo' para el POS)."""
+        if not service_type_external_id:
+            return self.env['product.product']
+        products = self.env['product.product'].sudo().search(
+            [('product_tmpl_id.rehalife_external_id', '=', service_type_external_id)], order='id',
+        )
+        if not products:
+            return products
+        return min(products, key=lambda p: self._POS_SERVICE_STATUS_RANK.get(
+            self._pos_product_status(p), 3))
+
+    @api.model
+    def get_cobertura_nextjs(self, external_id):
+        """RPC para Next (Fase 5, solo lectura): cobertura de una reserva por
+        su id del backend. {found: False} si no está en el espejo."""
+        reservation = self.sudo().search([('external_id', '=', external_id)], limit=1)
+        if not reservation:
+            return {'found': False}
+        info = reservation.get_cobertura_info(reservation.ids)[reservation.id]
+        info.update({
+            'found': True,
+            'invoice_status': reservation.invoice_status,
+            'pos_paid_amount': reservation.pos_paid_amount,
+            'precio_servicio_congelado': reservation.precio_servicio_congelado,
+            'porcentaje_cobertura_congelado': reservation.porcentaje_cobertura_congelado,
+            'monto_paciente_congelado': reservation.monto_paciente_congelado,
+            'monto_aseguradora_congelado': reservation.monto_aseguradora_congelado,
+        })
+        return info
+
+    def _congelar_cobertura(self):
+        """Guarda precio, %, copago y monto de la aseguradora al pagar.
+        Nunca sobrescribe (solo reservas de seguro sin fecha_congelamiento).
+        Fija también pedido_marco_id si todavía no tiene uno."""
+        for rec in self.filtered(lambda r: r.modalidad == 'seguro' and not r.fecha_congelamiento):
+            info = rec._get_cobertura_info(crear_pvm=True)
+            if not info['cobrable']:
+                _logger.warning(
+                    '[Seguros] Reserva %s pagada sin cobertura aplicable, no se congela: %s',
+                    rec.external_id, info['motivo'],
+                )
+                continue
+            vals = {
+                'precio_servicio_congelado': info['precio'],
+                'porcentaje_cobertura_congelado': info['porcentaje'],
+                'monto_paciente_congelado': info['monto_paciente'],
+                'monto_aseguradora_congelado': info['monto_aseguradora'],
+                'fecha_congelamiento': fields.Datetime.now(),
+            }
+            if info['pvm'] and not rec.pedido_marco_id:
+                vals['pedido_marco_id'] = info['pvm'].id
+            rec.sudo().write(vals)
+            _logger.info(
+                '[Seguros] Reserva %s: cobertura congelada (precio %.2f, %.2f%%, paciente %.2f, '
+                'aseguradora %.2f, origen %s).', rec.external_id, info['precio'],
+                info['porcentaje'], info['monto_paciente'], info['monto_aseguradora'], info['origen'],
+            )
+
+    @api.model
+    def get_pos_charge_info(self, reservation_ids):
+        """Extiende el dato de cobro del POS (rehalife_o18) para las reservas
+        de seguro: el paciente paga solo su copago."""
+        # Fase 4: el copago sale del PVM del mes (_get_cobertura_info). Sin
+        # cobertura aplicable la reserva NO es cobrable, y el servidor exige
+        # que la línea tenga exactamente el copago (enforce_price). Solo en
+        # el control al pagar (contexto rehalife_pos_paying) se crea el PVM
+        # que falte.
+        crear_pvm = bool(self.env.context.get('rehalife_pos_paying'))
+        result = super().get_pos_charge_info(reservation_ids)
+        for reservation in self.browse(list(result)).exists():
+            info = result[reservation.id]
+            info['modalidad'] = reservation.modalidad or 'particular'
+            if reservation.modalidad != 'seguro' or not info['chargeable']:
+                continue
+            producto = self.env['product.product'].browse(info['product_id'])
+            try:
+                with self.env.cr.savepoint():
+                    cob = reservation._get_cobertura_info(crear_pvm=crear_pvm, producto=producto)
+            except Exception as e:
+                _logger.exception(
+                    '[Seguros] Reserva %s: no se pudo calcular la cobertura.', reservation.external_id)
+                cob = {'cobrable': False, 'motivo': 'No se pudo calcular la cobertura: %s' % e}
+            info['enforce_price'] = True
+            if not cob['cobrable']:
+                info.update(chargeable=False, reason=cob['motivo'], price_unit=0.0)
+                continue
+            nota = (' (%s)' % cob['nota']) if cob.get('nota') else ''
+            info.update(
+                price_unit=cob['monto_paciente'],
+                insurer_amount=cob['monto_aseguradora'],
+                coverage_pct=cob['porcentaje'],
+                line_note='Seguro %.2f%%: cubre %.2f Bs.%s' % (
+                    cob['porcentaje'], cob['monto_aseguradora'], nota),
+            )
+        return result
 
     @api.onchange('aseguradora_id')
     def _onchange_aseguradora_id_reset_pedido_marco(self):
@@ -166,6 +416,7 @@ class RehalifeReservation(models.Model):
         # estado → 'updated'), así que sin esto se volvería a procesar.
         previo = self.search([('external_id', '=', vals.get('external_id'))], limit=1)
         status_previo = previo.status if previo else False
+        fecha_previa = previo.reservation_date if previo else False
 
         result = super().sync_from_nextjs(vals)
 
@@ -181,6 +432,21 @@ class RehalifeReservation(models.Model):
                         '[Seguros] Reserva %s: error al regularizar sus Notas de '
                         'Conformidad tras pasar a %s.', record.external_id, record.status,
                     )
+
+        # Reprogramación a otro mes (Fase 4): si todavía no tiene NC, se
+        # suelta el PVM para que al completarse tome el del mes nuevo. Si ya
+        # se pagó, la NC usará igual el % congelado.
+        record = self.browse(result.get('id')) if result.get('id') else self.browse()
+        if (record and fecha_previa and record.reservation_date and record.pedido_marco_id
+                and (fecha_previa.year, fecha_previa.month)
+                != (record.reservation_date.year, record.reservation_date.month)
+                and not record.nota_conformidad_ids.filtered(lambda n: n.estado != 'regularizada')):
+            _logger.info(
+                '[Seguros] Reserva %s reprogramada de %s a %s: se libera el PVM %s.',
+                record.external_id, fecha_previa, record.reservation_date,
+                record.pedido_marco_id.name,
+            )
+            record.pedido_marco_id = False
 
         modality_type = vals.get('modality_type')
         if not modality_type:

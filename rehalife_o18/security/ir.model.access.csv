@@ -8,3 +8,6 @@ access_rehalife_import_reservations_wizard,rehalife.import.reservations.wizard,m
 access_alpha_siat_tipo_doc_rehalife,alpha.siat.tipo.documento.identidad rehalife,alpha_siat.model_alpha_siat_tipo_documento_identidad,base.group_user,1,0,0,0
 access_rehalife_services_sync_wizard,rehalife.services.sync.wizard,model_rehalife_services_sync_wizard,base.group_user,1,1,1,1
 access_rehalife_services_template_wizard,rehalife.services.template.wizard,model_rehalife_services_template_wizard,base.group_user,1,1,1,1
+access_rehalife_branch_user,rehalife.branch user,model_rehalife_branch,base.group_user,1,0,0,0
+access_rehalife_branch_admin,rehalife.branch admin,model_rehalife_branch,base.group_system,1,1,1,1
+access_rehalife_branch_rehalife_admin,rehalife.branch rehalife admin,model_rehalife_branch,group_rehalife_admin,1,1,1,1

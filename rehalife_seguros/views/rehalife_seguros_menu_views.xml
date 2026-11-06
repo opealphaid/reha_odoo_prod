@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- Fase 4: Seguros solo para quien lo administra/aprueba. La
+         recepcionista solo cobra el copago en el POS (no usa este menú). Los
+         submenús heredan la restricción; las acciones llevan los mismos grupos
+         para que tampoco se abran por URL directa. -->
     <menuitem id="menu_rehalife_seguros_root"
               name="Seguros"
-              sequence="60"/>
+              sequence="60"
+              groups="rehalife_seguros.group_rehalife_seguros_approver,rehalife_o18.group_rehalife_admin,base.group_system"/>
 
     <menuitem id="menu_rehalife_seguros_pedidos_marco"
               name="Pedidos de Venta Marco"

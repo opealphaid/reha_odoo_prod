@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Pagos anticipados, Fase 4: asegura el Pedido de Venta Marco del mes
+         actual y del siguiente por aseguradora (clonando el más reciente).
+         noupdate: el intervalo/activo que ajuste un administrador no se pisa
+         al actualizar el módulo. -->
+    <data noupdate="1">
+        <record id="ir_cron_asegurar_pedidos_marco" model="ir.cron">
+            <field name="name">Rehalife Seguros: asegurar Pedidos de Venta Marco (mes actual y siguiente)</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_asegurar_pedidos_marco()</field>
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+</odoo>

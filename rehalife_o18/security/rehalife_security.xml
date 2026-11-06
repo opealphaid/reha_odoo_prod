@@ -15,6 +15,15 @@
         <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
     </record>
 
+    <!-- Grupo Recepcionista: solo ve, edita y cobra las reservas de su
+         sucursal (regla en rehalife_rules.xml). Independiente del
+         Administrador: group_rehalife_admin NO lo implica. -->
+    <record id="group_rehalife_receptionist" model="res.groups">
+        <field name="name">Recepcionista (restringido por sucursal)</field>
+        <field name="category_id" ref="module_category_rehalife"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+    </record>
+
     <!-- Grupo Usuario Rehalife -->
     <record id="group_rehalife_user" model="res.groups">
         <field name="name">Usuario</field>

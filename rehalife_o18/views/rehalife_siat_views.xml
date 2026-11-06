@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ─── Sucursal SIAT: vinculo con la Sucursal Rehalife ─── -->
+    <record id="view_siat_sucursal_list_rehalife" model="ir.ui.view">
+        <field name="name">alpha.siat.sucursal.list.rehalife</field>
+        <field name="model">alpha.siat.sucursal</field>
+        <field name="inherit_id" ref="alpha_siat.view_siat_sucursal_list"/>
+        <field name="arch" type="xml">
+            <field name="codigo_punto_venta" position="after">
+                <field name="rehalife_branch_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_siat_sucursal_form_rehalife" model="ir.ui.view">
+        <field name="name">alpha.siat.sucursal.form.rehalife</field>
+        <field name="model">alpha.siat.sucursal</field>
+        <field name="inherit_id" ref="alpha_siat.view_siat_sucursal_form"/>
+        <field name="arch" type="xml">
+            <field name="codigo_punto_venta" position="after">
+                <field name="rehalife_branch_id"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- ─── Usuario: Sucursal Rehalife (derivada de su Sucursal SIAT) ─── -->
+    <record id="view_users_form_siat_rehalife" model="ir.ui.view">
+        <field name="name">res.users.form.siat.rehalife</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="alpha_siat.view_users_form_siat"/>
+        <field name="arch" type="xml">
+            <field name="siat_sucursal_id" position="after">
+                <field name="rehalife_branch_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
