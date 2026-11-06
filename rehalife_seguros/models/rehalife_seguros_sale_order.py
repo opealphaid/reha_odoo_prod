@@ -237,7 +237,7 @@ class SaleOrder(models.Model):
         - Hay uno en borrador/enviado → no se crea ni se confirma; `motivo`
           explica que hay que confirmarlo en Odoo.
         - No hay → con crear=True se clona `fuente` (mismas líneas: producto,
-          % en price_unit, cantidad estimada; qty_conformidad/qty_confirmada
+          % en porcentaje_cobertura, cantidad estimada; qty_conformidad/qty_confirmada
           en 0) y se confirma. Con crear=False solo se informa la fuente.
         - La aseguradora nunca tuvo PVM → pedido vacío y `motivo`.
 
@@ -288,10 +288,11 @@ class SaleOrder(models.Model):
             'name': line.name,
             'product_uom_qty': line.product_uom_qty,
             'product_uom': line.product_uom.id,
-            'price_unit': line.price_unit,
-            # Mismo estado "precio manual" que la línea de origen: sin esto,
-            # Odoo podría recalcular el % con la lista de precios.
-            'technical_price_unit': line.technical_price_unit,
+            # Fase 6: se copia el %; precio_servicio_pvm toma el precio
+            # VIGENTE del servicio y price_unit (monto de la aseguradora) se
+            # calcula solo. Ya no hace falta technical_price_unit: las líneas
+            # de PVM no pasan por la lista de precios.
+            'porcentaje_cobertura': line.porcentaje_cobertura,
             'tax_id': [(6, 0, line.tax_id.ids)],
         }) for line in fuente.order_line if not line.display_type]
         nuevo = SaleOrder.create({
@@ -375,13 +376,16 @@ class SaleOrder(models.Model):
             lineas = []
             for line in self.order_line.filtered(lambda l: not l.display_type):
                 precio = line.product_id.lst_price
-                monto_aseg = currency.round(precio * (line.price_unit or 0.0) / 100.0)
+                monto_aseg = currency.round(precio * (line.porcentaje_cobertura or 0.0) / 100.0)
                 lineas.append({
                     'id': line.id,
                     'product_id': line.product_id.id,
                     'product_name': line.product_id.display_name or line.name or '',
                     'service_external_id': line.product_id.product_tmpl_id.rehalife_external_id or False,
-                    'porcentaje': line.price_unit,
+                    'porcentaje': line.porcentaje_cobertura,
+                    # Lo que dice el PVM (fijado al poner el % o el producto).
+                    'precio_servicio_pvm': line.precio_servicio_pvm,
+                    'monto_pvm': line.price_unit,
                     'cantidad_estimada': line.product_uom_qty,
                     'qty_conformidad': line.qty_conformidad,
                     'qty_confirmada': line.qty_confirmada,
@@ -476,8 +480,8 @@ class SaleOrder(models.Model):
                 continue
             cur = pvm.currency_id or self.env.company.currency_id
             precio = producto.lst_price
-            monto_aseg = cur.round(precio * (linea.price_unit or 0.0) / 100.0)
-            entry.update(porcentaje=linea.price_unit, precio=precio,
+            monto_aseg = cur.round(precio * (linea.porcentaje_cobertura or 0.0) / 100.0)
+            entry.update(porcentaje=linea.porcentaje_cobertura, precio=precio,
                          monto_aseguradora=monto_aseg, monto_paciente=cur.round(precio - monto_aseg))
         return result
 

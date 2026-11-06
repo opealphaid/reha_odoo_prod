@@ -14,6 +14,10 @@
 //   precio de lista; seguro = copago del paciente. Nada se calcula aquí.
 // - La verificación final antes de cobrar está en
 //   reservation_payment_check.js y en el servidor (pos.order.line).
+// - Fase 6 (punto 2): la lista se filtra y pagina en el SERVIDOR
+//   (rehalife.reservation.get_pos_reservations): por defecto solo las
+//   cobrables; "Mostrar pagadas" agrega las pagadas no completadas; 20 por
+//   servicio y "Ver más". Los contadores vienen calculados sobre el total.
 
 import { Component, useState, onMounted } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
@@ -23,12 +27,9 @@ import { ProductScreen } from "@point_of_sale/app/screens/product_screen/product
 import { usePos } from "@point_of_sale/app/store/pos_hook";
 import { lineReservationIds } from "@rehalife_o18/js/reservation_payment_check";
 
-const RESERVATION_FIELDS = [
-    "id", "partner_id", "reservation_date", "reservation_time", "end_time",
-    "status", "sub_specialty", "doctor_name", "branch_name", "environment_name",
-    "service_type_external_id", "service_type_name",
-    "invoice_status", "pos_paid_amount", "paid_amount", "pos_order_id",
-];
+// Reservas por grupo (servicio) en cada página. El servidor usa el mismo
+// valor por defecto (_POS_DIALOG_PAGE).
+const PAGE_SIZE = 20;
 
 const STATUS_LABELS = {
     PENDING: "Pendiente",
@@ -80,12 +81,19 @@ export class ReservationDialog extends Component {
             searchQuery: "",
             searchResults: [],
             searching: false,
-            reservations: [],
-            // {reservation_id: info} de get_pos_charge_info. null = no se pudo
-            // obtener: nada es seleccionable.
-            charge: null,
+            // Grupos por servicio que devuelve get_pos_reservations:
+            // {key, name, total, paid, pending, visible, loaded, has_more,
+            //  reservations}. Los contadores son sobre el total del paciente.
+            groups: [],
+            includePaid: false,
+            // {reservation_id: info} de get_pos_charge_info. Una reserva
+            // pendiente sin entrada aquí no es seleccionable.
+            charge: {},
+            chargeError: false,
+            loadingMore: {},
             selected: {},
             payN: {},
+            payNWarning: {},
             loading: false,
             adding: false,
             error: "",
@@ -159,54 +167,117 @@ export class ReservationDialog extends Component {
             return;
         }
         this.state.partner = null;
-        this.state.reservations = [];
-        this.state.charge = null;
+        this.state.groups = [];
+        this.state.charge = {};
+        this.state.chargeError = false;
         this.state.selected = {};
         this.state.payN = {};
+        this.state.payNWarning = {};
         this.state.error = "";
     }
 
-    // ── Reservas del paciente ────────────────────────────────────────────────
+    // ── Reservas del paciente (filtradas y paginadas en el servidor) ────────
+    _fetchReservations(groupKey = null, offset = 0, limit = PAGE_SIZE) {
+        return this.orm.call("rehalife.reservation", "get_pos_reservations", [
+            this.state.partner.id,
+            this.state.includePaid,
+            groupKey,
+            offset,
+            limit,
+        ]);
+    }
+
+    _mergeCharge(charge) {
+        if (charge === null || charge === undefined) {
+            this.state.chargeError = true;
+            return;
+        }
+        Object.assign(this.state.charge, charge);
+    }
+
     async _loadReservations() {
         if (!this.state.partner || this.noBranchAssigned) {
             return;
         }
         this.state.loading = true;
         this.state.error = "";
-        this.state.selected = {};
         this.state.payN = {};
+        this.state.payNWarning = {};
+        this.state.loadingMore = {};
+        const previousSelection = this.state.selected;
         try {
-            // Todas las activas del paciente (incluye PENDING), sin límite.
-            // La regla de registro de sucursal sigue aplicando en el servidor.
-            const reservations = await this.orm.searchRead(
-                "rehalife.reservation",
-                [
-                    ["partner_id", "=", this.state.partner.id],
-                    ["status", "not in", ["CANCELLED", "NO_SHOW"]],
-                ],
-                RESERVATION_FIELDS,
-                { order: "reservation_date asc, reservation_time asc, id asc" }
-            );
-            this.state.reservations = reservations.sort((a, b) =>
-                sortKey(a).localeCompare(sortKey(b))
-            );
-            const pendingIds = reservations
-                .filter((res) => res.invoice_status === "pending")
-                .map((res) => res.id);
-            this.state.charge = pendingIds.length
-                ? await this.orm.call("rehalife.reservation", "get_pos_charge_info", [pendingIds])
-                : {};
+            const result = await this._fetchReservations();
+            this.state.charge = {};
+            this.state.chargeError = false;
+            this._mergeCharge(result.charge);
+            this.state.groups = result.groups || [];
+            // Al cambiar "Mostrar pagadas" se conserva lo elegido que siga cargado.
+            const selected = {};
+            for (const res of this.allReservations) {
+                if (previousSelection[res.id] && this.rowState(res).selectable) {
+                    selected[res.id] = true;
+                }
+            }
+            this.state.selected = selected;
         } catch (e) {
             console.warn("[Reservas] Error cargando las reservas del paciente:", e);
             this.state.error = `No se pudieron cargar las reservas (${e?.message || e}).`;
-            this.state.charge = null;
+            this.state.groups = [];
+            this.state.selected = {};
         } finally {
             this.state.loading = false;
         }
     }
 
+    async toggleIncludePaid() {
+        this.state.includePaid = !this.state.includePaid;
+        await this._loadReservations();
+    }
+
+    /** "Ver más": pide al servidor las siguientes del grupo. */
+    async loadMore(group, limit = PAGE_SIZE) {
+        const current = this.state.groups.find((g) => g.key === group.key);
+        if (!current || !current.has_more || this.state.loadingMore[group.key]) {
+            return;
+        }
+        this.state.loadingMore[group.key] = true;
+        try {
+            const result = await this._fetchReservations(current.key, current.loaded, limit);
+            const fresh = (result.groups || []).find((g) => g.key === current.key);
+            this._mergeCharge(result.charge);
+            if (!fresh) {
+                // Ya no quedan visibles en el servidor (p. ej. otra caja las cobró).
+                current.has_more = false;
+                return;
+            }
+            const known = new Set(current.reservations.map((res) => res.id));
+            current.reservations.push(...fresh.reservations.filter((res) => !known.has(res.id)));
+            Object.assign(current, {
+                total: fresh.total,
+                paid: fresh.paid,
+                pending: fresh.pending,
+                visible: fresh.visible,
+                loaded: fresh.loaded,
+                has_more: fresh.has_more,
+            });
+        } catch (e) {
+            console.warn("[Reservas] Error cargando más reservas:", e);
+            this.state.error = `No se pudieron cargar más reservas (${e?.message || e}).`;
+        } finally {
+            this.state.loadingMore[group.key] = false;
+        }
+    }
+
+    isLoadingMore(group) {
+        return Boolean(this.state.loadingMore[group.key]);
+    }
+
+    get allReservations() {
+        return this.state.groups.flatMap((group) => group.reservations);
+    }
+
     chargeInfo(res) {
-        return this.state.charge ? this.state.charge[res.id] || null : null;
+        return this.state.charge[res.id] || null;
     }
 
     /** {selectable, label, cls, detail} de una reserva. */
@@ -263,34 +334,12 @@ export class ReservationDialog extends Component {
         return money(value);
     }
 
+    /** Grupos del servidor + las seleccionables cargadas de cada uno. */
     get groups() {
-        const groups = new Map();
-        for (const res of this.state.reservations) {
-            const key = res.service_type_external_id || res.service_type_name || "sin-servicio";
-            if (!groups.has(key)) {
-                groups.set(key, {
-                    key,
-                    name: res.service_type_name || "(sin servicio)",
-                    reservations: [],
-                    total: 0,
-                    paid: 0,
-                    pending: 0,
-                    selectable: [],
-                });
-            }
-            const group = groups.get(key);
-            group.reservations.push(res);
-            group.total += 1;
-            if (res.invoice_status === "paid") {
-                group.paid += 1;
-            } else if (res.invoice_status === "pending") {
-                group.pending += 1;
-            }
-            if (this.rowState(res).selectable) {
-                group.selectable.push(res);
-            }
-        }
-        return [...groups.values()];
+        return this.state.groups.map((group) => ({
+            ...group,
+            selectable: group.reservations.filter((res) => this.rowState(res).selectable),
+        }));
     }
 
     isSelected(res) {
@@ -304,12 +353,36 @@ export class ReservationDialog extends Component {
         this.state.selected[res.id] = !this.state.selected[res.id];
     }
 
-    /** "Pagar N": selecciona las N más próximas por fecha del grupo. */
-    selectFirstN(group) {
+    selectableOf(groupKey) {
+        const group = this.state.groups.find((g) => g.key === groupKey);
+        return group ? group.reservations.filter((res) => this.rowState(res).selectable) : [];
+    }
+
+    /**
+     * "Pagar N": selecciona las N más próximas por fecha del grupo entre las
+     * cargadas; si no alcanzan y el servidor tiene más, las pide primero.
+     */
+    async selectFirstN(group) {
         const n = Math.max(0, Math.floor(Number(this.state.payN[group.key]) || 0));
-        group.selectable.forEach((res, index) => {
+        let selectable = this.selectableOf(group.key);
+        while (selectable.length < n) {
+            const current = this.state.groups.find((g) => g.key === group.key);
+            if (!current || !current.has_more) {
+                break;
+            }
+            const before = current.reservations.length;
+            await this.loadMore(current, Math.max(PAGE_SIZE, n - selectable.length));
+            if (current.reservations.length === before) {
+                break;
+            }
+            selectable = this.selectableOf(group.key);
+        }
+        selectable.forEach((res, index) => {
             this.state.selected[res.id] = index < n;
         });
+        this.state.payNWarning[group.key] = selectable.length < n
+            ? `Solo hay ${selectable.length} cobrable(s).`
+            : "";
     }
 
     selectedCount(group) {
@@ -317,7 +390,7 @@ export class ReservationDialog extends Component {
     }
 
     get selectedReservations() {
-        return this.state.reservations.filter(
+        return this.allReservations.filter(
             (res) => this.isSelected(res) && this.rowState(res).selectable
         );
     }

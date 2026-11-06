@@ -29,19 +29,43 @@
             </xpath>
 
             <field name="order_line" position="before">
+                <!-- Fase 6 (2026-11-06): el % vive en "% Cobertura
+                     Aseguradora"; price_unit es el monto que cubre la
+                     aseguradora por sesión (calculado). -->
                 <div class="alert alert-info" role="alert" invisible="not es_pedido_marco">
-                    <strong>Pedido de Venta Marco:</strong> el "Unit Price"/
-                    "Precio Unitario" de cada línea representa el
-                    <strong>% que la aseguradora cubre</strong> de ese
-                    servicio (0 a 100), no un monto en Bs. — ej. 50 = cubre
-                    el 50%. El monto real (en Bs.) se calcula solo, por
-                    Nota de Conformidad, como precio del servicio × ese %.
+                    <strong>Pedido de Venta Marco:</strong> en cada línea se carga el
+                    <strong>% Cobertura Aseguradora</strong> (0 a 100). El "Precio
+                    Unitario" se calcula solo: es el <strong>monto en Bs. que cubre
+                    la aseguradora por sesión</strong> (Precio servicio × % / 100),
+                    así el total del pedido es lo esperado a facturar. El "Precio
+                    servicio" se toma al poner el % o el producto: un cambio de
+                    precio posterior del servicio no modifica este pedido. Cada
+                    cambio de % queda registrado en el historial.
                 </div>
             </field>
 
+            <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="before">
+                <field name="porcentaje_cobertura" string="% Cobertura"
+                       column_invisible="not parent.es_pedido_marco"
+                       readonly="parent.state == 'cancel'"/>
+                <field name="precio_servicio_pvm"
+                       column_invisible="not parent.es_pedido_marco" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="attributes">
+                <attribute name="readonly">qty_invoiced &gt; 0 or parent.es_pedido_marco</attribute>
+            </xpath>
             <xpath expr="//field[@name='order_line']/list//field[@name='price_unit']" position="after">
                 <field name="qty_conformidad" optional="show" readonly="1"/>
                 <field name="qty_confirmada" optional="show" readonly="1"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/form//field[@name='price_unit']" position="before">
+                <field name="porcentaje_cobertura" invisible="not parent.es_pedido_marco"
+                       readonly="parent.state == 'cancel'"/>
+                <field name="precio_servicio_pvm" invisible="not parent.es_pedido_marco"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='price_unit']" position="attributes">
+                <attribute name="readonly">parent.es_pedido_marco</attribute>
             </xpath>
 
         </field>

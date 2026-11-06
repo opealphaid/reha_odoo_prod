@@ -65,8 +65,8 @@ class RehalifeReservation(models.Model):
     # cuando se genera (_generar_desde_reservation), queda vinculada a la
     # línea del Pedido de Venta Marco (`pedido_marco_line_id`), y esa línea
     # trae el % que el administrador acordó con la aseguradora para ese
-    # servicio (`price_unit`, interpretado como % 0-100 — ver
-    # rehalife_seguros_sale_order_line.py). La NC ya calcula el monto real
+    # servicio (`porcentaje_cobertura` desde la Fase 6, 2026-11-06; antes
+    # era `price_unit` — ver rehalife_seguros_sale_order_line.py). La NC ya calcula el monto real
     # en Bs. (`monto_cubierto` = precio del servicio × %/100) — acá solo se
     # reusa ese valor, no se recalcula el % dos veces. "Si se acepta [la
     # NC], ese monto lo paga la aseguradora" — la aprobación confirma el
@@ -237,7 +237,7 @@ class RehalifeReservation(models.Model):
 
         cur = pvm.currency_id or currency
         precio = producto.lst_price
-        porcentaje = linea.price_unit
+        porcentaje = linea.porcentaje_cobertura
         monto_aseguradora = cur.round(precio * (porcentaje or 0.0) / 100.0)
         info.update(
             pvm=SaleOrder if a_crear else pvm,

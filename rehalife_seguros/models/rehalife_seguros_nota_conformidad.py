@@ -59,6 +59,10 @@ class RehalifeNotaConformidad(models.Model):
     # rehalife_seguros_sale_order_line.py para la validación 0-100), pero
     # de este lado se expone con el nombre correcto.
     #
+    # Fase 6 (2026-11-06): el % de la línea del PVM vive ahora en
+    # sale.order.line.porcentaje_cobertura (price_unit pasó a ser el MONTO
+    # que cubre la aseguradora). Todo lo de abajo lee ese campo.
+    #
     # Pagos anticipados, Fase 4 (2026-11-09): YA NO es related a
     # pedido_marco_line_id.price_unit. Se fija AL CREAR la NC: el % congelado
     # de la reserva si se pagó por adelantado (porcentaje_desde_reserva) o,
@@ -190,7 +194,7 @@ class RehalifeNotaConformidad(models.Model):
     def _onchange_pedido_marco_line_id_porcentaje(self):
         for rec in self:
             if rec.pedido_marco_line_id and not rec.porcentaje_desde_reserva:
-                rec.porcentaje_cobertura = rec.pedido_marco_line_id.price_unit
+                rec.porcentaje_cobertura = rec.pedido_marco_line_id.porcentaje_cobertura
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -198,7 +202,7 @@ class RehalifeNotaConformidad(models.Model):
             # % fijado al crear (Fase 4): si no viene, el de la línea del PVM.
             if 'porcentaje_cobertura' not in vals and vals.get('pedido_marco_line_id'):
                 vals['porcentaje_cobertura'] = self.env['sale.order.line'].browse(
-                    vals['pedido_marco_line_id']).price_unit
+                    vals['pedido_marco_line_id']).porcentaje_cobertura
             if not vals.get('name') or vals['name'] == '/':
                 vals['name'] = self.env['ir.sequence'].next_by_code(
                     'rehalife.nota.conformidad'
@@ -286,7 +290,7 @@ class RehalifeNotaConformidad(models.Model):
             porcentaje = reservation.porcentaje_cobertura_congelado
             desde_reserva = True
         else:
-            porcentaje = line.price_unit
+            porcentaje = line.porcentaje_cobertura
             desde_reserva = False
 
         vals = {
@@ -512,7 +516,7 @@ class RehalifeNotaConformidad(models.Model):
                 if (rec.pedido_marco_line_id and not rec.porcentaje_desde_reserva
                         and not rec.factura_id and rec.estado not in ('facturada', 'pagada')):
                     super(RehalifeNotaConformidad, rec).write({
-                        'porcentaje_cobertura': rec.pedido_marco_line_id.price_unit,
+                        'porcentaje_cobertura': rec.pedido_marco_line_id.porcentaje_cobertura,
                     })
             return result
         return super().write(vals)

@@ -735,6 +735,159 @@ class RehalifeReservation(models.Model):
             'branch_name': branch.sudo().name or '',
         }
 
+    # ─── POS: lista paginada del diálogo "Reservas" (Fase 6, punto 2) ────────
+    _POS_DIALOG_FIELDS = [
+        'id', 'partner_id', 'reservation_date', 'reservation_time', 'end_time',
+        'status', 'sub_specialty', 'doctor_name', 'branch_name', 'environment_name',
+        'service_type_external_id', 'service_type_name',
+        'invoice_status', 'pos_paid_amount', 'paid_amount', 'pos_order_id',
+    ]
+    _POS_DIALOG_ORDER = 'reservation_date asc, reservation_time asc, id asc'
+    _POS_DIALOG_PAGE = 20
+    _POS_DIALOG_MAX_PAGE = 200
+
+    @staticmethod
+    def _pos_group_key(ext_id, name):
+        """Clave del grupo por servicio (mismo criterio que usaba el diálogo:
+        external_id del servicio, o su nombre si no tiene)."""
+        if ext_id:
+            return 'ext:%s' % ext_id
+        if name:
+            return 'name:%s' % name
+        return 'none'
+
+    @staticmethod
+    def _pos_group_domain(key):
+        if key.startswith('ext:'):
+            return [('service_type_external_id', '=', key[4:])]
+        if key.startswith('name:'):
+            return [
+                ('service_type_external_id', '=', False),
+                ('service_type_name', '=', key[5:]),
+            ]
+        return [
+            ('service_type_external_id', '=', False),
+            ('service_type_name', '=', False),
+        ]
+
+    @staticmethod
+    def _pos_visible(invoice_status, status, include_paid):
+        """Reservas que lista el diálogo: las cobrables (pendientes de pago) y,
+        con "Mostrar pagadas", las pagadas que aún no se completaron. Las
+        pagadas y COMPLETED no se muestran nunca."""
+        if invoice_status == 'pending':
+            return True
+        return bool(include_paid) and invoice_status == 'paid' and status != 'COMPLETED'
+
+    @api.model
+    def get_pos_reservations(self, partner_id, include_paid=False, group_key=None,
+                             offset=0, limit=None):
+        """Reservas de un paciente para el diálogo "Reservas" del POS, filtradas
+        y paginadas en el servidor (no se cargan todas en el POS).
+
+        - Base: reservas del paciente sin CANCELLED/NO_SHOW. La regla de registro
+          de sucursal aplica (sin sudo: search y _read_group la respetan).
+        - Visibles: invoice_status='pending'; con include_paid, además las
+          'paid' cuyo status no sea COMPLETED. Orden: fecha y hora ascendente.
+        - Por grupo (servicio): las `limit` (20) más próximas desde `offset`.
+          Con `group_key` solo se devuelve ese grupo ("Ver más").
+        - Contadores (total / pagadas / pendientes) sobre TODAS las reservas
+          activas del paciente en ese servicio, no solo las cargadas.
+        - `charge`: get_pos_charge_info de las pendientes devueltas (None si
+          falló; el diálogo las muestra como "Sin datos de cobro").
+
+        Devuelve {'groups': [{key, name, total, paid, pending, visible,
+        loaded, has_more, reservations}], 'charge': {...} | None}.
+        """
+        try:
+            partner_id = int(partner_id)
+            offset = max(0, int(offset or 0))
+            limit = int(limit or self._POS_DIALOG_PAGE)
+        except (TypeError, ValueError):
+            raise UserError('Parámetros inválidos para listar las reservas.')
+        limit = min(max(limit, 1), self._POS_DIALOG_MAX_PAGE)
+        include_paid = bool(include_paid)
+
+        base = [
+            ('partner_id', '=', partner_id),
+            ('status', 'not in', ['CANCELLED', 'NO_SHOW']),
+        ]
+        if group_key:
+            base = base + self._pos_group_domain(group_key)
+
+        # Contadores de todo el paciente (o del grupo pedido) en una consulta.
+        counts = {}
+        rows = self._read_group(
+            base,
+            groupby=['service_type_external_id', 'service_type_name',
+                     'invoice_status', 'status'],
+            aggregates=['__count'],
+        )
+        for ext_id, name, invoice_status, status, count in rows:
+            key = self._pos_group_key(ext_id, name)
+            if group_key and key != group_key:
+                continue
+            group = counts.setdefault(key, {
+                'key': key, 'name': '', 'total': 0, 'paid': 0, 'pending': 0, 'visible': 0,
+            })
+            if name and not group['name']:
+                group['name'] = name
+            group['total'] += count
+            if invoice_status == 'paid':
+                group['paid'] += count
+            elif invoice_status == 'pending':
+                group['pending'] += count
+            if self._pos_visible(invoice_status, status, include_paid):
+                group['visible'] += count
+
+        if include_paid:
+            visible_domain = [
+                '|', ('invoice_status', '=', 'pending'),
+                '&', ('invoice_status', '=', 'paid'), ('status', '!=', 'COMPLETED'),
+            ]
+        else:
+            visible_domain = [('invoice_status', '=', 'pending')]
+
+        groups = []
+        pending_ids = []
+        for key, group in counts.items():
+            if not group['visible']:
+                continue
+            records = self.search(
+                base + self._pos_group_domain(key) + visible_domain,
+                order=self._POS_DIALOG_ORDER, offset=offset, limit=limit,
+            )
+            reservations = records.read(self._POS_DIALOG_FIELDS)
+            pending_ids += [r['id'] for r in reservations if r['invoice_status'] == 'pending']
+            loaded = offset + len(reservations)
+            groups.append(dict(
+                group,
+                name=group['name'] or '(sin servicio)',
+                loaded=loaded,
+                has_more=loaded < group['visible'],
+                reservations=reservations,
+            ))
+
+        # Grupos ordenados por su reserva más próxima (como antes en el POS).
+        def _first_key(group):
+            first = group['reservations'][0] if group['reservations'] else {}
+            return (
+                str(first.get('reservation_date') or '9999-12-31'),
+                first.get('reservation_time') or '99:99',
+                group['name'],
+            )
+        groups.sort(key=_first_key)
+
+        charge = {}
+        if pending_ids:
+            try:
+                with self.env.cr.savepoint():
+                    charge = self.get_pos_charge_info(pending_ids)
+            except Exception:
+                _logger.exception('[POS Reservas] No se pudieron calcular los datos de cobro')
+                charge = None
+        return {'groups': groups, 'charge': charge}
+
     # ─── POS: estado del servicio de la reserva ──────────────────────────────
     # Orden de "cercanía" a estar listo: si un servicio tiene varias variantes
     # se informa la mejor. Por producto, las fallas se priorizan
