@@ -3,7 +3,7 @@ import logging
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
 from odoo.osv import expression
 
 _logger = logging.getLogger(__name__)
@@ -346,6 +346,140 @@ class SaleOrder(models.Model):
                         '[Seguros][cron PVM] "%s" %s: no se pudo asegurar el Pedido Marco.',
                         aseguradora.name, periodo,
                     )
+
+    # ── Lectura para Next.js (Pagos anticipados, Fase 5) — SOLO LECTURA ──────
+    # Nunca crean ni modifican nada: Next muestra los PVM y estima a qué PVM
+    # irá una reserva. Se llaman por JSON-RPC con el usuario técnico.
+    _ESTADOS_PVM = {'draft': 'Borrador', 'sent': 'Enviado', 'sale': 'Confirmado', 'cancel': 'Cancelado'}
+
+    def _pvm_nextjs_dict(self, con_lineas=True):
+        self.ensure_one()
+        currency = self.currency_id
+        data = {
+            'id': self.id,
+            'name': self.name,
+            'nombre_periodo': self.nombre_periodo or '',
+            'periodo': fields.Date.to_string(self.periodo) if self.periodo else False,
+            'state': self.state,
+            'state_label': self._ESTADOS_PVM.get(self.state, self.state),
+            'origin': self.origin or '',
+            'aseguradora': {
+                'id': self.partner_id.id,
+                'name': self.partner_id.name or '',
+                'external_id': self.partner_id.rehalife_external_id or False,
+            },
+            'currency': currency.name or '',
+            'nota_conformidad_count': len(self.nota_conformidad_ids),
+        }
+        if con_lineas:
+            lineas = []
+            for line in self.order_line.filtered(lambda l: not l.display_type):
+                precio = line.product_id.lst_price
+                monto_aseg = currency.round(precio * (line.price_unit or 0.0) / 100.0)
+                lineas.append({
+                    'id': line.id,
+                    'product_id': line.product_id.id,
+                    'product_name': line.product_id.display_name or line.name or '',
+                    'service_external_id': line.product_id.product_tmpl_id.rehalife_external_id or False,
+                    'porcentaje': line.price_unit,
+                    'cantidad_estimada': line.product_uom_qty,
+                    'qty_conformidad': line.qty_conformidad,
+                    'qty_confirmada': line.qty_confirmada,
+                    'precio_servicio': precio,
+                    'monto_aseguradora': monto_aseg,
+                    'monto_paciente': currency.round(precio - monto_aseg),
+                })
+            data['lineas'] = lineas
+        return data
+
+    @api.model
+    def get_pedidos_marco_nextjs(self, filtros=None):
+        """Lista de PVM (no cancelados) con sus líneas, en UNA llamada.
+        filtros: {mes: 'AAAA-MM', aseguradora_external_id}."""
+        filtros = filtros or {}
+        domain = [('es_pedido_marco', '=', True), ('state', '!=', 'cancel')]
+        if filtros.get('mes'):
+            periodo = fields.Date.to_date('%s-01' % filtros['mes'])
+            domain.append(('periodo', '=', periodo))
+        if filtros.get('aseguradora_external_id'):
+            domain.append(('partner_id.rehalife_external_id', '=', filtros['aseguradora_external_id']))
+        pedidos = self.sudo().search(domain, order='periodo desc, id desc', limit=500)
+        return [p._pvm_nextjs_dict() for p in pedidos]
+
+    @api.model
+    def get_pedido_marco_detalle_nextjs(self, pedido_id):
+        pedido = self.sudo().browse(int(pedido_id)).exists()
+        if not pedido or not pedido.es_pedido_marco:
+            return False
+        data = pedido._pvm_nextjs_dict()
+        resumen = {}
+        for nc in pedido.nota_conformidad_ids:
+            resumen[nc.estado] = resumen.get(nc.estado, 0) + 1
+        etiquetas = dict(self.env['rehalife.nota.conformidad']._fields['estado'].selection)
+        data['notas_por_estado'] = [
+            {'estado': k, 'label': etiquetas.get(k, k), 'count': v} for k, v in resumen.items()
+        ]
+        return data
+
+    @api.model
+    def resolver_pedido_marco_nextjs(self, aseguradora_external_id, fechas, service_type_external_id):
+        """A qué PVM iría una reserva que todavía no existe (asistente).
+        NO crea nada. Una entrada por mes de `fechas` ('AAAA-MM-DD'):
+        {mes, estado, mensaje, pvm_id, pvm_name, porcentaje, precio,
+        monto_aseguradora, monto_paciente}. estado ∈ existe | se_creara |
+        borrador | sin_pvm | sin_linea | sin_producto | sin_aseguradora."""
+        Partner = self.env['res.partner'].sudo()
+        aseguradora = Partner.search(
+            [('rehalife_external_id', '=', aseguradora_external_id)], limit=1,
+        ) if aseguradora_external_id else Partner
+        producto = self.env['rehalife.reservation'].sudo()._producto_de_servicio(
+            service_type_external_id)
+        meses = sorted({str(f)[:7] for f in (fechas or []) if f})
+        result = []
+        for mes in meses:
+            periodo = fields.Date.to_date('%s-01' % mes)
+            entry = {
+                'mes': mes, 'estado': '', 'mensaje': '', 'pvm_id': False, 'pvm_name': '',
+                'porcentaje': 0.0, 'precio': 0.0, 'monto_aseguradora': 0.0, 'monto_paciente': 0.0,
+            }
+            result.append(entry)
+            if not aseguradora:
+                entry.update(estado='sin_aseguradora',
+                             mensaje='La aseguradora no está sincronizada en Odoo.')
+                continue
+            if not producto:
+                entry.update(estado='sin_producto',
+                             mensaje='El servicio no tiene producto en Odoo.')
+                continue
+            res = self._asegurar_pedido_marco(aseguradora, periodo, crear=False)
+            pvm = res['pedido'] or res['fuente']
+            if not pvm:
+                entry.update(
+                    estado='borrador' if self._buscar_pedido_marco(aseguradora, periodo) else 'sin_pvm',
+                    mensaje=res['motivo'] or 'Sin Pedido de Venta Marco.',
+                )
+                continue
+            if res['pedido']:
+                entry.update(estado='existe', pvm_id=pvm.id, pvm_name=pvm.nombre_periodo or pvm.name)
+            else:
+                entry.update(
+                    estado='se_creara',
+                    mensaje='Se creará al cobrar copiando el de %s.' % (
+                        self._nombre_mes(pvm.periodo) if pvm.periodo else pvm.name),
+                )
+            try:
+                linea = self.env['rehalife.nota.conformidad'].sudo()._resolve_pedido_marco_line(
+                    self.env['rehalife.reservation'], order=pvm, product=producto)
+            except UserError:
+                entry.update(estado='sin_linea', mensaje='El Pedido Marco %s no incluye el servicio %s.' % (
+                    pvm.nombre_periodo or pvm.name, producto.display_name))
+                continue
+            cur = pvm.currency_id or self.env.company.currency_id
+            precio = producto.lst_price
+            monto_aseg = cur.round(precio * (linea.price_unit or 0.0) / 100.0)
+            entry.update(porcentaje=linea.price_unit, precio=precio,
+                         monto_aseguradora=monto_aseg, monto_paciente=cur.round(precio - monto_aseg))
+        return result
 
     def action_view_notas_conformidad(self):
         self.ensure_one()

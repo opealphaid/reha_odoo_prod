@@ -289,6 +289,39 @@ class RehalifeReservation(models.Model):
             result[rec.id] = base
         return result
 
+    @api.model
+    def _producto_de_servicio(self, service_type_external_id):
+        """Producto de un servicio del backend, con el mismo criterio que
+        get_pos_service_status (el más 'listo' para el POS)."""
+        if not service_type_external_id:
+            return self.env['product.product']
+        products = self.env['product.product'].sudo().search(
+            [('product_tmpl_id.rehalife_external_id', '=', service_type_external_id)], order='id',
+        )
+        if not products:
+            return products
+        return min(products, key=lambda p: self._POS_SERVICE_STATUS_RANK.get(
+            self._pos_product_status(p), 3))
+
+    @api.model
+    def get_cobertura_nextjs(self, external_id):
+        """RPC para Next (Fase 5, solo lectura): cobertura de una reserva por
+        su id del backend. {found: False} si no está en el espejo."""
+        reservation = self.sudo().search([('external_id', '=', external_id)], limit=1)
+        if not reservation:
+            return {'found': False}
+        info = reservation.get_cobertura_info(reservation.ids)[reservation.id]
+        info.update({
+            'found': True,
+            'invoice_status': reservation.invoice_status,
+            'pos_paid_amount': reservation.pos_paid_amount,
+            'precio_servicio_congelado': reservation.precio_servicio_congelado,
+            'porcentaje_cobertura_congelado': reservation.porcentaje_cobertura_congelado,
+            'monto_paciente_congelado': reservation.monto_paciente_congelado,
+            'monto_aseguradora_congelado': reservation.monto_aseguradora_congelado,
+        })
+        return info
+
     def _congelar_cobertura(self):
         """Guarda precio, %, copago y monto de la aseguradora al pagar.
         Nunca sobrescribe (solo reservas de seguro sin fecha_congelamiento).
