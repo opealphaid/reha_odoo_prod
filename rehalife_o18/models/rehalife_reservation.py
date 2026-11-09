@@ -85,6 +85,25 @@ class RehalifeReservation(models.Model):
         store=False,
     )
 
+    # ── Pagos anticipados (Fase 2) ───────────────────────────────────────────
+    pos_paid_amount = fields.Float(
+        string='Monto Pagado (POS)', readonly=True, digits=(16, 2), copy=False,
+        help='Lo que se cobró por esta reserva en el POS: total de su línea '
+             '(con impuestos) dividido entre las reservas que cubre la línea.',
+    )
+    pos_order_line_ids = fields.Many2many(
+        'pos.order.line',
+        'rehalife_pos_line_reservation_rel',
+        'reservation_id', 'line_id',
+        string='Líneas POS', readonly=True, copy=False,
+    )
+    alerta_pagada_cancelada = fields.Boolean(
+        string='Pagada pero Cancelada/No asistió', readonly=True, copy=False,
+        help='Llegó CANCELLED o NO_SHOW desde Rehalife para una reserva ya '
+             'pagada. El pago no se devuelve: hay que reprogramarla en Rehalife '
+             'y luego marcar la alerta como revisada.',
+    )
+
     nc_error = fields.Char(
         string='Error al Generar Nota de Conformidad', readonly=True, copy=False,
     )
@@ -188,7 +207,7 @@ class RehalifeReservation(models.Model):
             })
             return False
 
-        paid_amount = self.pos_order_id.amount_total or 0.0
+        paid_amount = self._get_backend_paid_amount()
         invoiced = bool(self.pos_order_id.to_invoice)
 
         try:
@@ -217,6 +236,64 @@ class RehalifeReservation(models.Model):
                 self.external_id, str(e),
             )
             return False
+
+    def _get_backend_paid_amount(self):
+        """Monto de ESTA reserva para register-payment.
+
+        Desde la Fase 2 sale de pos_paid_amount (lo escribe
+        pos.order._sync_rehalife_reservation). Reservas cobradas antes, sin
+        ese dato: total de su línea (Many2one histórico) / qty; si tampoco
+        hay línea, el total de la orden, como antes.
+        """
+        self.ensure_one()
+        # sudo(): solo lectura de las líneas POS (el reintento manual lo puede
+        # pulsar un administrador de Rehalife sin permisos del POS).
+        rec = self.sudo()
+        if rec.pos_paid_amount or rec.pos_order_line_ids:
+            return rec.pos_paid_amount
+        line = rec.pos_order_id.lines.filtered(
+            lambda l: l.rehalife_reservation_id == rec and l.qty > 0
+        )[:1]
+        if line:
+            return line.price_subtotal_incl / line.qty
+        return rec.pos_order_id.amount_total or 0.0
+
+    @api.model
+    def _cron_retry_backend_payment(self, limit=20, max_consecutive_failures=3):
+        """Cron: reintenta register-payment en reservas pagadas en el POS
+        cuya notificación al backend falló.
+
+        Lote chico y corte tras varios fallos seguidos: si el backend está
+        caído, cada llamada espera hasta 15 s y no tiene sentido seguir. Cada
+        intento actualiza write_date, así que la siguiente corrida empieza
+        por las que llevan más tiempo sin reintentarse.
+        """
+        reservations = self.search([
+            ('invoice_status', '=', 'paid'),
+            ('backend_sync_state', '=', 'error'),
+            ('pos_order_id', '!=', False),
+        ], order='write_date asc, id asc', limit=limit)
+        ok = failures = 0
+        for reservation in reservations:
+            if reservation._notify_backend_payment():
+                ok += 1
+                failures = 0
+                continue
+            failures += 1
+            if failures >= max_consecutive_failures:
+                _logger.warning(
+                    '[Cron] Reintento de pagos cortado tras %s fallos seguidos.', failures,
+                )
+                break
+        _logger.info(
+            '[Cron] Reintento de pagos al backend: %s de %s reserva(s) sincronizadas.',
+            ok, len(reservations),
+        )
+
+    def action_marcar_alerta_revisada(self):
+        """Botón: apaga la alerta "pagada pero cancelada" (manual, Fase 2)."""
+        self.write({'alerta_pagada_cancelada': False})
+        return {'type': 'ir.actions.client', 'tag': 'soft_reload'}
 
     def action_retry_backend_sync(self):
         """
@@ -413,6 +490,10 @@ class RehalifeReservation(models.Model):
             if (new_status in ('CANCELLED', 'NO_SHOW')
                     and existing.status not in ('CANCELLED', 'NO_SHOW')):
                 if existing.invoice_status in ('paid', 'invoiced'):
+                    # Pagos anticipados, Fase 2: se acepta el estado pero se
+                    # marca la alerta para que un administrador la reprograme.
+                    if existing.invoice_status == 'paid':
+                        write_vals['alerta_pagada_cancelada'] = True
                     _logger.warning(
                         '[Webhook] Reserva pagada recibida como cancelada: %s '
                         '(invoice_status=%s, status=%s). No se cambia el cobro.',
@@ -439,6 +520,50 @@ class RehalifeReservation(models.Model):
                 'action': 'created',
                 'external_id': external_id,
             }
+
+    @api.model
+    def sync_batch_from_nextjs(self, vals_list):
+        """Sincroniza varias reservas en una sola llamada (Pagos anticipados,
+        Fase 1: reservas recurrentes / en lote creadas desde Next.js).
+
+        Llama a self.sync_from_nextjs (no a super) para que cada elemento pase
+        también por el override de rehalife_seguros (modalidad, aseguradora,
+        NC). Cada reserva va en su propio savepoint: si una falla (p. ej. el
+        paciente todavía no está en Odoo), se revierte solo esa y las demás
+        siguen.
+
+        Devuelve una lista, en el mismo orden recibido, de
+        {external_id, ok, action, id, error}.
+        """
+        results = []
+        for vals in vals_list or []:
+            if not isinstance(vals, dict):
+                results.append({
+                    'external_id': None, 'ok': False, 'action': None, 'id': None,
+                    'error': 'Elemento inválido: se esperaba un objeto.',
+                })
+                continue
+            external_id = vals.get('external_id')
+            try:
+                with self.env.cr.savepoint():
+                    result = self.sync_from_nextjs(vals)
+                results.append({
+                    'external_id': external_id,
+                    'ok': True,
+                    'action': result.get('action'),
+                    'id': result.get('id'),
+                    'error': None,
+                })
+            except Exception as e:
+                _logger.warning(
+                    '[Webhook] Lote: no se pudo sincronizar la reserva %s: %s',
+                    external_id, str(e),
+                )
+                results.append({
+                    'external_id': external_id, 'ok': False, 'action': None, 'id': None,
+                    'error': str(e),
+                })
+        return results
 
     @api.model
     def import_from_nextjs(self, raw: dict):

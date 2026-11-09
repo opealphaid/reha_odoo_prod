@@ -57,6 +57,50 @@ class RehalifeReservationController(http.Controller):
                 {'success': False, 'message': str(e)}, status=500
             )
 
+    # ─── Webhook: sincronizar VARIAS reservas (POST JSON) ────────────────────
+    # Pagos anticipados, Fase 1: reservas recurrentes / en lote creadas desde
+    # Next.js. Body: {"reservations": [<mismo payload que /sync>, ...]}.
+    # Máximo SYNC_BATCH_MAX por llamada (el cliente parte el envío en bloques).
+    SYNC_BATCH_MAX = 200
+
+    @http.route(
+        '/rehalife/reservation/sync-batch',
+        type='http',
+        auth='public',
+        methods=['POST'],
+        csrf=False,
+    )
+    def sync_reservation_batch(self, **kwargs):
+        if not self._check_token():
+            return request.make_json_response(
+                {'success': False, 'message': 'No autorizado'}, status=401
+            )
+        try:
+            body = json.loads(request.httprequest.data or '{}')
+            items = body.get('reservations') if isinstance(body, dict) else None
+            if not isinstance(items, list):
+                return request.make_json_response(
+                    {'success': False, 'message': 'Se esperaba "reservations" como lista.'},
+                    status=400,
+                )
+            if len(items) > self.SYNC_BATCH_MAX:
+                return request.make_json_response(
+                    {
+                        'success': False,
+                        'message': 'Máximo %s reservas por llamada (llegaron %s).'
+                        % (self.SYNC_BATCH_MAX, len(items)),
+                    },
+                    status=400,
+                )
+            _logger.info('[Webhook] Lote de reservas recibido: %s', len(items))
+            results = request.env['rehalife.reservation'].sudo().sync_batch_from_nextjs(items)
+            return request.make_json_response({'success': True, 'results': results})
+        except Exception as e:
+            _logger.error('[Webhook] Error sync lote de reservas: %s', str(e))
+            return request.make_json_response(
+                {'success': False, 'message': str(e)}, status=500
+            )
+
     # ─── Endpoint: estado de una reserva (GET) ────────────────────────────────
     @http.route(
         '/rehalife/reservation/<string:external_id>',

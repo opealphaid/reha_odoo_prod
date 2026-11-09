@@ -213,11 +213,26 @@ patch(ProductScreen.prototype, {
 
     openReservations() {
         const order = this._pos.selectedOrder;
-        const addedReservationIds = new Set(
-            (order?.lines || [])
-                .map(line => line.rehalife_reservation_id?.id ?? line.rehalife_reservation_id)
-                .filter(Boolean)
-        );
+        // Reservas ya agregadas a la orden. El Many2one solo existe en el
+        // navegador (no viaja al servidor, ver nota en el create de la línea);
+        // una orden recargada desde el servidor trae el vínculo solo en
+        // rehalife_reservation_ids_json.
+        const addedReservationIds = new Set();
+        for (const line of order?.lines || []) {
+            const m2o = line.rehalife_reservation_id?.id ?? line.rehalife_reservation_id;
+            if (m2o) {
+                addedReservationIds.add(m2o);
+            }
+            if (line.rehalife_reservation_ids_json) {
+                try {
+                    for (const id of JSON.parse(line.rehalife_reservation_ids_json) || []) {
+                        addedReservationIds.add(id);
+                    }
+                } catch {
+                    console.warn("[Reservas] rehalife_reservation_ids_json inválido en la línea", line);
+                }
+            }
+        }
 
         this._dialog.add(ReservationDialog, {
             addedReservationIds,
@@ -346,6 +361,14 @@ patch(ProductScreen.prototype, {
                             qty:        1,
                             price_unit: priceUnit,
                             rehalife_reservation_id: res.id,
+                            // El vínculo que llega al servidor. El POS de Odoo 18
+                            // serializa un Many2one hacia un modelo que no carga
+                            // (rehalife.reservation) como false
+                            // (point_of_sale/static/src/app/models/related_models.js,
+                            // serialize): el Many2one de arriba solo sirve en el
+                            // navegador. Un Char sí viaja tal cual; el servidor lo
+                            // convierte al Many2many rehalife_reservation_ids.
+                            rehalife_reservation_ids_json: JSON.stringify([res.id]),
                             full_product_name: nombreLinea,
                         });
                         console.log("[Reservas] ✅ Producto agregado, precio:", priceUnit);

@@ -12,7 +12,7 @@
                   decoration-success="invoice_status == 'paid'"
                   decoration-info="invoice_status == 'invoiced'"
                   decoration-warning="status == 'COMPLETED' and invoice_status == 'pending'"
-                  decoration-danger="backend_sync_state == 'error'"
+                  decoration-danger="backend_sync_state == 'error' or alerta_pagada_cancelada"
                   decoration-muted="invoice_status == 'cancelled'">
 
                 <field name="reservation_date"/>
@@ -29,7 +29,9 @@
                 <field name="invoice_status"/>
                 <field name="invoice_id" optional="show"/>
                 <field name="pos_order_id" optional="show"/>
+                <field name="pos_paid_amount" optional="hide"/>
                 <field name="backend_sync_state" optional="show"/>
+                <field name="alerta_pagada_cancelada" string="Pagada/Cancelada" optional="show"/>
                 <field name="doctor_name" optional="hide"/>
 
                 <button name="action_view_pos_order"
@@ -88,6 +90,15 @@
                             type="object"
                             class="btn-danger"
                             invisible="backend_sync_state != 'error'"/>
+
+                    <!-- Pagos anticipados (Fase 2): apagar la alerta a mano -->
+                    <button name="action_marcar_alerta_revisada"
+                            string="Marcar como revisada"
+                            type="object"
+                            class="btn-warning"
+                            groups="rehalife_o18.group_rehalife_admin,base.group_system"
+                            invisible="not alerta_pagada_cancelada"
+                            confirm="¿Ya reprogramaste esta reserva en Rehalife? La alerta se apagará."/>
                 </header>
 
                 <sheet>
@@ -111,6 +122,14 @@
                          role="alert"
                          invisible="invoice_status != 'cancelled'">
                         ⚠️ Esta reserva fue cancelada o el paciente no asistió. No aplica factura.
+                    </div>
+
+                    <!-- Alerta: pagada pero llegó CANCELLED / NO_SHOW (Fase 2) -->
+                    <div class="alert alert-danger mb-3"
+                         role="alert"
+                         invisible="not alerta_pagada_cancelada">
+                        <strong>⚠️ Reserva PAGADA pero cancelada o marcada "No asistió".</strong>
+                        <p class="mb-0">El pago no se devuelve: reprográmala en Rehalife y después usa "Marcar como revisada".</p>
                     </div>
 
                     <!-- Alerta POS -->
@@ -138,6 +157,16 @@
                         <field name="pos_order_state_label" readonly="1"/>
                         <field name="backend_sync_state" readonly="1"/>
                         <field name="backend_last_sync" readonly="1" invisible="not backend_last_sync"/>
+                        <field name="pos_paid_amount" readonly="1"/>
+                        <field name="pos_order_line_ids" readonly="1" invisible="not pos_order_line_ids"
+                               groups="point_of_sale.group_pos_user">
+                            <list>
+                                <field name="order_id"/>
+                                <field name="full_product_name"/>
+                                <field name="qty"/>
+                                <field name="price_subtotal_incl"/>
+                            </list>
+                        </field>
                     </group>
 
                     <group>
@@ -214,6 +243,9 @@
                 <filter name="backend_sync_error"
                         string="Error de Sync. Backend"
                         domain="[('backend_sync_state', '=', 'error')]"/>
+                <filter name="alerta_pagada_cancelada"
+                        string="Pagadas Canceladas"
+                        domain="[('alerta_pagada_cancelada', '=', True)]"/>
 
                 <separator/>
 

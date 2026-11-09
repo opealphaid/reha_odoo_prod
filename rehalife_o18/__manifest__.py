@@ -15,6 +15,7 @@
         'security/ir.model.access.csv',
         'security/rehalife_rules.xml',
         'data/ir_config_parameter.xml',
+        'data/ir_cron.xml',
         'views/res_config_settings_views.xml',
         'views/rehalife_city_views.xml',
         'views/rehalife_partner_views.xml',
