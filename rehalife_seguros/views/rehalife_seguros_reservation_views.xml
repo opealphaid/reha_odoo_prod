@@ -32,6 +32,19 @@
                                 groups="rehalife_seguros.group_rehalife_seguros_approver,rehalife_o18.group_rehalife_admin,base.group_system"/>
                     </div>
                 </group>
+                <!-- Pagos anticipados, Fase 4: lo que se congeló al pagar en el POS. -->
+                <group string="Pago anticipado / Congelado"
+                       invisible="modalidad != 'seguro' or not fecha_congelamiento">
+                    <group>
+                        <field name="precio_servicio_congelado"/>
+                        <field name="porcentaje_cobertura_congelado"/>
+                        <field name="fecha_congelamiento"/>
+                    </group>
+                    <group>
+                        <field name="monto_paciente_congelado"/>
+                        <field name="monto_aseguradora_congelado"/>
+                    </group>
+                </group>
                 <group string="Notas de Conformidad" invisible="not nota_conformidad_ids"
                        groups="rehalife_seguros.group_rehalife_seguros_approver,rehalife_o18.group_rehalife_admin,base.group_system">
                     <field name="nota_conformidad_ids" nolabel="1" readonly="1">

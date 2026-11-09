@@ -67,6 +67,7 @@
                             <field name="currency_id" invisible="1"/>
                             <field name="cantidad"/>
                             <field name="porcentaje_cobertura"/>
+                            <field name="porcentaje_desde_reserva" widget="boolean" readonly="1"/>
                             <field name="monto_cubierto" widget="monetary"/>
                             <field name="importe_total" widget="monetary"/>
                             <field name="fecha_emision"/>

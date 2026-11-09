@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
+from dateutil.relativedelta import relativedelta
+
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.osv import expression
@@ -193,6 +195,157 @@ class SaleOrder(models.Model):
         for order in self:
             if order.es_pedido_marco and order.nombre_periodo:
                 order.display_name = '%s (%s)' % (order.display_name, order.nombre_periodo)
+
+    # ── PVM por mes: búsqueda, clonado bajo demanda y cron ───────────────────
+    # Pagos anticipados, Fase 4. Cada reserva de seguro usa el PVM del MES de
+    # su fecha. El cron asegura el mes actual y el siguiente por aseguradora;
+    # al COBRAR una reserva de un mes más lejano se crea bajo demanda (ver
+    # rehalife.reservation._get_cobertura_info). Un PVM nuevo se clona del
+    # más reciente confirmado de esa aseguradora; si nunca tuvo uno, no se
+    # inventa nada.
+    @staticmethod
+    def _nombre_mes(periodo):
+        return '%s %s' % (_MESES_ES.get(periodo.month, ''), periodo.year)
+
+    @api.model
+    def _buscar_pedido_marco(self, aseguradora, periodo):
+        """PVM no cancelado de aseguradora+período (puede estar en borrador)."""
+        return self.sudo().search([
+            ('es_pedido_marco', '=', True),
+            ('partner_id', '=', aseguradora.id),
+            ('periodo', '=', periodo),
+            ('state', '!=', 'cancel'),
+        ], order='id desc', limit=1)
+
+    @api.model
+    def _fuente_pedido_marco(self, aseguradora):
+        """PVM confirmado más reciente (por período) de la aseguradora: el
+        que se clona para crear uno nuevo."""
+        return self.sudo().search([
+            ('es_pedido_marco', '=', True),
+            ('partner_id', '=', aseguradora.id),
+            ('periodo', '!=', False),
+            ('state', '=', 'sale'),
+        ], order='periodo desc, id desc', limit=1)
+
+    @api.model
+    def _asegurar_pedido_marco(self, aseguradora, periodo, crear=True):
+        """Devuelve {'pedido', 'motivo', 'fuente', 'creado'} para
+        aseguradora+período (`periodo` se normaliza al día 1).
+
+        - Hay un PVM confirmado → ese.
+        - Hay uno en borrador/enviado → no se crea ni se confirma; `motivo`
+          explica que hay que confirmarlo en Odoo.
+        - No hay → con crear=True se clona `fuente` (mismas líneas: producto,
+          % en price_unit, cantidad estimada; qty_conformidad/qty_confirmada
+          en 0) y se confirma. Con crear=False solo se informa la fuente.
+        - La aseguradora nunca tuvo PVM → pedido vacío y `motivo`.
+
+        Concurrencia: pg_advisory_xact_lock por (aseguradora, período) antes
+        de buscar y crear; _check_pedido_marco_periodo_unico es una
+        constraint Python y no protege contra dos creaciones simultáneas.
+        """
+        SaleOrder = self.env['sale.order'].sudo()
+        periodo = fields.Date.to_date(periodo).replace(day=1)
+        result = {
+            'pedido': SaleOrder, 'motivo': '', 'fuente': SaleOrder, 'creado': False,
+        }
+        if not aseguradora:
+            result['motivo'] = 'La reserva de seguro no tiene aseguradora.'
+            return result
+
+        if crear:
+            self.env.cr.execute(
+                'SELECT pg_advisory_xact_lock(%s, %s)',
+                (aseguradora.id, periodo.year * 100 + periodo.month),
+            )
+
+        existente = self._buscar_pedido_marco(aseguradora, periodo)
+        if existente:
+            if existente.state == 'sale':
+                result['pedido'] = existente
+            else:
+                result['motivo'] = (
+                    'El Pedido Marco de %s está en borrador; confírmalo en Odoo.'
+                    % self._nombre_mes(periodo)
+                )
+            return result
+
+        fuente = self._fuente_pedido_marco(aseguradora)
+        result['fuente'] = fuente
+        if not fuente:
+            result['motivo'] = (
+                'La aseguradora "%s" no tiene ningún Pedido de Venta Marco: créalo y '
+                'confírmalo en Odoo (Seguros > Pedidos de Venta Marco).' % aseguradora.name
+            )
+            return result
+        if not crear:
+            return result
+
+        lineas = [(0, 0, {
+            'sequence': line.sequence,
+            'product_id': line.product_id.id,
+            'name': line.name,
+            'product_uom_qty': line.product_uom_qty,
+            'product_uom': line.product_uom.id,
+            'price_unit': line.price_unit,
+            # Mismo estado "precio manual" que la línea de origen: sin esto,
+            # Odoo podría recalcular el % con la lista de precios.
+            'technical_price_unit': line.technical_price_unit,
+            'tax_id': [(6, 0, line.tax_id.ids)],
+        }) for line in fuente.order_line if not line.display_type]
+        nuevo = SaleOrder.create({
+            'partner_id': aseguradora.id,
+            'es_pedido_marco': True,
+            'periodo': periodo,
+            'company_id': fuente.company_id.id,
+            'pricelist_id': fuente.pricelist_id.id,
+            'user_id': fuente.user_id.id,
+            'origin': 'Copia automática de %s' % (fuente.nombre_periodo or fuente.name),
+            'order_line': lineas,
+        })
+        nuevo.action_confirm()
+        nuevo.message_post(body=(
+            'Creado automáticamente para %s copiando el Pedido Marco %s.'
+            % (self._nombre_mes(periodo), fuente.nombre_periodo or fuente.name)
+        ))
+        _logger.info(
+            '[Seguros] PVM %s creado para "%s" / %s copiando %s.',
+            nuevo.name, aseguradora.name, periodo, fuente.name,
+        )
+        result.update(pedido=nuevo, creado=True)
+        return result
+
+    @api.model
+    def _cron_asegurar_pedidos_marco(self):
+        """Cron diario: para cada aseguradora con al menos un PVM confirmado,
+        asegura el del mes actual y el del siguiente. Errores silenciosos:
+        se registran en el log y se sigue con la siguiente."""
+        hoy = fields.Date.context_today(self).replace(day=1)
+        periodos = (hoy, hoy + relativedelta(months=1))
+        aseguradoras = self.sudo().search([
+            ('es_pedido_marco', '=', True), ('state', '=', 'sale'),
+        ]).mapped('partner_id')
+        for aseguradora in aseguradoras:
+            for periodo in periodos:
+                try:
+                    with self.env.cr.savepoint():
+                        res = self._asegurar_pedido_marco(aseguradora, periodo, crear=True)
+                    if res['creado']:
+                        _logger.info(
+                            '[Seguros][cron PVM] "%s" %s: creado %s.',
+                            aseguradora.name, periodo, res['pedido'].name,
+                        )
+                    elif res['motivo']:
+                        _logger.warning(
+                            '[Seguros][cron PVM] "%s" %s: %s',
+                            aseguradora.name, periodo, res['motivo'],
+                        )
+                except Exception:
+                    _logger.exception(
+                        '[Seguros][cron PVM] "%s" %s: no se pudo asegurar el Pedido Marco.',
+                        aseguradora.name, periodo,
+                    )
 
     def action_view_notas_conformidad(self):
         self.ensure_one()

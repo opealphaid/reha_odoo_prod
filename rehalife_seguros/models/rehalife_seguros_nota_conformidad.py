@@ -58,9 +58,20 @@ class RehalifeNotaConformidad(models.Model):
     # nativo de Odoo, no se renombra ahí — ver
     # rehalife_seguros_sale_order_line.py para la validación 0-100), pero
     # de este lado se expone con el nombre correcto.
+    #
+    # Pagos anticipados, Fase 4 (2026-11-09): YA NO es related a
+    # pedido_marco_line_id.price_unit. Se fija AL CREAR la NC: el % congelado
+    # de la reserva si se pagó por adelantado (porcentaje_desde_reserva) o,
+    # si no, el % de la línea del PVM en ese momento. Así cambiar el % del
+    # PVM ya no altera NC existentes (antes recalculaba monto_cubierto de
+    # TODAS, incluso facturadas). Migración: migrations/18.0.1.0.2.
     porcentaje_cobertura = fields.Float(
-        string='% Cobertura Aseguradora',
-        related='pedido_marco_line_id.price_unit', store=True, readonly=True,
+        string='% Cobertura Aseguradora', readonly=True,
+    )
+    porcentaje_desde_reserva = fields.Boolean(
+        string='% Congelado al Pagar', readonly=True, copy=False,
+        help='El % y el precio del servicio vienen de lo congelado en la reserva '
+             'cuando el paciente pagó por adelantado (no del % actual del Pedido Marco).',
     )
     # Monto real en Bs. que paga la aseguradora — precio real del servicio
     # (product_id.lst_price) × porcentaje_cobertura/100, redondeado a 2
@@ -147,8 +158,15 @@ class RehalifeNotaConformidad(models.Model):
 
     @api.depends('product_id', 'porcentaje_cobertura', 'currency_id')
     def _compute_monto_cubierto(self):
+        # Precio congelado de la reserva si se pagó por adelantado (Fase 4).
+        # A propósito NO es una dependencia: se lee al calcular (al crear la
+        # NC); no debe recalcular NC ya existentes ni facturadas.
         for rec in self:
-            precio_real = rec.product_id.lst_price if rec.product_id else 0.0
+            reserva = rec.reservation_id
+            if rec.porcentaje_desde_reserva and reserva.fecha_congelamiento:
+                precio_real = reserva.precio_servicio_congelado
+            else:
+                precio_real = rec.product_id.lst_price if rec.product_id else 0.0
             monto = precio_real * (rec.porcentaje_cobertura or 0.0) / 100.0
             rec.monto_cubierto = rec.currency_id.round(monto) if rec.currency_id else round(monto, 2)
 
@@ -168,9 +186,19 @@ class RehalifeNotaConformidad(models.Model):
                 rec.diagnostico = rec.reservation_id.diagnosis
                 rec.medico_nombre = rec.reservation_id.doctor_name
 
+    @api.onchange('pedido_marco_line_id')
+    def _onchange_pedido_marco_line_id_porcentaje(self):
+        for rec in self:
+            if rec.pedido_marco_line_id and not rec.porcentaje_desde_reserva:
+                rec.porcentaje_cobertura = rec.pedido_marco_line_id.price_unit
+
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            # % fijado al crear (Fase 4): si no viene, el de la línea del PVM.
+            if 'porcentaje_cobertura' not in vals and vals.get('pedido_marco_line_id'):
+                vals['porcentaje_cobertura'] = self.env['sale.order.line'].browse(
+                    vals['pedido_marco_line_id']).price_unit
             if not vals.get('name') or vals['name'] == '/':
                 vals['name'] = self.env['ir.sequence'].next_by_code(
                     'rehalife.nota.conformidad'
@@ -181,7 +209,7 @@ class RehalifeNotaConformidad(models.Model):
                 rec.pedido_marco_line_id.qty_conformidad += rec.cantidad
         return records
 
-    def _resolve_pedido_marco_line(self, reservation):
+    def _resolve_pedido_marco_line(self, reservation, order=None, product=None):
         """Busca en el pedido marco la línea correspondiente al servicio de la
         reserva. Si el pedido marco tiene una sola línea, se asume esa.
 
@@ -203,12 +231,14 @@ class RehalifeNotaConformidad(models.Model):
         ese producto exacto), cae a un match por nombre — pero EXACTO, no
         substring, para no repetir el mismo bug con otro par de productos.
         """
-        order = reservation.pedido_marco_id
+        # Fase 4: `order`/`product` opcionales para calcular el copago con el
+        # PVM del mes antes de que la reserva tenga pedido_marco_id.
+        order = order or reservation.pedido_marco_id
         lines = order.order_line.filtered(lambda l: not l.display_type)
         if len(lines) == 1:
             return lines
 
-        product = reservation._resolve_product_servicio()
+        product = product or reservation._resolve_product_servicio()
         if product:
             match = lines.filtered(lambda l: l.product_id == product)
             if len(match) == 1:
@@ -250,7 +280,18 @@ class RehalifeNotaConformidad(models.Model):
 
         line = self._resolve_pedido_marco_line(reservation)
 
+        # Fase 4: si la reserva se pagó por adelantado, la NC usa el %
+        # congelado (paciente + aseguradora suman el precio que se cobró).
+        if reservation.fecha_congelamiento:
+            porcentaje = reservation.porcentaje_cobertura_congelado
+            desde_reserva = True
+        else:
+            porcentaje = line.price_unit
+            desde_reserva = False
+
         vals = {
+            'porcentaje_cobertura': porcentaje,
+            'porcentaje_desde_reserva': desde_reserva,
             'partner_id': reservation.partner_id.id,
             'aseguradora_id': reservation.aseguradora_id.id,
             'reservation_id': reservation.id,
@@ -463,6 +504,17 @@ class RehalifeNotaConformidad(models.Model):
                 'La cantidad de una Nota de Conformidad no se edita directamente; '
                 'use la acción "Regularizar" para anularla.'
             )
+        if 'pedido_marco_line_id' in vals and 'porcentaje_cobertura' not in vals:
+            # Cambio manual de línea: toma el % de la línea nueva, salvo que
+            # el % venga congelado de la reserva o la NC ya esté facturada.
+            result = super().write(vals)
+            for rec in self:
+                if (rec.pedido_marco_line_id and not rec.porcentaje_desde_reserva
+                        and not rec.factura_id and rec.estado not in ('facturada', 'pagada')):
+                    super(RehalifeNotaConformidad, rec).write({
+                        'porcentaje_cobertura': rec.pedido_marco_line_id.price_unit,
+                    })
+            return result
         return super().write(vals)
 
     def action_exportar_excel(self):
