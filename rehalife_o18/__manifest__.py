@@ -32,6 +32,7 @@
     'assets': {
         'point_of_sale._assets_pos': [
             'rehalife_o18/static/src/xml/reservation_screen.xml',
+            'rehalife_o18/static/src/js/reservation_payment_check.js',
             'rehalife_o18/static/src/js/reservation_button.js',
         ],
     },

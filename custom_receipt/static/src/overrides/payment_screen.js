@@ -33,6 +33,15 @@ patch(PaymentScreen.prototype, {
             return;
         }
 
+        // Gancho opcional (lo define rehalife_o18, pagos anticipados): verifica
+        // en el servidor las reservas de la venta ANTES de generar el QR, porque
+        // con el QR el banco cobra antes de validar la orden. Si el método no
+        // existe (rehalife_o18 no instalado) o la venta no tiene reservas, no
+        // cambia nada.
+        if (typeof this.checkBeforeQrPayment === "function" && !(await this.checkBeforeQrPayment())) {
+            return;
+        }
+
         const currency = this.pos.currency?.name === "USD" ? "USD" : "BOB";
 
         const payload = await makeAwaitable(this.dialog, QrPaymentPopup, {

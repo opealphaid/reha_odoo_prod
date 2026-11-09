@@ -25,7 +25,8 @@ class PosOrderLine(models.Model):
     _inherit = 'pos.order.line'
 
     # Histórico: una línea = una reserva. Se conserva por compatibilidad con
-    # las órdenes ya cobradas y con el diálogo del POS hasta la Fase 3.
+    # las órdenes ya cobradas. Desde la Fase 3 el diálogo del POS ya no lo
+    # llena (nunca llegaba al servidor): usa rehalife_reservation_ids_json.
     rehalife_reservation_id = fields.Many2one(
         'rehalife.reservation',
         string='Reserva Rehalife',
@@ -101,6 +102,7 @@ class PosOrderLine(models.Model):
                 'partner': line.order_id.partner_id,
                 'product_id': line.product_id.id,
                 'qty': line.qty,
+                'price_unit': line.price_unit,
                 'reservation_ids': line._rehalife_reservations().ids,
                 'is_refund': bool(refunded) or line.qty < 0,
                 'refunded_has_reservations': bool(refunded and refunded._rehalife_reservations()),
@@ -113,8 +115,9 @@ class PosOrderLine(models.Model):
                                         check_duplicates=False):
         """Valida las reservas de un conjunto de líneas y devuelve los errores.
 
-        `entries`: dicts {label, partner, product_id, qty, reservation_ids,
-        is_refund, refunded_has_reservations}.
+        `entries`: dicts {label, partner, product_id, qty, price_unit,
+        reservation_ids, is_refund, refunded_has_reservations}. price_unit
+        solo se compara si get_pos_charge_info marca enforce_price.
         `ignore_order_ids`: órdenes propias (no cuentan como "otra orden").
         `lock`: bloquea las filas de las reservas (SELECT ... FOR UPDATE,
         ordenado por id para no generar deadlocks entre dos cajas).
@@ -174,7 +177,12 @@ class PosOrderLine(models.Model):
         for reservation_id, order_name in self.env.cr.fetchall():
             other_orders.setdefault(reservation_id, order_name)
 
-        service_status = self.env['rehalife.reservation'].sudo().get_pos_service_status(all_ids)
+        # Datos de cobro (producto, precio, si es cobrable). Con lock=True es
+        # el control definitivo al pagar: rehalife_seguros puede, con este
+        # contexto, crear el Pedido Marco del mes que falte.
+        charge_info = self.env['rehalife.reservation'].sudo().with_context(
+            rehalife_pos_paying=bool(lock),
+        ).get_pos_charge_info(all_ids)
 
         branch_restricted = self.env['rehalife.reservation']._is_pos_branch_restricted()
         user_branch = self.env.user.rehalife_branch_id
@@ -258,14 +266,21 @@ class PosOrderLine(models.Model):
                             'La reserva %s ya está cobrada en la orden %s.' % (label, other_orders[rid])
                         )
 
-                info = service_status.get(rid)
-                if not info or info['status'] != 'ready':
-                    motivo = info['message'] if info else 'la reserva no existe.'
+                info = charge_info.get(rid)
+                if not info or not info['chargeable']:
+                    motivo = (info['reason'] or info['message']) if info else 'la reserva no existe.'
                     errors.append('La reserva %s no se puede cobrar: %s' % (label, motivo))
                 elif info['product_id'] != entry['product_id']:
                     errors.append(
                         'La reserva %s no se puede cobrar: la línea no usa el producto del '
                         'servicio (%s).' % (label, info['product_name'])
+                    )
+                elif info.get('enforce_price') and entry.get('price_unit') is not None                         and abs((entry['price_unit'] or 0.0) - info['price_unit']) > 0.01:
+                    errors.append(
+                        'La reserva %s debe cobrarse a %.2f (la línea tiene %.2f). Elimina la '
+                        'línea y vuelve a agregarla desde el diálogo "Reservas".' % (
+                            label, info['price_unit'], entry['price_unit'] or 0.0,
+                        )
                     )
 
         if check_duplicates:
@@ -336,12 +351,13 @@ class PosOrderLine(models.Model):
             self._rehalife_check_lines()
         return result
 
-    # ─── RPC para el POS (Fase 3) ────────────────────────────────────────────
+    # ─── RPC para el POS (Fase 3: lo llama reservation_payment_check.js) ────────────────────────────────────────────
     @api.model
     def check_reservations_payable(self, partner_id, order_uuid, lines):
         """Verificación previa al pago, llamada desde el POS.
 
-        `lines` = [{product_id, qty, reservation_ids}]. `order_uuid` es la
+        `lines` = [{product_id, qty, price_unit, reservation_ids, label}]
+        (price_unit opcional). `order_uuid` es la
         orden actual: si ya se sincronizó al servidor, no cuenta como "otra
         orden". Mismas validaciones que el control al pagar, sin bloquear
         filas. Nunca lanza excepción: devuelve {ok, errors}.
@@ -366,6 +382,7 @@ class PosOrderLine(models.Model):
                     'partner': partner,
                     'product_id': line.get('product_id'),
                     'qty': qty,
+                    'price_unit': line.get('price_unit'),
                     'reservation_ids': ids,
                     'is_refund': qty < 0,
                     'refunded_has_reservations': False,

@@ -138,6 +138,21 @@ class RehalifeReservation(models.Model):
             rec.monto_cobertura_seguro = nc.monto_cubierto
             rec.monto_a_pagar_paciente = precio_real - nc.monto_cubierto
 
+    @api.model
+    def get_pos_charge_info(self, reservation_ids):
+        """Extiende el dato de cobro del POS (rehalife_o18) para las reservas
+        de seguro: el paciente paga solo su copago."""
+        result = super().get_pos_charge_info(reservation_ids)
+        for reservation in self.browse(list(result)).exists():
+            info = result[reservation.id]
+            info['modalidad'] = reservation.modalidad or 'particular'
+            if reservation.modalidad != 'seguro' or not info['chargeable']:
+                continue
+            info['price_unit'] = reservation.monto_a_pagar_paciente
+            info['insurer_amount'] = reservation.monto_cobertura_seguro
+            info['line_note'] = 'Seguro cubre %.2f Bs.' % reservation.monto_cobertura_seguro
+        return result
+
     @api.onchange('aseguradora_id')
     def _onchange_aseguradora_id_reset_pedido_marco(self):
         if self.pedido_marco_id and self.pedido_marco_id.partner_id != self.aseguradora_id:

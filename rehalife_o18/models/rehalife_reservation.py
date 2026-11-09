@@ -805,3 +805,35 @@ class RehalifeReservation(models.Model):
                 'message': messages[status] % service_name if not ready else '',
             }
         return result
+    # ─── POS: qué y cuánto se cobra por reserva (Pagos anticipados, Fase 3) ──
+    @api.model
+    def get_pos_charge_info(self, reservation_ids):
+        """Datos de cobro de cada reserva para el diálogo "Reservas" del POS y
+        para la validación del servidor (pos.order.line).
+
+        Devuelve {reservation_id: {status, product_id, product_name,
+        list_price, message, price_unit, chargeable, reason, enforce_price,
+        modalidad, insurer_amount, coverage_pct, line_note}}.
+
+        Base (particular): precio = precio de lista del producto del servicio;
+        cobrable solo si el servicio está 'ready'. rehalife_seguros lo extiende
+        para las reservas de seguro (copago del paciente). Con
+        `enforce_price` = True la línea del POS debe tener exactamente
+        `price_unit` (tolerancia 0.01), lo valida el servidor al pagar.
+        """
+        status = self.get_pos_service_status(reservation_ids)
+        result = {}
+        for rid, info in status.items():
+            ready = info['status'] == 'ready'
+            result[rid] = dict(
+                info,
+                price_unit=info['list_price'] if ready else 0.0,
+                chargeable=ready,
+                reason=info['message'],
+                enforce_price=False,
+                modalidad='particular',
+                insurer_amount=0.0,
+                coverage_pct=0.0,
+                line_note='',
+            )
+        return result
