@@ -42,9 +42,17 @@ class SaleOrderLine(models.Model):
         help='Porcentaje (0 a 100) del precio del servicio que cubre la aseguradora. '
              'Solo se usa en Pedidos de Venta Marco.',
     )
+    # precompute=True es OBLIGATORIO: price_unit (nativo) es store+required+
+    # precompute y depende de este campo. Si este no fuera precompute, Odoo
+    # (odoo/fields.py, _setup_dependencies) apaga el precompute de price_unit
+    # con el warning "cannot be precomputed as it depends on non-precomputed
+    # field", el INSERT de la línea sale sin price_unit y PostgreSQL rechaza
+    # el NULL ("Missing required value ... price_unit") en TODO pedido de
+    # venta. Sus dependencias (product_id, porcentaje_cobertura) no son
+    # computadas, así que puede precomputarse sin arrastrar a nadie.
     precio_servicio_pvm = fields.Float(
         string='Precio servicio', compute='_compute_precio_servicio_pvm', store=True,
-        readonly=True, digits='Product Price',
+        precompute=True, readonly=True, digits='Product Price',
         help='Precio del servicio cuando se fijó el % o el producto de la línea. '
              'Cambiar después el precio del servicio no modifica el Pedido Marco.',
     )
@@ -59,7 +67,7 @@ class SaleOrderLine(models.Model):
         # de precio del servicio no recalcula PVM existentes.
         for line in self:
             if line._es_linea_pvm() and line.product_id:
-                line.precio_servicio_pvm = line.product_id.lst_price
+                line.precio_servicio_pvm = line.product_id.lst_price or 0.0
             else:
                 line.precio_servicio_pvm = 0.0
 
@@ -77,11 +85,15 @@ class SaleOrderLine(models.Model):
         # Las líneas de PVM nunca pasan por la lista de precios: su price_unit
         # es el monto de la aseguradora. Un cambio de cantidad estimada
         # vuelve a dar el mismo monto (usa precio_servicio_pvm, no el precio
-        # actual). El resto de pedidos de venta sigue el cálculo nativo.
+        # actual). El resto de pedidos de venta (y las secciones/notas, que
+        # el nativo deja en 0.0) sigue el cálculo nativo.
+        # Todas las dependencias agregadas (porcentaje_cobertura: campo plano;
+        # precio_servicio_pvm: precompute=True) son precomputables, así que
+        # price_unit conserva su precompute nativo.
         pvm_lines = self.filtered(lambda l: l.order_id and l._es_linea_pvm())
         super(SaleOrderLine, self - pvm_lines)._compute_price_unit()
         for line in pvm_lines:
-            monto = line._monto_cobertura_pvm()
+            monto = line._monto_cobertura_pvm() or 0.0
             line.price_unit = monto
             line.technical_price_unit = monto
 
