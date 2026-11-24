@@ -59,13 +59,15 @@ class SalesIvaXlsx(models.AbstractModel):
                 descuento = round(descuento + (-1 * line.price_total), 2)
 
         amount_total = inv.amount_total_signed + round(descuento * exchange, 2)
+        titular = self._siat_titular(inv)
 
         return {
             'invoice_date': inv.invoice_date.strftime('%d/%m/%Y') if inv.invoice_date else '',
             'invoice_number': getattr(inv, 'siat_numero_factura', '') or '',
             'auth_code': getattr(inv, 'siat_cuf', '') or '',
-            'client_vat': inv.partner_id.vat or '',
-            'client_name': inv.partner_id.name or '',
+            'client_vat': titular['vat'],
+            'client_complement': titular['complement'],
+            'client_name': titular['name'],
             'amount_total': amount_total,
             'base_debito_fiscal': inv.amount_total_signed,
             'debito_fiscal': round(float(inv.amount_tax_signed), 2),
@@ -73,6 +75,59 @@ class SalesIvaXlsx(models.AbstractModel):
             'name': inv.name or '',
             'unique_code': getattr(inv, 'unique_code', '') or '',
         }
+
+    def _siat_titular(self, inv):
+        """Titular al que realmente se emitió la factura en el SIAT, que
+        puede no ser el partner_id de Odoo (Razón Social / NIT de
+        facturación del contacto). Orden de prioridad:
+          1. Lo que va en el XML enviado al SIAT (siat_xml_factura) — es la
+             fuente de verdad, aunque el contacto se haya editado después.
+          2. Los campos de facturación SIAT del contacto, si no son los
+             valores por defecto (S/N / 0000000).
+          3. Nombre y NIT/CI del contacto en Odoo.
+        Solo se usa en el Libro de Ventas IVA."""
+        partner = inv.partner_id
+        titular = {
+            'name': partner.name or '',
+            'vat': partner.vat or '',
+            'complement': getattr(partner, 'siat_complemento', '') or '',
+        }
+
+        razon = getattr(partner, 'siat_razon_social_facturacion', '') or ''
+        nit = getattr(partner, 'siat_nit_facturacion', '') or ''
+        if razon and razon != 'S/N':
+            titular['name'] = razon
+        if nit and nit != '0000000':
+            titular['vat'] = nit
+
+        xml_data = self._parse_siat_xml(getattr(inv, 'siat_xml_factura', '') or '')
+        if xml_data.get('nombreRazonSocial'):
+            titular['name'] = xml_data['nombreRazonSocial']
+        if xml_data.get('numeroDocumento'):
+            titular['vat'] = xml_data['numeroDocumento']
+        if 'nombreRazonSocial' in xml_data:
+            # Si hay XML, el complemento es el que se envió (puede ir vacío).
+            titular['complement'] = xml_data.get('complemento', '')
+        return titular
+
+    def _parse_siat_xml(self, xml_string):
+        """Extrae los datos del cliente de la cabecera del XML SIAT.
+        Devuelve {} si no hay XML o no se puede leer."""
+        if not xml_string:
+            return {}
+        try:
+            from lxml import etree
+            root = etree.fromstring(xml_string.encode('utf-8'))
+        except Exception as e:  # XML corrupto: no romper el reporte
+            _logger.warning('Libro Ventas IVA: no se pudo leer el XML SIAT: %s', e)
+            return {}
+
+        result = {}
+        for tag in ('nombreRazonSocial', 'numeroDocumento', 'complemento'):
+            nodes = root.xpath('//*[local-name()="cabecera"]/*[local-name()=$t]', t=tag)
+            if nodes:
+                result[tag] = (nodes[0].text or '').strip()
+        return result
 
     # ------------------------------------------------------------------
     # Escritura del Excel
@@ -103,7 +158,7 @@ class SalesIvaXlsx(models.AbstractModel):
             sheet.write(r, 3, row['invoice_number'], cell_fmt)
             sheet.write(r, 4, row['auth_code'], cell_fmt)
             sheet.write(r, 5, row['client_vat'], cell_fmt)
-            sheet.write(r, 6, '', cell_fmt)
+            sheet.write(r, 6, row['client_complement'], cell_fmt)
             sheet.write(r, 7, row['client_name'], cell_fmt)
             sheet.write(r, 8, row['amount_total'], cell_fmt)
             sheet.write(r, 9, '0.00', cell_fmt)
