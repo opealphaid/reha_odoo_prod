@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Rehalife',
-    'version': '18.0.1.4.1',
+    'version': '18.0.1.4.2',
     'summary': 'Modulo de gestion ',
     'description': """
         Modulo de integracion con el backend de Rehalife

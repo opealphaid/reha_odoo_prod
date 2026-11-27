@@ -11,7 +11,7 @@
             <list string="Reservas"
                   decoration-success="invoice_status == 'paid'"
                   decoration-info="invoice_status == 'invoiced'"
-                  decoration-warning="status == 'COMPLETED' and invoice_status == 'pending'"
+                  decoration-warning="(status == 'COMPLETED' and invoice_status == 'pending') or backend_sync_state == 'pending_notify'"
                   decoration-danger="backend_sync_state == 'error' or alerta_pagada_cancelada"
                   decoration-muted="invoice_status == 'cancelled'">
 
@@ -30,7 +30,9 @@
                 <field name="invoice_id" optional="show"/>
                 <field name="pos_order_id" optional="show"/>
                 <field name="pos_paid_amount" optional="hide"/>
-                <field name="backend_sync_state" optional="show"/>
+                <field name="backend_sync_state" optional="show"
+                       decoration-warning="backend_sync_state == 'pending_notify'"
+                       decoration-danger="backend_sync_state == 'error'"/>
                 <field name="alerta_pagada_cancelada" string="Pagada/Cancelada" optional="show"/>
                 <field name="doctor_name" optional="hide"/>
 
@@ -50,7 +52,7 @@
                         string="Reintentar envío"
                         type="object"
                         icon="fa-refresh"
-                        invisible="backend_sync_state != 'error'"
+                        invisible="backend_sync_state not in ('error', 'pending_notify')"
                         class="btn-danger"/>
             </list>
         </field>
@@ -89,7 +91,7 @@
                             string="🔄 Reintentar envío al Backend"
                             type="object"
                             class="btn-danger"
-                            invisible="backend_sync_state != 'error'"/>
+                            invisible="backend_sync_state not in ('error', 'pending_notify')"/>
 
                     <!-- Pagos anticipados (Fase 2): apagar la alerta a mano -->
                     <button name="action_marcar_alerta_revisada"
@@ -148,6 +150,16 @@
                         <strong>⚠️ No se pudo notificar el pago al backend Rehalife:</strong>
                         <field name="backend_sync_error" readonly="1" nolabel="1"/>
                         <p class="mb-0">Corrige la causa (por ejemplo, credenciales del backend en Ajustes) y usa el botón "Reintentar envío al Backend".</p>
+                    </div>
+
+                    <!-- Pagada en el POS, aviso al backend todavía no enviado
+                         (sale después de guardar la venta; si no sale, el
+                         cron lo reintenta pasados 5 minutos). -->
+                    <div class="alert alert-warning mb-3"
+                         role="alert"
+                         invisible="backend_sync_state != 'pending_notify'">
+                        <strong>⏳ Pago por notificar al backend Rehalife.</strong>
+                        <p class="mb-0">Se envía automáticamente después de guardar la venta; si sigue así más de unos minutos, el cron lo reintenta o puedes usar "Reintentar envío al Backend".</p>
                     </div>
 
                     <!-- Grupo POS en el sheet -->
@@ -243,6 +255,9 @@
                 <filter name="backend_sync_error"
                         string="Error de Sync. Backend"
                         domain="[('backend_sync_state', '=', 'error')]"/>
+                <filter name="backend_sync_pending_notify"
+                        string="Pago por Notificar al Backend"
+                        domain="[('backend_sync_state', '=', 'pending_notify')]"/>
                 <filter name="alerta_pagada_cancelada"
                         string="Pagadas Canceladas"
                         domain="[('alerta_pagada_cancelada', '=', True)]"/>

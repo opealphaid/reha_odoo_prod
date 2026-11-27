@@ -1,4 +1,6 @@
 import logging
+from datetime import timedelta
+
 from odoo import api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
@@ -6,6 +8,66 @@ _logger = logging.getLogger(__name__)
 
 # Estados de los que una reserva ya no sale: sync_from_nextjs no los pisa.
 TERMINAL_STATUSES = ('CANCELLED', 'NO_SHOW', 'COMPLETED')
+
+# Aviso de pago al backend (register-payment). Solo se avisa de reservas en
+# estos estados de sincronización, pagadas y con su orden POS pagada.
+BACKEND_NOTIFY_STATES = ('pending_notify', 'error')
+BACKEND_NOTIFY_ORDER_STATES = ('paid', 'done', 'invoiced')
+# Clave en cr.postcommit.data: un solo callback por transacción.
+BACKEND_NOTIFY_POSTCOMMIT_KEY = 'rehalife_o18.notify_backend_payment'
+# Minutos tras los que el cron toma una reserva que quedó en 'pending_notify'
+# (el proceso murió entre el commit de la venta y el callback).
+BACKEND_PENDING_NOTIFY_GRACE_MINUTES = 5
+BACKEND_SKIPPED_MSG = ('No se intentó: falló la notificación de otra reserva de la misma '
+                       'orden. Se reintenta por cron.')
+
+
+def _run_backend_payment_postcommit(registry, uid, context, pending):
+    """Callback de cr.postcommit: avisa al backend el pago de las reservas.
+
+    Corre cuando la venta YA está guardada (después del commit), con su propio
+    cursor. Recibe solo el registry, el uid, el contexto y los ids (nunca
+    recordsets: los del env original son de un cursor que ya terminó).
+    Nunca lanza: la venta ya está guardada y un error aquí no debe llegar al
+    POS. Lo que no se pueda avisar queda en 'error' (o en 'pending_notify') y
+    lo toma el cron.
+    """
+    ids = list(dict.fromkeys(pending.get('ids') or []))
+    if not ids:
+        return
+    try:
+        with registry.cursor() as cr:
+            env = api.Environment(cr, uid, context)
+            Reservation = env['rehalife.reservation']
+            failed = False
+            for reservation_id in ids:
+                try:
+                    reservation = Reservation._lock_for_backend_notify(reservation_id)
+                    if not reservation:
+                        # La tiene otro proceso (cron/botón), ya está
+                        # sincronizada o su orden no quedó pagada.
+                        cr.commit()
+                        continue
+                    if failed:
+                        reservation.write({
+                            'backend_sync_state': 'error',
+                            'backend_sync_error': BACKEND_SKIPPED_MSG,
+                        })
+                    elif not reservation._notify_backend_payment():
+                        failed = True
+                    cr.commit()
+                except Exception:
+                    cr.rollback()
+                    failed = True
+                    _logger.exception(
+                        '[POS] Error al notificar al backend el pago de la reserva id=%s '
+                        '(queda para el cron).', reservation_id,
+                    )
+    except Exception:
+        _logger.exception(
+            '[POS] Error en el aviso de pago al backend después del commit (reservas %s). '
+            'La venta está guardada; el cron reintenta.', ids,
+        )
 
 
 class RehalifeReservation(models.Model):
@@ -109,8 +171,12 @@ class RehalifeReservation(models.Model):
     )
 
     # ── Sincronización del pago con el backend Next.js ───────────────────────
+    # 'pending_notify': pagada en el POS; el aviso al backend sale DESPUÉS del
+    # commit de la venta (_register_backend_payment_postcommit). Si el proceso
+    # muere antes de avisar, el cron la toma pasados 5 minutos.
     backend_sync_state = fields.Selection([
         ('draft',  'Pendiente'),
+        ('pending_notify', 'Por notificar'),
         ('synced', 'Sincronizado'),
         ('error',  'Error'),
     ], string='Estado Sync. Backend', default='draft', readonly=True)
@@ -237,6 +303,71 @@ class RehalifeReservation(models.Model):
             )
             return False
 
+    @api.model
+    def _lock_for_backend_notify(self, reservation_id):
+        """Bloquea la reserva (FOR UPDATE SKIP LOCKED) si sigue pendiente de
+        avisar al backend: backend_sync_state en pending_notify/error, pagada
+        y con su orden POS pagada. Devuelve el registro, o un recordset vacío
+        si otro proceso la tiene bloqueada o ya no corresponde avisar.
+
+        Evita que el aviso postcommit, el cron y el botón de reintento avisen
+        dos veces la misma reserva. El bloqueo dura hasta el commit/rollback
+        de la transacción que lo pidió.
+        """
+        self.env.cr.execute(
+            """
+            SELECT r.id
+              FROM rehalife_reservation r
+              JOIN pos_order o ON o.id = r.pos_order_id
+             WHERE r.id = %s
+               AND r.backend_sync_state IN %s
+               AND r.invoice_status = 'paid'
+               AND o.state IN %s
+               FOR UPDATE OF r SKIP LOCKED
+            """,
+            (reservation_id, BACKEND_NOTIFY_STATES, BACKEND_NOTIFY_ORDER_STATES),
+        )
+        row = self.env.cr.fetchone()
+        if not row:
+            return self.browse()
+        reservation = self.browse(row[0])
+        # Lo leído antes del bloqueo puede estar viejo en la caché.
+        reservation.invalidate_recordset()
+        return reservation
+
+    def _register_backend_payment_postcommit(self):
+        """Deja estas reservas en 'pending_notify' y programa el aviso al
+        backend para DESPUÉS del commit de la transacción actual.
+
+        Si la transacción se deshace (p. ej. falla la factura después del
+        pago), Odoo vacía cr.postcommit en el rollback y el aviso nunca sale:
+        el backend no registra un pago que Odoo no tiene. Un solo callback
+        por transacción (clave en cr.postcommit.data); las llamadas
+        siguientes solo agregan ids.
+        """
+        if not self:
+            return
+        self.write({
+            'backend_sync_state': 'pending_notify',
+            'backend_sync_error': False,
+        })
+        cr = self.env.cr
+        pending = cr.postcommit.data.get(BACKEND_NOTIFY_POSTCOMMIT_KEY)
+        if pending is None:
+            pending = {'ids': []}
+            cr.postcommit.data[BACKEND_NOTIFY_POSTCOMMIT_KEY] = pending
+            registry = self.env.registry
+            uid = self.env.uid
+            context = {
+                key: self.env.context[key]
+                for key in ('lang', 'tz', 'allowed_company_ids')
+                if key in self.env.context
+            }
+            cr.postcommit.add(
+                lambda: _run_backend_payment_postcommit(registry, uid, context, pending)
+            )
+        pending['ids'].extend(self.ids)
+
     def _get_backend_paid_amount(self):
         """Monto de ESTA reserva para register-payment.
 
@@ -261,21 +392,38 @@ class RehalifeReservation(models.Model):
     @api.model
     def _cron_retry_backend_payment(self, limit=20, max_consecutive_failures=3):
         """Cron: reintenta register-payment en reservas pagadas en el POS
-        cuya notificación al backend falló.
+        cuya notificación al backend falló ('error') o nunca salió
+        ('pending_notify' con más de 5 minutos: el proceso murió entre el
+        commit de la venta y el aviso postcommit).
 
         Lote chico y corte tras varios fallos seguidos: si el backend está
         caído, cada llamada espera hasta 15 s y no tiene sentido seguir. Cada
         intento actualiza write_date, así que la siguiente corrida empieza
         por las que llevan más tiempo sin reintentarse.
         """
+        limite_pendientes = fields.Datetime.now() - timedelta(
+            minutes=BACKEND_PENDING_NOTIFY_GRACE_MINUTES)
         reservations = self.search([
             ('invoice_status', '=', 'paid'),
-            ('backend_sync_state', '=', 'error'),
             ('pos_order_id', '!=', False),
+            '|',
+            ('backend_sync_state', '=', 'error'),
+            '&',
+            ('backend_sync_state', '=', 'pending_notify'),
+            ('write_date', '<', limite_pendientes),
         ], order='write_date asc, id asc', limit=limit)
         ok = failures = 0
-        for reservation in reservations:
-            if reservation._notify_backend_payment():
+        for reservation_id in reservations.ids:
+            # SKIP LOCKED: si el aviso postcommit o el botón la están
+            # procesando, se salta. Commit por reserva para soltar el bloqueo
+            # y no perder lo ya avisado si una llamada posterior falla.
+            reservation = self._lock_for_backend_notify(reservation_id)
+            if not reservation:
+                self.env.cr.commit()
+                continue
+            success = reservation._notify_backend_payment()
+            self.env.cr.commit()
+            if success:
                 ok += 1
                 failures = 0
                 continue
@@ -305,7 +453,30 @@ class RehalifeReservation(models.Model):
         recargue la página manualmente.
         """
         self.ensure_one()
-        success = self._notify_backend_payment()
+        # Mismo bloqueo que el aviso postcommit y el cron: no se avisa dos
+        # veces una reserva que otro proceso está notificando.
+        reservation = self._lock_for_backend_notify(self.id)
+        if not reservation:
+            self.invalidate_recordset(['backend_sync_state'])
+            message = (
+                'La reserva ya está sincronizada con el backend.'
+                if self.backend_sync_state == 'synced' else
+                'No se puede reintentar ahora: la reserva no está pendiente de aviso, su '
+                'orden POS no está pagada o se está notificando en este momento. '
+                'Recarga y vuelve a intentar.'
+            )
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Sin cambios',
+                    'message': message,
+                    'type': 'warning',
+                    'sticky': False,
+                    'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+                },
+            }
+        success = reservation._notify_backend_payment()
 
         if success:
             params = {
