@@ -83,7 +83,7 @@
                                 </div>
                                 <div style="display: flex; justify-content: space-between;">
                                     <span>
-                                        <t t-esc="props.formatCurrency(line.cantidad, false)"/> X <t t-esc="props.formatCurrency(line.precio_unitario)"/> - <t t-esc="props.formatCurrency(line.descuento or 0)"/>
+                                        <t t-esc="props.formatCurrency(line.cantidad, false)"/> X <t t-esc="props.formatCurrency(line.precio_unitario)"/><t t-if="line.descuento > 0"> - <t t-esc="props.formatCurrency(line.descuento)"/></t>
                                     </span>
                                     <span style="font-weight: bold;">
                                         <t t-esc="props.formatCurrency(line.subtotal)"/>
@@ -145,9 +145,10 @@
                         </div>
                     </div>
 
-                    <!-- Monto en letras -->
-                    <div style="text-align: center; margin: 10px 0; font-size: 9px; font-style: italic;">
-                        Son: [Monto en letras] Bolivianos
+                    <!-- Monto en letras (alpha_siat _siat_monto_a_letras; ya trae "NN/100 Bolivianos").
+                         Sin dato (cache viejo / error) se oculta la línea completa. -->
+                    <div t-if="props.data.monto_letras" style="text-align: center; margin: 10px 0; font-size: 9px; font-style: italic;">
+                        Son: <t t-esc="props.data.monto_letras"/>
                     </div>
 
                     <!-- Separador -->

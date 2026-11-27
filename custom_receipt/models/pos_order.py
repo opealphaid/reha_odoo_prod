@@ -71,6 +71,9 @@ class PosOrder(models.Model):
             'has_siat': True,
             'siat_info': siat_info,
             'qr_url': order._receipt_siat_qr_url(),
+            # Mismo total que imprime el recibo; misma función que el PDF de
+            # la factura (alpha_siat/models/account_move_pdf.py).
+            'monto_letras': self.env['account.move']._siat_monto_a_letras(order.amount_total),
         }
 
     def _receipt_siat_lines(self):

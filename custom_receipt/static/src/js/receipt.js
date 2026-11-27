@@ -103,6 +103,7 @@ patch(OrderReceipt.prototype, {
             const cached = SIAT_CACHE.get(orderName);
             this.props.data.custom_qr_code = cached.custom_qr_code;
             this.props.data.siat_info = cached.siat_info;
+            this.props.data.monto_letras = cached.monto_letras;
             this.props.data.footer = cached.footer; // ✅ Cargar footer del cache
         }
 
@@ -159,6 +160,7 @@ patch(OrderReceipt.prototype, {
                 const cached = SIAT_CACHE.get(orderName);
                 this.props.data.custom_qr_code = cached.custom_qr_code;
                 this.props.data.siat_info = cached.siat_info;
+                this.props.data.monto_letras = cached.monto_letras;
                 // Usar la leyenda del cache si existe, sino usar la nueva
                 if (cached.footer) {
                     this.props.data.footer = cached.footer;
@@ -189,12 +191,14 @@ patch(OrderReceipt.prototype, {
                 SIAT_CACHE.set(orderName, {
                     custom_qr_code: qrBase64,
                     siat_info: siatInfo,
+                    monto_letras: result.monto_letras || null,
                     footer: this.props.data.footer // ✅ Guardar la leyenda en cache
                 });
 
                 // Inyectar datos en props
                 this.props.data.custom_qr_code = qrBase64;
                 this.props.data.siat_info = siatInfo;
+                this.props.data.monto_letras = result.monto_letras || null;
 
                 // Forzar re-render
                 this.render();

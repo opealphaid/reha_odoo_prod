@@ -624,94 +624,100 @@ class AccountMove(models.Model):
             return None
 
     def _convertir_monto_a_letras(self, monto):
-        """Convierte monto a letras - SIEMPRE EN BOLIVIANOS"""
+        """Convierte monto a letras - SIEMPRE EN BOLIVIANOS.
+
+        Ignora `monto` (como siempre): usa el total en Bs. de la factura
+        (siat_monto_total_bolivianos si es moneda extranjera)."""
+        if self.siat_es_moneda_extranjera:
+            monto_bob = self.siat_monto_total_bolivianos
+        else:
+            monto_bob = self.amount_total
+        return self._siat_monto_a_letras(monto_bob)
+
+    @api.model
+    def _siat_monto_a_letras(self, monto):
+        """Conversión pura de un monto en Bs. a texto SIAT:
+        "<Texto> NN/100 Bolivianos" (ej. 250 → "Doscientos Cincuenta 00/100
+        Bolivianos"). Cada palabra con mayúscula inicial salvo la "y".
+        Soporta hasta 999.999,99 (no hay ventas de millones); fuera de rango
+        o ante cualquier error devuelve el monto en números.
+        La usan el PDF (_convertir_monto_a_letras) y el recibo del POS
+        (custom_receipt, pos.order.get_receipt_siat_data)."""
         try:
-            # Siempre usar el monto en bolivianos
-            if self.siat_es_moneda_extranjera:
-                monto_bob = self.siat_monto_total_bolivianos
-            else:
-                monto_bob = self.amount_total
+            centavos_totales = int(round(abs(monto or 0.0) * 100))
+            entero, decimal = divmod(centavos_totales, 100)
+            if entero >= 1000000:
+                raise ValueError("monto fuera de rango (millones)")
 
-            entero = int(monto_bob)
-            decimal = int(round((monto_bob - entero) * 100))
-
-            # Conversión básica a texto
             if entero == 0:
-                texto = "Cero"
-            elif entero < 10:
-                unidades = ['Cero', 'Uno', 'Dos', 'Tres', 'Cuatro', 'Cinco',
-                            'Seis', 'Siete', 'Ocho', 'Nueve']
-                texto = unidades[entero]
-            elif entero < 20:
-                especiales = ['Diez', 'Once', 'Doce', 'Trece', 'Catorce', 'Quince',
-                              'Dieciséis', 'Diecisiete', 'Dieciocho', 'Diecinueve']
-                texto = especiales[entero - 10]
-            elif entero < 100:
-                decenas = ['', '', 'Veinte', 'Treinta', 'Cuarenta', 'Cincuenta',
-                           'Sesenta', 'Setenta', 'Ochenta', 'Noventa']
-                unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco',
-                            'seis', 'siete', 'ocho', 'nueve']
-                d = entero // 10
-                u = entero % 10
-                if u == 0:
-                    texto = decenas[d]
-                else:
-                    texto = f"{decenas[d]} y {unidades[u]}"
+                texto = "cero"
             elif entero < 1000:
                 texto = self._convertir_centenas(entero)
             else:
-                # Para miles
-                miles = entero // 1000
-                resto = entero % 1000
+                miles, resto = divmod(entero, 1000)
                 if miles == 1:
                     texto_miles = "mil"
                 else:
-                    texto_miles = f"{self._convertir_centenas(miles)} mil"
-
+                    # Delante de "mil": un / veintiún / treinta y un ...
+                    texto_miles = f"{self._convertir_centenas(miles, apocope=True)} mil"
                 if resto > 0:
                     texto = f"{texto_miles} {self._convertir_centenas(resto)}"
                 else:
                     texto = texto_miles
 
-            return f"{texto.title()} {decimal:02d}/100 Bolivianos"
+            palabras = [
+                p if p == 'y' else p[:1].upper() + p[1:]
+                for p in texto.split()
+            ]
+            return f"{' '.join(palabras)} {decimal:02d}/100 Bolivianos"
 
         except Exception as e:
             _logger.error(f"Error convirtiendo monto: {str(e)}")
-            monto_final = self.siat_monto_total_bolivianos if self.siat_es_moneda_extranjera else self.amount_total
-            return f"{monto_final:.2f} Bolivianos"
+            return f"{(monto or 0.0):.2f} Bolivianos"
 
-    def _convertir_centenas(self, numero):
-        """Convierte números de 0-999 a texto"""
+    @api.model
+    def _convertir_centenas(self, numero, apocope=False):
+        """Convierte números de 0-999 a texto en minúsculas.
+
+        apocope=True se usa delante de "mil": lo que termina en "uno" pasa a
+        "un" (1 → un, 21 → veintiún, 31 → treinta y un, 101 → ciento un)."""
+        unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco',
+                    'seis', 'siete', 'ocho', 'nueve']
+        especiales = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince',
+                      'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve']
+        veintes = ['veinte', 'veintiuno', 'veintidós', 'veintitrés', 'veinticuatro',
+                   'veinticinco', 'veintiséis', 'veintisiete', 'veintiocho', 'veintinueve']
+        decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta',
+                   'sesenta', 'setenta', 'ochenta', 'noventa']
+        centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos',
+                    'seiscientos', 'setecientos', 'ochocientos', 'novecientos']
+
         if numero == 0:
             return ""
-        elif numero < 20:
-            unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve',
-                        'diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho',
-                        'diecinueve']
+        elif numero < 10:
+            if apocope and numero == 1:
+                return "un"
             return unidades[numero]
+        elif numero < 20:
+            return especiales[numero - 10]
+        elif numero < 30:
+            if apocope and numero == 21:
+                return "veintiún"
+            return veintes[numero - 20]
         elif numero < 100:
-            decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta',
-                       'sesenta', 'setenta', 'ochenta', 'noventa']
-            unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco',
-                        'seis', 'siete', 'ocho', 'nueve']
-            d = numero // 10
-            u = numero % 10
+            d, u = divmod(numero, 10)
             if u == 0:
                 return decenas[d]
-            else:
-                return f"{decenas[d]} y {unidades[u]}"
+            unidad = "un" if (apocope and u == 1) else unidades[u]
+            return f"{decenas[d]} y {unidad}"
         else:
-            centenas = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos',
-                        'seiscientos', 'setecientos', 'ochocientos', 'novecientos']
-            c = numero // 100
-            resto = numero % 100
-
+            c, resto = divmod(numero, 100)
             if numero == 100:
                 return "cien"
             elif resto == 0:
                 return centenas[c]
             else:
-                return f"{centenas[c]} {self._convertir_centenas(resto)}"
+                return f"{centenas[c]} {self._convertir_centenas(resto, apocope)}"
 
     def _formatear_numero(self, numero, decimales=2):
 

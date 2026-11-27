@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'POS Custom Receipt - Reha',
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0.2',
     'category': 'Point of Sale',
     'summary': 'Personalización del recibo POS con QR',
     'author': 'Alpha Systems S.R.L.',
