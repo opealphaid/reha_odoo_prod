@@ -1086,20 +1086,17 @@ class PosOrder(models.Model):
 
         company = self.company_id
 
-        qr_base_url = self._get_siat_qr_base_url()
-
-        qr_data = {
-            'nit': company.vat or '',
-            'cuf': self.siat_cuf or '',
-            'numero': self.siat_numero_factura or 0,
-            't': 1
-        }
-
-        siat_qr_url = f"{qr_base_url}nit={qr_data['nit']}&cuf={qr_data['cuf']}&numero={qr_data['numero']}&t={qr_data['t']}"
+        # Ticket (rollo → t=1); base según codigo_ambiente de la config SIAT
+        # de la compañía. Antes llamaba a self._get_siat_qr_base_url(), que
+        # solo existe en account.move (AttributeError en pos.order).
+        # sudo: solo se lee codigo_ambiente (ACL de la config = group_system).
+        config = self.env['alpha.siat.config'].sudo()._get_config_for_company(company)
+        siat_qr_url = config.get_siat_qr_url(
+            company.vat, self.siat_cuf, self.siat_numero_factura or 0,
+            formato='rollo')
 
         _logger.info("=" * 100)
         _logger.info("[RECEIPT] PREPARANDO DATOS SIAT PARA EL RECEIPT")
-        _logger.info(f"  URL Base QR: {qr_base_url}")
         _logger.info(f"  NIT Emisor: {company.vat}")
         _logger.info(f"  CUF: {self.siat_cuf}")
         _logger.info(f"  Número Factura: {self.siat_numero_factura}")

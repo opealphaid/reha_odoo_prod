@@ -463,14 +463,16 @@ patch(ProductScreen.prototype, {
         const pos = this._pos;
         let partner = pos.models["res.partner"]?.getBy("id", partnerId);
         if (!partner) {
-            // Mismo patrón que antes de la Fase 3 (probado): leer y registrar
-            // el contacto en el store reactivo del POS.
-            const [partnerData] = await this._orm.read("res.partner", [partnerId], []);
-            if (partnerData) {
-                partner = pos.models["res.partner"].create(partnerData);
-            }
+            // PosData.read (mismo patrón que _loadProduct): usa los campos de
+            // _load_pos_data_fields y carga el registro en el store con sus
+            // relaciones bien resueltas. NUNCA orm.read + models[...].create():
+            // los Many2one crudos ([id, "nombre"]) creaban registros LOCALES
+            // (ej. "product.pricelist_1") que luego llegaban como string al
+            // INSERT de pos_order (bug 2026-11-26).
+            const loaded = await pos.data.read("res.partner", [partnerId]);
+            partner = Array.isArray(loaded) ? loaded[0] : null;
         }
-        return partner;
+        return partner || null;
     },
 
     async _loadProduct(productId) {
@@ -548,6 +550,16 @@ patch(ProductScreen.prototype, {
                 return false;
             }
             order.set_partner(partner);
+            // Defensa: si la orden quedó con una pricelist que no es un registro
+            // real del servidor (id no numérico, ej. "product.pricelist_1"),
+            // se deja la de la configuración del POS (puede ser vacía). Solo
+            // reasigna el campo: no recalcula precios (las líneas de reservas
+            // son price_type "manual").
+            const pricelist = order.pricelist_id;
+            if (pricelist && typeof pricelist.id !== "number") {
+                console.warn("[Reservas] Pricelist local en la orden, se reemplaza por la del POS:", pricelist.id);
+                order.update({ pricelist_id: pos.config.pricelist_id || false });
+            }
         }
 
         // ── 2. Agrupar por (producto, precio) ──────────────────────────────

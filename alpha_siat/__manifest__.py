@@ -1,6 +1,6 @@
 {
     "name": "Alpha SIAT - Bolivia Electronic Invoicing - Reha",
-    "version": "18.2",
+    "version": "18.3",
     "author": "ALPHA SYSTEMS",
     "license": "LGPL-3",
     "category": "Accounting/Localizations",

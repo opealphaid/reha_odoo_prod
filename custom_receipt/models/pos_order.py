@@ -111,12 +111,15 @@ class PosOrder(models.Model):
         return lines, round(subtotal_total, 2), round(descuento_total, 2)
 
     def _receipt_siat_qr_url(self):
-        """URL del QR de consulta SIAT. Se mantiene el valor que armaba antes
-        receipt.js (piloto, t=1); aislado aquí para poder reemplazarlo cuando
-        dependa del ambiente SIAT."""
+        """URL del QR de consulta SIAT del ticket (rollo → t=1). La base la
+        decide codigo_ambiente de la config SIAT de la compañía de la orden
+        (alpha.siat.config.get_siat_qr_url)."""
         self.ensure_one()
-        return (
-            'https://pilotosiat.impuestos.gob.bo/consulta/QR'
-            f'?nit={self.company_id.vat}&cuf={self.siat_cuf}'
-            f'&numero={self.siat_numero_factura}&t=1'
-        )
+        company = self.company_id
+        # sudo SOLO para leer codigo_ambiente: el ACL de alpha.siat.config
+        # es de base.group_system y el cajero del POS no lo tiene.
+        config = self.env['alpha.siat.config'].sudo()._get_config_for_company(company)
+        url = config.get_siat_qr_url(
+            company.vat, self.siat_cuf, self.siat_numero_factura, formato='rollo')
+        _logger.info("[RECEIPT QR] Orden %s → %s", self.name, url)
+        return url

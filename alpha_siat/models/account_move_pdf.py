@@ -566,13 +566,16 @@ class AccountMove(models.Model):
         else:
             return textos_pie
 
-    def _get_siat_qr_base_url(self):
-        """Obtiene la URL base del QR desde la configuración SIAT"""
-        siat_config = self.env['alpha.siat.config'].search([], limit=1)
-        if siat_config and siat_config.url_qr:
-            return siat_config.url_qr
-        # Valor por defecto si no hay configuración
-        return 'https://pilotosiat.impuestos.gob.bo/consulta/QR?'
+    def _get_siat_qr_url(self):
+        """URL del QR del PDF (hoja → t=2). Base según codigo_ambiente de la
+        config SIAT de la compañía (alpha.siat.config.get_siat_qr_url)."""
+        self.ensure_one()
+        # sudo: solo se lee codigo_ambiente (ACL de la config = group_system).
+        Config = self.env['alpha.siat.config'].sudo()
+        config = Config._get_config_for_company(self.company_id)
+        return config.get_siat_qr_url(
+            self.company_id.vat, self.siat_cuf, self.siat_numero_factura,
+            formato='media_hoja')
 
     def _generar_qr_code(self):
         try:
@@ -582,19 +585,10 @@ class AccountMove(models.Model):
 
             company = self.company_id
 
-            qr_base_url = self._get_siat_qr_base_url()
-
-            qr_url = (
-                f"{qr_base_url}"
-                f"nit={company.vat or ''}&"
-                f"cuf={self.siat_cuf}&"
-                f"numero={self.siat_numero_factura}&"
-                f"t=1"
-            )
+            qr_url = self._get_siat_qr_url()
 
             _logger.info("=" * 100)
             _logger.info("[PDF QR] GENERANDO QR PARA FACTURA")
-            _logger.info(f"  URL Base QR: {qr_base_url}")
             _logger.info(f"  NIT Emisor: {company.vat}")
             _logger.info(f"  CUF: {self.siat_cuf}")
             _logger.info(f"  Número Factura: {self.siat_numero_factura}")
