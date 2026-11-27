@@ -103,6 +103,7 @@ patch(OrderReceipt.prototype, {
             const cached = SIAT_CACHE.get(orderName);
             this.props.data.custom_qr_code = cached.custom_qr_code;
             this.props.data.siat_info = cached.siat_info;
+            this.props.data.monto_letras = cached.monto_letras;
             this.props.data.footer = cached.footer; // ✅ Cargar footer del cache
         }
 
@@ -159,6 +160,7 @@ patch(OrderReceipt.prototype, {
                 const cached = SIAT_CACHE.get(orderName);
                 this.props.data.custom_qr_code = cached.custom_qr_code;
                 this.props.data.siat_info = cached.siat_info;
+                this.props.data.monto_letras = cached.monto_letras;
                 // Usar la leyenda del cache si existe, sino usar la nueva
                 if (cached.footer) {
                     this.props.data.footer = cached.footer;
@@ -168,100 +170,40 @@ patch(OrderReceipt.prototype, {
                 return;
             }
 
-            console.log(`🔍 Buscando orden: ${orderName}`);
+            console.log(`🔍 Buscando datos SIAT de la orden: ${orderName}`);
 
-            // Buscar la orden en el backend
-            const orders = await this.orm.searchRead(
+            // Un solo RPC: datos SIAT + líneas/totales calculados igual que el
+            // XML de alpha_siat + URL del QR (armada en Python).
+            const result = await this.orm.call(
                 "pos.order",
-                [["pos_reference", "=", orderName]],
-                [
-                    "id",
-                    "name",
-                    "pos_reference",
-                    "to_invoice",
-                    "siat_cuf",
-                    "siat_numero_factura",
-                    "siat_codigo_recepcion",
-                    "siat_estado_envio",
-                    "siat_fecha_envio",
-                    "partner_id",
-                    "company_id"
-                ],
-                { limit: 1 }
+                "get_receipt_siat_data",
+                [orderName]
             );
 
-            console.log("📦 Órdenes encontradas:", orders);
+            if (result && result.has_siat && result.siat_info) {
+                const siatInfo = result.siat_info;
+                console.log("🎫 Orden tiene factura SIAT", siatInfo.numero_factura);
+                console.log("🔗 URL QR SIAT:", result.qr_url);
 
-            if (orders && orders.length > 0) {
-                const order = orders[0];
-                console.log("✅ Orden encontrada:", order);
+                const qrBase64 = await generateQRCodeBase64(result.qr_url);
 
-                // Verificar si tiene factura SIAT (por el CUF)
-                if (order.siat_cuf) {
-                    console.log("🎫 Orden tiene factura SIAT");
-                    console.log("  CUF:", order.siat_cuf);
-                    console.log("  Número:", order.siat_numero_factura);
+                // GUARDAR EN CACHE para que persista al imprimir
+                SIAT_CACHE.set(orderName, {
+                    custom_qr_code: qrBase64,
+                    siat_info: siatInfo,
+                    monto_letras: result.monto_letras || null,
+                    footer: this.props.data.footer // ✅ Guardar la leyenda en cache
+                });
 
-                    // Obtener datos de compañía y partner
-                    const company = await this.orm.read(
-                        "res.company",
-                        [order.company_id[0]],
-                        ["vat", "name"]
-                    );
+                // Inyectar datos en props
+                this.props.data.custom_qr_code = qrBase64;
+                this.props.data.siat_info = siatInfo;
+                this.props.data.monto_letras = result.monto_letras || null;
 
-                    const partner = await this.orm.read(
-                        "res.partner",
-                        [order.partner_id[0]],
-                        ["siat_razon_social_facturacion", "siat_nit_facturacion"]
-                    );
-
-                    console.log("🏢 Compañía:", company[0]);
-                    console.log("👤 Cliente:", partner[0]);
-
-                    // Construir URL del QR de SIAT
-                    const qrUrl = `https://pilotosiat.impuestos.gob.bo/consulta/QR?nit=${company[0].vat}&cuf=${order.siat_cuf}&numero=${order.siat_numero_factura}&t=1`;
-
-                    console.log("🔗 URL QR SIAT:", qrUrl);
-
-                    // Generar QR con la URL de SIAT
-                    const qrBase64 = await generateQRCodeBase64(qrUrl);
-
-                    // Preparar datos SIAT
-                    const siatInfo = {
-                        numero_factura: order.siat_numero_factura,
-                        cuf: order.siat_cuf,
-                        codigo_recepcion: order.siat_codigo_recepcion || '',
-                        fecha_emision: order.siat_fecha_envio || '',
-                        estado: order.siat_estado_envio || '',
-                        empresa_nit: company[0].vat,
-                        empresa_razon_social: company[0].name,
-                        cliente_nit: partner[0].siat_nit_facturacion || '',
-                        cliente_razon_social: partner[0].siat_razon_social_facturacion,
-                    };
-
-                    // GUARDAR EN CACHE para que persista al imprimir
-                    SIAT_CACHE.set(orderName, {
-                        custom_qr_code: qrBase64,
-                        siat_info: siatInfo,
-                        footer: this.props.data.footer // ✅ Guardar la leyenda en cache
-                    });
-
-                    // Inyectar datos en props
-                    this.props.data.custom_qr_code = qrBase64;
-                    this.props.data.siat_info = siatInfo;
-
-                    console.log("✅ Datos SIAT inyectados:");
-                    console.log(this.props.data.siat_info);
-
-                    // Forzar re-render
-                    this.render();
-
-                } else {
-                    console.log("⚠️ Orden sin factura SIAT (no tiene CUF) - usando QR genérico");
-                    this.generateFallbackQR();
-                }
+                // Forzar re-render
+                this.render();
             } else {
-                console.warn("⚠️ No se encontró la orden");
+                console.log("⚠️ Orden sin factura SIAT (no tiene CUF o no existe) - usando QR genérico");
                 this.generateFallbackQR();
             }
 

@@ -10,7 +10,6 @@
         <field name="modalidad"/>
         <field name="codigo_ambiente"/>
         <field name="codigo_sistema"/>
-        <field name="url_qr"/>
         <field name="token"/>
       </list>
     </field>
@@ -41,8 +40,7 @@
             <field name="wsdl_compra_venta" widget="url"/>
           </group>
           <group string="QR Configuration">
-            <field name="url_qr"/>
-          </group>
+              </group>
         </sheet>
       </form>
     </field>

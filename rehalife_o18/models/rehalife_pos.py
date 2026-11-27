@@ -562,18 +562,10 @@ class PosOrder(models.Model):
             log('[POS] Orden %s sin reservas vinculadas.', order.name)
             return
 
-        # Una llamada a register-payment por reserva. No bloquea el POS: el
-        # error queda en la reserva y el cron lo reintenta. Tras el primer
-        # fallo no se llama por las demás (si el backend está caído, cada
-        # llamada esperaría hasta 15 s con el POS bloqueado).
-        failed = False
-        for reservation in paid:
-            if failed:
-                reservation.write({
-                    'backend_sync_state': 'error',
-                    'backend_sync_error': 'No se intentó: falló la notificación de otra reserva '
-                                          'de la misma orden. Se reintenta por cron.',
-                })
-                continue
-            if not reservation._notify_backend_payment():
-                failed = True
+        # El aviso al backend (register-payment) NO sale dentro de esta
+        # transacción: si algo falla después (factura, SIAT, PDF...), Odoo
+        # deshace la venta, pero el backend ya habría registrado el pago y no
+        # permite revertirlo. Se deja 'pending_notify' y se avisa después del
+        # commit (postcommit, una llamada por reserva, corte tras el primer
+        # fallo); lo que no se pueda avisar lo toma el cron.
+        paid._register_backend_payment_postcommit()
